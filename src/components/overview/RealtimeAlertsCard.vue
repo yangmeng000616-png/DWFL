@@ -29,7 +29,7 @@
     <div class="overflow-x-auto my-1 flex-1">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="text-xs text-slate-300 font-medium border-b border-[#13325e]/70">
+          <tr class="text-xs text-slate-200 font-medium border-b border-[#215caa]/75">
             <th class="py-1.5 px-2 font-medium">时间</th>
             <th class="py-1.5 px-2 font-medium">类型</th>
             <th class="py-1.5 px-2 font-medium text-center">等级</th>
@@ -37,17 +37,17 @@
             <th class="py-1.5 px-2 font-medium text-right">状态</th>
           </tr>
         </thead>
-        <tbody class="text-sm divide-y divide-[#13325e]/50">
+        <tbody class="text-sm divide-y divide-[#1e4e8c]/60">
           <tr
             v-for="alert in alerts"
             :key="alert.id"
             @click="locateAndInspect(alert)"
-            class="hover:bg-[#102d60]/70 cursor-pointer transition-all group"
-            :class="selectedAlertId === alert.id ? 'bg-[#123877]/80 ring-1 ring-cyan-400/50' : ''"
+            class="hover:bg-[#144288]/80 cursor-pointer transition-all group"
+            :class="selectedAlertId === alert.id ? 'bg-[#1a519c]/90 ring-1 ring-cyan-400/80 shadow-[0_0_12px_rgba(0,240,255,0.3)]' : ''"
             title="点击在三维数字孪生中定位此设备"
           >
             <!-- Time -->
-            <td class="py-2 px-2 text-slate-300 font-tech text-xs whitespace-nowrap">
+            <td class="py-2 px-2 text-slate-200 font-tech text-xs whitespace-nowrap">
               {{ alert.time }}
             </td>
 
@@ -68,8 +68,8 @@
             </td>
 
             <!-- Location -->
-            <td class="py-2 px-2 text-cyan-300 group-hover:text-white whitespace-nowrap text-xs">
-              <span class="underline decoration-cyan-500/40 decoration-dotted">{{ alert.location }}</span>
+            <td class="py-2 px-2 text-cyan-200 group-hover:text-white whitespace-nowrap text-xs">
+              <span class="underline decoration-cyan-400/50 decoration-dotted">{{ alert.location }}</span>
             </td>
 
             <!-- Status -->
@@ -168,29 +168,29 @@ const locateAndInspect = (alert: AlertItem) => {
 const getLevelBadgeClass = (level: string) => {
   switch (level) {
     case '黄色':
-      return 'bg-[#2b2207] text-[#fbbf24] border border-[#f59e0b]/50';
+      return 'bg-[#42320b] text-[#fde047] border border-[#f59e0b]/70';
     case '橙色':
-      return 'bg-[#331c08] text-[#fb923c] border border-[#f97316]/50';
+      return 'bg-[#4d2209] text-[#fdba74] border border-[#f97316]/70';
     case '红色':
-      return 'bg-[#381014] text-[#f87171] border border-[#ef4444]/50';
+      return 'bg-[#52171e] text-[#fca5a5] border border-[#ef4444]/70';
     case '蓝色':
-      return 'bg-[#0b244d] text-[#60a5fa] border border-[#3b82f6]/50';
+      return 'bg-[#123875] text-[#93c5fd] border border-[#3b82f6]/70';
     case '绿色':
     default:
-      return 'bg-[#042820] text-[#34d399] border border-[#10b981]/50';
+      return 'bg-[#0a3d31] text-[#6ee7b7] border border-[#10b981]/70';
   }
 };
 
 const getStatusBadgeClass = (status: string) => {
   if (status.includes('正常') || status.includes('已处理') || status.includes('通过')) {
-    return 'bg-[#042820] text-[#00e5a3] border border-[#00e5a3]/40';
+    return 'bg-[#0a3d31] text-[#6ee7b7] border border-[#10b981]/70';
   }
   if (status.includes('处理中')) {
-    return 'bg-[#331c08] text-[#fb923c] border border-[#f97316]/40';
+    return 'bg-[#4d2209] text-[#fdba74] border border-[#f97316]/70';
   }
   if (status.includes('提示')) {
-    return 'bg-[#07244a] text-[#38bdf8] border border-cyan-500/40';
+    return 'bg-[#0d346c] text-[#67e8f9] border border-cyan-400/60';
   }
-  return 'bg-[#2b2207] text-[#fbbf24] border border-[#f59e0b]/40';
+  return 'bg-[#42320b] text-[#fde047] border border-[#f59e0b]/70';
 };
 </script>

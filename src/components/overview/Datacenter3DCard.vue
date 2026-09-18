@@ -16,13 +16,13 @@
       <!-- Mode & Interactive Tools -->
       <div class="flex items-center gap-1.5">
         <!-- View Mode Selector -->
-        <div class="hidden sm:flex items-center bg-[#051634] p-0.5 rounded-md border border-[#184682]/60 text-xs">
+        <div class="hidden sm:flex items-center bg-[#092960]/90 p-0.5 rounded-md border border-[#2461b2]/70 text-xs">
           <button
             v-for="mode in viewModes"
             :key="mode.id"
             @click="activeMode = mode.id"
             class="px-2 py-0.5 rounded transition-all font-medium text-[11px] whitespace-nowrap"
-            :class="activeMode === mode.id ? 'bg-gradient-to-r from-[#1872f6] to-[#0091ff] text-white shadow-[0_0_8px_rgba(24,114,246,0.6)]' : 'text-slate-400 hover:text-slate-200'"
+            :class="activeMode === mode.id ? 'bg-gradient-to-r from-[#217bf8] to-[#00a6ff] text-white shadow-[0_0_10px_rgba(33,123,248,0.7)]' : 'text-slate-300 hover:text-white'"
           >
             {{ mode.label }}
           </button>
@@ -32,8 +32,8 @@
         <button
           @click="handleLightningDemo"
           :disabled="isDemoRunning"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-semibold flex items-center gap-1 transition-all shadow-[0_0_8px_rgba(0,240,255,0.15)] disabled:opacity-50"
-          :class="isDemoRunning ? 'bg-amber-600/90 text-white border-amber-400 animate-pulse' : 'bg-[#08224e] hover:bg-[#0f3474] text-cyan-300 border-cyan-500/40'"
+          class="h-6.5 px-2 rounded-md border text-[11px] font-semibold flex items-center gap-1 transition-all shadow-[0_0_8px_rgba(0,240,255,0.2)] disabled:opacity-50 cursor-pointer"
+          :class="isDemoRunning ? 'bg-amber-600/90 text-white border-amber-400 animate-pulse' : 'bg-[#0f3b7d] hover:bg-[#184ea0] text-cyan-200 border-cyan-400/50'"
         >
           <svg class="w-3 h-3 fill-current text-amber-300" viewBox="0 0 24 24">
             <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
@@ -42,48 +42,48 @@
         </button>
 
         <!-- 3D Transform Controls (Rotate & Zoom) -->
-        <div class="flex items-center bg-[#051634] p-0.5 rounded-md border border-[#184682]/60 text-xs text-slate-300 h-6.5">
+        <div class="flex items-center bg-[#092960]/90 p-0.5 rounded-md border border-[#2461b2]/70 text-xs text-slate-200 h-6.5">
           <button
             @click="rotateAngle -= 15"
             title="左旋 15°"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-300 hover:bg-[#0c2858] rounded transition-colors text-xs"
+            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs cursor-pointer"
           >
             ↺
           </button>
           <button
             @click="toggleAutoRotate"
             :title="isAutoRotating ? '暂停巡航' : '自动巡航'"
-            class="px-1 py-0.5 hover:text-cyan-300 hover:bg-[#0c2858] rounded transition-colors font-tech text-[10px]"
-            :class="isAutoRotating ? 'text-cyan-300 font-bold' : 'text-slate-400'"
+            class="px-1 py-0.5 hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors font-tech text-[10px] cursor-pointer"
+            :class="isAutoRotating ? 'text-cyan-300 font-bold' : 'text-slate-300'"
           >
             {{ isAutoRotating ? '巡航中' : '巡航' }}
           </button>
           <button
             @click="rotateAngle += 15"
             title="右旋 15°"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-300 hover:bg-[#0c2858] rounded transition-colors text-xs"
+            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs cursor-pointer"
           >
             ↻
           </button>
-          <span class="w-px h-3 bg-slate-700 mx-0.5"></span>
+          <span class="w-px h-3 bg-slate-600 mx-0.5"></span>
           <button
             @click="zoomIn"
             title="放大"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-300 hover:bg-[#0c2858] rounded transition-colors text-xs font-bold"
+            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs font-bold cursor-pointer"
           >
             +
           </button>
           <button
             @click="zoomOut"
             title="缩小"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-300 hover:bg-[#0c2858] rounded transition-colors text-xs font-bold"
+            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs font-bold cursor-pointer"
           >
             -
           </button>
           <button
             @click="resetView"
-            title="复位视角"
-            class="px-1 py-0.5 hover:text-cyan-300 hover:bg-[#0c2858] rounded transition-colors text-[10px]"
+            title="重置视角"
+            class="px-1 py-0.5 hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-[10px] cursor-pointer"
           >
             复位
           </button>
@@ -94,7 +94,7 @@
     <!-- Center 3D Isometric View Stage -->
     <div class="relative flex-1 min-h-[320px] flex items-center justify-center overflow-hidden my-1 select-none">
       <!-- Ambient Cyber Glows & Grid Floor -->
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#0e3575]/40 via-[#061738]/70 to-[#02091c] pointer-events-none"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#144ba0]/55 via-[#0b2b68]/75 to-[#061940] pointer-events-none"></div>
 
       <!-- High-Fidelity 3D Isometric Architectural SVG -->
       <div
@@ -354,38 +354,38 @@
       <!-- Tag 1: 大气电场仪 (Top-Left) -->
       <div
         @click="openDetail('atmospheric')"
-        class="absolute left-[3%] top-[6%] z-20 cursor-pointer bg-[#04122bd0] hover:bg-[#071c42] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
-        :class="focusHotspot === 'atmospheric' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_16px_rgba(0,240,255,0.7)]' : 'border-cyan-500/40 hover:border-cyan-400'"
+        class="absolute left-[3%] top-[6%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="focusHotspot === 'atmospheric' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse flex-shrink-0"></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-slate-100">大气电场仪</span>
-          <span class="text-[11px] text-emerald-400 font-mono font-medium leading-tight">12.4 kV/m · 正常</span>
+          <span class="text-xs font-bold text-white">大气电场仪</span>
+          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">12.4 kV/m · 正常</span>
         </div>
       </div>
 
       <!-- Tag 2: 双流向主动防雷装置 (Top-Center-Right) -->
       <div
         @click="openDetail('dual_protection')"
-        class="absolute left-[47%] top-[2%] z-20 cursor-pointer bg-[#04122bd0] hover:bg-[#071c42] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
-        :class="focusHotspot === 'dual_protection' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_16px_rgba(0,240,255,0.7)]' : 'border-cyan-500/40 hover:border-cyan-400'"
+        class="absolute left-[47%] top-[2%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="focusHotspot === 'dual_protection' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse flex-shrink-0"></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-slate-100">双流向主动防雷</span>
-          <span class="text-[11px] text-emerald-400 font-mono font-medium leading-tight">就绪 · 耐受58.7kA</span>
+          <span class="text-xs font-bold text-white">双流向主动防雷</span>
+          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">就绪 · 耐受58.7kA</span>
         </div>
       </div>
 
       <!-- Tag 3: SPD监测终端 (Middle-Right) -->
       <div
         @click="openDetail('spd_terminal')"
-        class="absolute right-[3%] top-[24%] z-20 cursor-pointer bg-[#04122bd0] hover:bg-[#071c42] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
-        :class="focusHotspot === 'spd_terminal' ? 'border-amber-400 ring-1 ring-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.7)]' : 'border-cyan-500/40 hover:border-cyan-400'"
+        class="absolute right-[3%] top-[24%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="focusHotspot === 'spd_terminal' ? 'border-amber-300 ring-1 ring-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
       >
         <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-slate-100">SPD监测终端</span>
+          <span class="text-xs font-bold text-white">SPD监测终端</span>
           <span class="text-[11px] text-amber-300 font-mono font-medium leading-tight">12/12在网 · 正常</span>
         </div>
       </div>
@@ -393,45 +393,45 @@
       <!-- Tag 4: 接地电阻监测 (Bottom-Left) -->
       <div
         @click="openDetail('ground_res')"
-        class="absolute left-[4%] bottom-[6%] z-20 cursor-pointer bg-[#04122bd0] hover:bg-[#071c42] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
-        :class="focusHotspot === 'ground_res' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_16px_rgba(0,240,255,0.7)]' : 'border-cyan-500/40 hover:border-cyan-400'"
+        class="absolute left-[4%] bottom-[6%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="focusHotspot === 'ground_res' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
       >
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-slate-100">地网接地电阻</span>
-          <span class="text-[11px] text-emerald-400 font-mono font-medium leading-tight">0.52 Ω (≤1.0Ω优)</span>
+          <span class="text-xs font-bold text-white">地网接地电阻</span>
+          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">0.52 Ω (≤1.0Ω优)</span>
         </div>
       </div>
 
       <!-- Tag 5: 静电监测终端 (Bottom-Right) -->
       <div
         @click="openDetail('esd_terminal')"
-        class="absolute right-[4%] bottom-[6%] z-20 cursor-pointer bg-[#04122bd0] hover:bg-[#071c42] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
-        :class="focusHotspot === 'esd_terminal' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_16px_rgba(0,240,255,0.7)]' : 'border-cyan-500/40 hover:border-cyan-400'"
+        class="absolute right-[4%] bottom-[6%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="focusHotspot === 'esd_terminal' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
       >
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-slate-100">微环境静电终端</span>
-          <span class="text-[11px] text-emerald-400 font-mono font-medium leading-tight">0.8 kV · 运行正常</span>
+          <span class="text-xs font-bold text-white">微环境静电终端</span>
+          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">0.8 kV · 运行正常</span>
         </div>
       </div>
 
       <!-- Tag 6: 设备机房区域状态 (Center Floating Badge) -->
       <div
         @click="openDetail('datacenter_zone')"
-        class="absolute left-[36%] top-[56%] z-20 cursor-pointer bg-[#04122bd0] hover:bg-[#071c42] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
-        :class="focusHotspot === 'datacenter_zone' ? 'border-emerald-300 ring-1 ring-emerald-400 shadow-[0_0_16px_rgba(0,229,163,0.7)]' : 'border-emerald-500/40 hover:border-emerald-400'"
+        class="absolute left-[36%] top-[56%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="focusHotspot === 'datacenter_zone' ? 'border-emerald-300 ring-1 ring-emerald-400 shadow-[0_0_18px_rgba(0,229,163,0.75)]' : 'border-emerald-400/60 hover:border-emerald-300'"
       >
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-slate-100">核心机房防护</span>
-          <span class="text-[11px] text-emerald-400 font-medium leading-tight">屏蔽衰减88dB · 等电位优</span>
+          <span class="text-xs font-bold text-white">核心机房防护</span>
+          <span class="text-[11px] text-emerald-300 font-medium leading-tight">屏蔽衰减88dB · 等电位优</span>
         </div>
       </div>
 
       <!-- BOTTOM-LEFT COMPASS ROSE -->
       <div class="absolute left-3 bottom-3 z-10 flex flex-col items-center select-none pointer-events-none">
-        <div class="w-9 h-9 rounded-full bg-[#061838]/90 border border-cyan-400/50 flex items-center justify-center shadow-[0_0_12px_rgba(0,240,255,0.35)]">
+        <div class="w-9 h-9 rounded-full bg-[#0a2b60]/95 border border-cyan-400/70 flex items-center justify-center shadow-[0_0_14px_rgba(0,240,255,0.45)]">
           <svg
             class="w-6 h-6 text-cyan-300 transition-transform duration-300"
             :style="{ transform: `rotate(${-45 - rotateAngle}deg)` }"

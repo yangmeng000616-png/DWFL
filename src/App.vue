@@ -1,8 +1,9 @@
 <template>
-  <div class="min-h-screen bg-[radial-gradient(circle_at_50%_15%,_#08265e_0%,_#04143a_40%,_#010717_100%)] text-slate-100 flex flex-col font-sans relative overflow-x-hidden">
-    <!-- Cyber ambient lighting glow circles in background -->
-    <div class="fixed top-0 left-1/4 w-[700px] h-[350px] bg-blue-500/15 rounded-full blur-[150px] pointer-events-none"></div>
-    <div class="fixed bottom-0 right-1/4 w-[700px] h-[400px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none"></div>
+  <div class="min-h-screen bg-[radial-gradient(circle_at_50%_15%,_#123b8c_0%,_#0a2869_42%,_#061b45_80%,_#041232_100%)] text-slate-100 flex flex-col font-sans relative overflow-x-hidden">
+    <!-- Cyber ambient lighting glow circles in background (brighter luminous atmosphere) -->
+    <div class="fixed top-0 left-1/4 w-[800px] h-[400px] bg-blue-500/25 rounded-full blur-[160px] pointer-events-none"></div>
+    <div class="fixed bottom-0 right-1/4 w-[800px] h-[450px] bg-cyan-500/20 rounded-full blur-[170px] pointer-events-none"></div>
+    <div class="fixed top-1/2 right-10 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[180px] pointer-events-none"></div>
 
     <!-- Top Platform Header -->
     <AppHeader />
