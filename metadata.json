@@ -1,0 +1,6 @@
+{
+  "name": "算力中心雷电静电智能监测与防护平台",
+  "description": "构建主动防御与实时感知的数据中心智能安全底座，提供雷电监测、静电防护、接地系统监测、SPD状态管理与环境安全态势感知。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
