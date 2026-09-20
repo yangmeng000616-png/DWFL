@@ -26,15 +26,15 @@
     </div>
 
     <!-- Alert Table -->
-    <div class="overflow-x-auto my-0.5 flex-1 no-scrollbar">
-      <table class="w-full text-left border-collapse">
+    <div class="overflow-hidden my-0.5 flex-1">
+      <table class="w-full text-left border-collapse table-auto">
         <thead>
-          <tr class="text-[11px] text-slate-300 font-medium border-b border-[#215caa]/75">
-            <th class="py-1 px-1.5 font-medium whitespace-nowrap">时间</th>
-            <th class="py-1 px-1.5 font-medium whitespace-nowrap">类型</th>
-            <th class="py-1 px-1 font-medium text-center whitespace-nowrap">等级</th>
-            <th class="py-1 px-1.5 font-medium whitespace-nowrap">监测区域/设备</th>
-            <th class="py-1 px-1.5 font-medium text-right whitespace-nowrap">状态</th>
+          <tr class="text-[10px] text-slate-300 font-medium border-b border-[#215caa]/75">
+            <th class="py-1 px-1 font-medium whitespace-nowrap">时间</th>
+            <th class="py-1 px-1 font-medium whitespace-nowrap">类型</th>
+            <th class="py-1 px-0.5 font-medium text-center whitespace-nowrap">等级</th>
+            <th class="py-1 px-1 font-medium whitespace-nowrap">监测区域/设备</th>
+            <th class="py-1 px-1 font-medium text-right whitespace-nowrap">状态</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#1e4e8c]/50">
@@ -44,25 +44,25 @@
             @click="locateAndInspect(alert)"
             class="hover:bg-[#144288]/80 cursor-pointer transition-all group"
             :class="selectedAlertId === alert.id ? 'bg-[#1a519c]/90 ring-1 ring-cyan-400/80 shadow-[0_0_12px_rgba(0,240,255,0.3)]' : ''"
-            title="点击在三维数字孪生中定位此设备"
+            :title="`【${alert.time}】${alert.type} - 点击定位三维设备`"
           >
             <!-- Time -->
-            <td class="py-1.5 px-1.5 text-slate-300 font-tech text-[10px] sm:text-[11px] whitespace-nowrap">
-              {{ alert.time }}
+            <td class="py-1 px-1 text-slate-300 font-tech text-[10px] whitespace-nowrap">
+              {{ formatAlertTime(alert.time) }}
             </td>
 
             <!-- Type -->
-            <td class="py-1.5 px-1.5 text-white font-medium text-[11px] whitespace-nowrap">
-              <div class="flex items-center gap-1.5">
+            <td class="py-1 px-1 text-white font-medium text-[10px] whitespace-nowrap">
+              <div class="flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="alert.dotClass"></span>
                 <span>{{ alert.type }}</span>
               </div>
             </td>
 
             <!-- Severity Level Badge -->
-            <td class="py-1.5 px-1 text-center whitespace-nowrap">
+            <td class="py-1 px-0.5 text-center whitespace-nowrap">
               <span
-                class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                class="px-1 py-0.2 rounded text-[9px] font-semibold inline-block"
                 :class="getLevelBadgeClass(alert.level)"
               >
                 {{ alert.level }}
@@ -70,14 +70,14 @@
             </td>
 
             <!-- Location -->
-            <td class="py-1.5 px-1.5 text-cyan-200 group-hover:text-white whitespace-nowrap text-[11px]">
+            <td class="py-1 px-1 text-cyan-200 group-hover:text-white whitespace-nowrap text-[10px]">
               <span class="underline decoration-cyan-400/50 decoration-dotted">{{ alert.location }}</span>
             </td>
 
             <!-- Status -->
-            <td class="py-1.5 px-1.5 text-right whitespace-nowrap">
+            <td class="py-1 px-1 text-right whitespace-nowrap">
               <span
-                class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                class="px-1 py-0.2 rounded text-[9px] font-semibold inline-block"
                 :class="getStatusBadgeClass(alert.status)"
               >
                 {{ alert.status }}
@@ -165,6 +165,11 @@ const locateAndInspect = (alert: AlertItem) => {
   activeFocusHotspot.value = alert.deviceId;
   // Automatically trigger detail modal
   openDeviceInspection(alert.deviceId);
+};
+
+const formatAlertTime = (timeStr: string) => {
+  if (!timeStr) return '';
+  return timeStr.replace(/^\d{4}-/, '');
 };
 
 const getLevelBadgeClass = (level: string) => {
