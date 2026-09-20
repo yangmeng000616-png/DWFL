@@ -187,16 +187,16 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 右侧：精简紧凑的工业级告警卡片列表 (缩小体量，紧凑精致) -->
+      <!-- 右侧：精简紧凑的工业级告警卡片列表 (高度适中紧凑，不强行铺满拉伸) -->
       <!-- ======================================================== -->
-      <div class="flex flex-col gap-1.5 min-w-0 h-full overflow-y-auto no-scrollbar justify-start">
-        <!-- 如果还有活跃告警，渲染卡片列表 -->
+      <div class="flex flex-col gap-2 min-w-0 h-full overflow-y-auto no-scrollbar justify-start">
+        <!-- 如果还有活跃告警，渲染卡片列表 (紧凑紧贴式卡片，不拉伸) -->
         <template v-if="alarmCards.length > 0">
           <div
             v-for="(item, idx) in alarmCards"
             :key="item.id"
             @click="manualSelect(item.id)"
-            class="p-2 rounded-lg border flex flex-col justify-between backdrop-blur-md transition-all cursor-pointer relative overflow-hidden flex-1 group shadow-sm"
+            class="px-2.5 py-2 rounded-lg border flex flex-col gap-1.5 backdrop-blur-md transition-all cursor-pointer relative overflow-hidden flex-shrink-0 group shadow-sm"
             :class="[
               focusedId === item.id
                 ? 'ring-1.5 ring-cyan-400/90 shadow-[0_0_12px_rgba(6,182,212,0.25)] bg-gradient-to-r from-[#0c1e3d] to-[#08152e]'
@@ -209,7 +209,7 @@
             ]"
           >
             <!-- 顶部行：左侧[序号+标题+设备]+右侧[实时值与门限] -->
-            <div class="flex items-start justify-between gap-1.5 pb-0.5 border-b border-white/5">
+            <div class="flex items-start justify-between gap-1.5 pb-1 border-b border-white/5">
               <!-- 左侧标号与标题 -->
               <div class="flex items-start gap-1.5 min-w-0 flex-1">
                 <span
@@ -258,7 +258,7 @@
             <!-- 中间行：精简趋势折线 + 越界量化 -->
             <div class="py-0.5 flex items-center justify-between gap-2">
               <!-- Sparkline 微型趋势图 -->
-              <div class="flex-1 h-6 relative px-1 bg-black/40 rounded border border-white/5 overflow-hidden">
+              <div class="flex-1 h-5 relative px-1 bg-black/40 rounded border border-white/5 overflow-hidden">
                 <svg class="w-full h-full" viewBox="0 0 280 34" preserveAspectRatio="none">
                   <!-- 阈值虚线 (Y=18) -->
                   <line x1="5" y1="18" x2="275" y2="18" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 2" />
@@ -303,7 +303,7 @@
             </div>
 
             <!-- 底部行：工单协同步进器与右侧操作按钮 -->
-            <div class="flex items-center justify-between gap-1.5 pt-0.5 border-t border-white/5">
+            <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-white/5">
               <!-- 4 步流转指示器 -->
               <div class="flex items-center gap-1 text-[9.5px]">
                 <div class="flex items-center gap-0.5">
