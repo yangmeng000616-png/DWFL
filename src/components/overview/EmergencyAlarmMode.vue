@@ -11,119 +11,100 @@
     ]"
   >
     <!-- ======================================================== -->
-    <!-- 区域 1：顶部告警横幅 (多告警全局态势 + 自动轮播/手动点选) -->
+    <!-- 区域 1：顶部状态监控与控制栏 (单行紧凑：左侧设备在线与各项指标监测 + 右侧轮播与一键派单) -->
     <!-- ======================================================== -->
     <div
-      class="w-full relative z-20 px-4 py-2 flex flex-wrap items-center justify-between gap-3 border-b backdrop-blur-md transition-colors duration-500"
+      class="w-full relative z-20 px-3 py-1.5 flex items-center justify-between gap-3 border-b backdrop-blur-md transition-colors duration-500 flex-nowrap overflow-x-auto no-scrollbar"
       :class="[
         activeScenario.severity === 'red'
-          ? 'bg-gradient-to-r from-red-950/95 via-red-900/85 to-[#1e0a0a]/90 border-red-500/70 shadow-[0_4px_16px_rgba(239,68,68,0.25)]'
-          : 'bg-gradient-to-r from-amber-950/95 via-amber-900/85 to-[#1f1205]/90 border-amber-500/70 shadow-[0_4px_16px_rgba(245,158,11,0.25)]'
+          ? 'bg-gradient-to-r from-red-950/95 via-[#1a0a0a]/95 to-[#0b1b36]/90 border-red-500/70 shadow-[0_4px_16px_rgba(239,68,68,0.2)]'
+          : 'bg-gradient-to-r from-amber-950/95 via-[#1a1208]/95 to-[#0b1b36]/90 border-amber-500/70 shadow-[0_4px_16px_rgba(245,158,11,0.2)]'
       ]"
     >
-      <!-- 左侧：多并发告警综合态势汇总 -->
-      <div class="flex items-center gap-3">
+      <!-- 左侧：设备在线率与全域各项防雷/静电指标实时在线监测 (可点击穿透排查) -->
+      <div class="flex items-center gap-2 flex-shrink-0 min-w-0">
+        <!-- 核心设备在网率胶囊 -->
         <div
-          class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 animate-pulse border shadow-md"
-          :class="activeScenario?.severity === 'red' ? 'bg-red-600/30 border-red-400 text-red-300' : 'bg-amber-600/30 border-amber-400 text-amber-300'"
+          @click="openDeviceInspection('datacenter_zone')"
+          class="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#092248]/90 border border-cyan-500/50 text-cyan-200 cursor-pointer hover:bg-cyan-950/80 transition-colors shadow-sm"
+          title="点击查看算力中心设备在线与通信链路详情"
         >
-          <AlertTriangle class="w-4 h-4" />
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+          <span class="text-xs font-semibold text-white whitespace-nowrap">设备在线:</span>
+          <span class="font-tech text-xs font-bold text-emerald-300">99.4%</span>
+          <span class="text-[10px] text-cyan-300 font-mono">(156/157)</span>
         </div>
 
-        <div class="flex items-center gap-2.5">
-          <span class="px-2 py-0.5 rounded text-[11px] font-tech font-bold uppercase tracking-wider border shadow-sm flex items-center gap-1.5 bg-red-500 text-white border-red-300">
-            <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-            并发告警联动 ({{ alarmCards.length }}处活跃)
-          </span>
-          <h2 class="text-sm font-bold text-white tracking-wide drop-shadow">
-            园区雷电防护综合预警响应中
-          </h2>
-          <span class="text-xs text-amber-200 font-medium bg-black/30 px-2 py-0.5 rounded border border-white/10 hidden sm:inline">
-            剩余待闭环: 一级严重 {{ countRed }} · 二级超限 {{ countOrange }} · 三级关注 {{ countYellow }}
-          </span>
-        </div>
-      </div>
+        <div class="h-3 w-px bg-white/15 flex-shrink-0"></div>
 
-      <!-- 中间：轮播播放控制 + 当前焦点摘要 (支持自动循环与手动切号) -->
-      <div v-if="alarmCards.length > 0" class="flex items-center gap-2 px-3 py-1 rounded-lg bg-black/50 border border-white/10 flex-shrink-0 shadow-inner">
-        <!-- 轮播控制开关 -->
-        <button
-          @click="toggleAutoPlay"
-          class="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-medium border transition-colors cursor-pointer"
-          :class="isAutoPlaying
-            ? 'bg-cyan-950/80 border-cyan-400 text-cyan-300'
-            : 'bg-slate-800/80 border-slate-600 text-slate-400 hover:text-white'"
-          :title="isAutoPlaying ? '点击暂停自动轮播' : '点击开启自动轮播 (每6秒切换)'"
-        >
-          <component :is="isAutoPlaying ? Pause : Play" class="w-3 h-3" />
-          <span>{{ isAutoPlaying ? '轮播中 (6s)' : '已暂停' }}</span>
-        </button>
-
-        <!-- 小数字切换胶囊 -->
-        <div class="flex items-center gap-1">
-          <button
-            v-for="(item, idx) in alarmCards"
-            :key="item.id"
-            @click="manualSelect(item.id)"
-            class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold font-mono transition-all cursor-pointer border"
-            :class="[
-              focusedId === item.id
-                ? 'bg-cyan-500 text-black border-cyan-300 scale-110 shadow-[0_0_8px_rgba(6,182,212,0.6)]'
-                : 'bg-[#081b3a] border-[#1a4478] text-slate-400 hover:text-white',
-              item.severity === 'red' && focusedId !== item.id ? 'text-red-400 border-red-500/50' : ''
-            ]"
-            :title="`切换至 ${item.title}`"
+        <!-- 各种监测指标胶囊：雷电、静电、地网、SPD、动力电源 -->
+        <div class="flex items-center gap-1.5 flex-nowrap text-xs">
+          <!-- 雷电监测 -->
+          <div
+            @click="openDeviceInspection('atmospheric')"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-cyan-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
+            title="雷电空间电场实时监测"
           >
-            {{ idx + 1 }}
-          </button>
-        </div>
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0"></span>
+            <span class="text-[11px] text-slate-300">雷电:</span>
+            <span class="font-tech text-[11px] font-bold text-cyan-300">23.6kA</span>
+          </div>
 
-        <div class="h-3 w-px bg-white/20 mx-0.5"></div>
+          <!-- 静电监测 -->
+          <div
+            @click="openDeviceInspection('esd_terminal')"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-emerald-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
+            title="微环境防静电电位遥测"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            <span class="text-[11px] text-slate-300">静电:</span>
+            <span class="font-tech text-[11px] font-bold text-emerald-300">0.8kV</span>
+          </div>
 
-        <!-- 当前轮播聚焦靶点名称 -->
-        <div class="flex items-center gap-1.5 text-xs text-slate-300">
-          <MapPin class="w-3.5 h-3.5 text-cyan-300 flex-shrink-0" />
-          <span class="font-medium text-white max-w-[190px] truncate" :title="activeScenario.title">
-            {{ activeScenario.title }}
-          </span>
-        </div>
+          <!-- 接地阻抗 -->
+          <div
+            @click="openDeviceInspection('ground_res')"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-amber-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
+            title="地网接地电阻在线遥测 (当前有超标告警)"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 animate-ping"></span>
+            <span class="text-[11px] text-slate-300">地阻:</span>
+            <span class="font-tech text-[11px] font-bold text-amber-300">1.28Ω</span>
+          </div>
 
-        <div class="h-3 w-px bg-white/20 mx-0.5"></div>
+          <!-- SPD在网 -->
+          <div
+            @click="openDeviceInspection('spd_terminal')"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-red-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
+            title="SPD浪涌保护器群组监测 (当前有漏电告警)"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0 animate-pulse"></span>
+            <span class="text-[11px] text-slate-300">SPD:</span>
+            <span class="font-tech text-[11px] font-bold text-red-300">0.28mA</span>
+          </div>
 
-        <!-- 实时值与越界标记 -->
-        <div class="flex items-baseline gap-1 text-xs">
-          <span class="font-tech font-bold" :class="activeScenario.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
-            {{ activeScenario.realtimeValue }}
-          </span>
-        </div>
-        <div
-          class="px-1.5 py-0.2 rounded text-[10px] font-bold"
-          :class="activeScenario.severity === 'red' ? 'bg-red-500/30 text-red-300 border border-red-500/40' : 'bg-amber-500/30 text-amber-300 border border-amber-500/40'"
-        >
-          {{ activeScenario.overValue }}
+          <!-- 配电电源 -->
+          <div
+            @click="openDeviceInspection('datacenter_zone')"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-cyan-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
+            title="主机房供配电相电压质量"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            <span class="text-[11px] text-slate-300">电源:</span>
+            <span class="font-tech text-[11px] font-bold text-emerald-300">220.4V</span>
+          </div>
         </div>
       </div>
-      <div v-else class="flex items-center gap-2 text-xs text-emerald-300">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-        <span>全域告警已全部处置完成，无活跃隐患</span>
-      </div>
 
-      <!-- 右侧：一键全部派单 + 常态回退 -->
-      <div class="flex items-center gap-2">
-        <button
-          @click="handleDispatchAll"
-          class="px-3 py-1 rounded text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white border border-amber-300/60 shadow transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-        >
-          <Send class="w-3.5 h-3.5" />
-          <span>一键全部派单 (3个班组)</span>
-        </button>
-
+      <!-- 右侧：返回常态 -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- 返回常态 -->
         <button
           @click="exitEmergencyMode"
-          class="px-2.5 py-1 rounded text-xs font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:text-white transition-all cursor-pointer flex items-center gap-1"
+          class="px-2.5 py-1 rounded text-xs font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap flex-shrink-0"
           title="退出应急极简视图，返回全量大屏"
         >
-          <LogOut class="w-3.5 h-3.5" />
+          <LogOut class="w-3.5 h-3.5 flex-shrink-0" />
           <span>返回常态</span>
         </button>
       </div>
@@ -175,7 +156,7 @@
           </div>
 
           <div class="flex items-center gap-1 text-xs text-cyan-300">
-            <span>{{ isAutoPlaying ? '视角伴随顶部自动轮播切换中' : '视角已锁定当前选中靶点' }}</span>
+            <span>点击右侧告警卡片切换三维视角定位</span>
           </div>
         </div>
 
@@ -459,7 +440,7 @@
           <span>{{ isNightWatchMode ? '夜间模式: 开' : '夜间模式:关' }}</span>
         </button>
         <span class="text-[10px] text-slate-500">
-          极简应急模式 · 3告警微型胶囊平铺与自动轮播
+          极简应急模式 · 3处告警空间靶标联动与快速处置
         </span>
       </div>
     </div>
@@ -467,15 +448,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import {
   AlertTriangle,
   MapPin,
   Send,
   LogOut,
   Moon,
-  Play,
-  Pause,
   Check,
   CheckCircle2
 } from 'lucide-vue-next';
@@ -487,6 +466,7 @@ import {
 } from '@/composables/useEmergencyMode';
 
 import Datacenter3DCard from '@/components/overview/Datacenter3DCard.vue';
+import { openDeviceInspection } from '@/composables/useCockpitState';
 
 // 3 个并发告警的独立状态对象
 const alarmCards = ref([
@@ -548,8 +528,6 @@ const alarmCards = ref([
 
 // 当前 3D 镜头焦点
 const focusedId = ref('spd');
-const isAutoPlaying = ref(true); // 默认开启自动轮播
-let carouselTimer: number | null = null;
 
 const activeScenario = computed(() => {
   if (alarmCards.value.length === 0) {
@@ -571,49 +549,10 @@ const countRed = computed(() => alarmCards.value.filter(c => c.severity === 'red
 const countOrange = computed(() => alarmCards.value.filter(c => c.severity === 'orange').length);
 const countYellow = computed(() => alarmCards.value.filter(c => c.severity === 'yellow').length);
 
-// 轮播核心函数：每 6 秒平滑流转下一个
-const startCarousel = () => {
-  stopCarousel();
-  if (alarmCards.value.length <= 1) return;
-  carouselTimer = window.setInterval(() => {
-    if (alarmCards.value.length === 0) return;
-    const currentIndex = alarmCards.value.findIndex(c => c.id === focusedId.value);
-    const nextIndex = (currentIndex + 1) % alarmCards.value.length;
-    focusedId.value = alarmCards.value[nextIndex].id;
-  }, 6000);
-};
-
-const stopCarousel = () => {
-  if (carouselTimer) {
-    clearInterval(carouselTimer);
-    carouselTimer = null;
-  }
-};
-
-const toggleAutoPlay = () => {
-  isAutoPlaying.value = !isAutoPlaying.value;
-  if (isAutoPlaying.value) {
-    startCarousel();
-  } else {
-    stopCarousel();
-  }
-};
-
-// 手动点选任意胶囊：自动暂停轮播并锁定在该项上
+// 点选任意告警卡片：锁定并在 3D 视图中聚焦对应靶点
 const manualSelect = (id: string) => {
   focusedId.value = id;
-  // 保持暂停，避免值班员正在看此故障时被强行切走
-  isAutoPlaying.value = false;
-  stopCarousel();
 };
-
-onMounted(() => {
-  startCarousel();
-});
-
-onUnmounted(() => {
-  stopCarousel();
-});
 
 // 推进单张卡片的进度 (1 -> 2 -> 3)
 const advanceStep = (id: string) => {
@@ -641,7 +580,6 @@ const resolveAndRemove = (id: string) => {
 
     // 如果全部告警均已销号完毕，延迟 1.5 秒自动退出应急模式，平滑返回常态大屏
     if (alarmCards.value.length === 0) {
-      stopCarousel();
       setTimeout(() => {
         exitEmergencyMode();
       }, 1800);
