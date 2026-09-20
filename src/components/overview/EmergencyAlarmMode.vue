@@ -68,6 +68,7 @@
             class="h-full w-full"
             :active-alarms="alarmCards"
             :focused-alarm-id="focusedId"
+            :allow-map-switch="true"
             @switch-to-map="activeMainView = 'map'"
           />
 

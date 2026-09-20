@@ -621,10 +621,13 @@ interface AlarmTarget {
   overValue?: string;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   activeAlarms?: AlarmTarget[];
   focusedAlarmId?: string;
-}>();
+  allowMapSwitch?: boolean;
+}>(), {
+  allowMapSwitch: false
+});
 
 const emit = defineEmits<{
   (e: 'switch-to-map'): void;
@@ -671,13 +674,18 @@ const zoomScale = ref(1.0);
 const isAutoRotating = ref(false);
 let autoRotateTimer: number | null = null;
 
-const viewModes = [
-  { id: 'all', label: '全景态势' },
-  { id: 'lightning', label: '防雷外廓' },
-  { id: 'server', label: '机房透视' },
-  { id: 'ground', label: '地网拓扑' },
-  { id: 'map', label: '雷电活动地图' }
-];
+const viewModes = computed(() => {
+  const modes = [
+    { id: 'all', label: '全景态势' },
+    { id: 'lightning', label: '防雷外廓' },
+    { id: 'server', label: '机房透视' },
+    { id: 'ground', label: '地网拓扑' }
+  ];
+  if (props.allowMapSwitch) {
+    modes.push({ id: 'map', label: '雷电活动地图' });
+  }
+  return modes;
+});
 const activeMode = ref('all');
 
 const handleModeClick = (modeId: string) => {
