@@ -128,109 +128,45 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- 中间主视图区：左侧 74%~76% 超宽放大三维数字孪生机房；右侧 24%~26% 紧凑极简告警卡片 -->
+    <!-- 中间主视图区：左侧 74%~76% 超宽放大三维数字孪生机房 / 地图；右侧 24%~26% 紧凑极简告警卡片 -->
     <!-- ======================================================== -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-[74%_26%] xl:grid-cols-[76%_24%] gap-2 p-2 overflow-hidden">
-      <!-- 左侧：保留总览的原版高保真三维机房态势图，叠加 3 处故障靶标联动 (大幅放大，视野开阔) -->
-      <div class="flex flex-col min-w-0 h-full gap-1.5">
-        <!-- 3D / 地图 联动说明与双模视图切换工具栏 -->
-        <div class="flex items-center justify-between px-2.5 py-1 rounded-lg bg-[#071c3f]/90 border border-[#1d4d8c]/70 text-[11px]">
-          <div class="flex items-center gap-2 min-w-0 overflow-hidden">
-            <!-- 视图切换胶囊: 三维数字孪生 VS 雷电活动实时地图 -->
-            <div class="flex items-center bg-[#051736] p-0.5 rounded-md border border-cyan-500/40 flex-shrink-0">
-              <button
-                @click="activeMainView = '3d'"
-                class="px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer font-medium"
-                :class="activeMainView === '3d'
-                  ? 'bg-gradient-to-r from-[#217bf8] to-[#00a6ff] text-white shadow-[0_0_8px_rgba(33,123,248,0.7)] font-bold'
-                  : 'text-slate-300 hover:text-white'"
-              >
-                <Box class="w-3.5 h-3.5" />
-                <span>三维数字孪生</span>
-              </button>
-              <button
-                @click="activeMainView = 'map'"
-                class="px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer font-medium"
-                :class="activeMainView === 'map'
-                  ? 'bg-gradient-to-r from-[#217bf8] to-[#00a6ff] text-white shadow-[0_0_8px_rgba(33,123,248,0.7)] font-bold'
-                  : 'text-slate-300 hover:text-white'"
-              >
-                <Globe class="w-3.5 h-3.5 text-cyan-300" />
-                <span>雷电活动实时地图</span>
-              </button>
-            </div>
+      <!-- 左侧：三维数字孪生 OR 雷电活动实时地图展示区 (纯净通高布局，无外部冗余横条) -->
+      <div class="relative min-w-0 h-full rounded-xl overflow-hidden border border-[#1d4d8c]/80 shadow-lg bg-[#040f24]">
+        <!-- 视图 A：三维数字孪生卡片组件 -->
+        <template v-if="activeMainView === '3d'">
+          <Datacenter3DCard
+            class="h-full w-full"
+            :active-alarms="alarmCards"
+            :focused-alarm-id="focusedId"
+            @switch-to-map="activeMainView = 'map'"
+          />
 
-            <!-- 当前视图全域状态标签 -->
-            <div v-if="activeMainView === '3d'" class="hidden xl:flex items-center gap-1.5 text-[11px] truncate border-l border-[#1d4d8c] pl-2">
-              <span class="text-slate-400 font-medium whitespace-nowrap">3D全域定位:</span>
-              <span class="text-slate-200 flex items-center gap-1.5 text-[11px] truncate">
-                <span v-if="alarmCards.some(c => c.id === 'spd')" class="flex items-center gap-1 whitespace-nowrap">
-                  <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span> 2F动力室 (SPD超标)
+          <!-- 在三维视图左下角轻量叠加醒目的当前主焦点 HUD 指引徽标 -->
+          <div class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
+            <div class="px-2.5 py-1 rounded-lg bg-black/85 border border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" :class="activeScenario.severity === 'red' ? 'bg-red-500 animate-ping' : 'bg-amber-400 animate-ping'"></span>
+              <div class="flex flex-col">
+                <span class="text-xs font-bold text-white flex items-center gap-1">
+                  <span>当前聚焦:</span>
+                  <span :class="activeScenario.severity === 'red' ? 'text-red-300' : 'text-amber-300'">{{ activeScenario.title }}</span>
                 </span>
-                <span v-if="alarmCards.some(c => c.id === 'spd') && alarmCards.some(c => c.id === 'ground')" class="text-slate-600">|</span>
-                <span v-if="alarmCards.some(c => c.id === 'ground')" class="flex items-center gap-1 whitespace-nowrap">
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> -1F地网 (阻抗超限)
+                <span class="text-[10.5px] text-slate-300">
+                  物理点位: <strong class="text-white">{{ activeScenario.location }}</strong> · 实时值 <strong class="text-amber-300 font-mono">{{ activeScenario.realtimeValue }}</strong> (门限 {{ activeScenario.threshold }})
                 </span>
-                <span v-if="(alarmCards.some(c => c.id === 'spd') || alarmCards.some(c => c.id === 'ground')) && alarmCards.some(c => c.id === 'lightning')" class="text-slate-600">|</span>
-                <span v-if="alarmCards.some(c => c.id === 'lightning')" class="flex items-center gap-1 whitespace-nowrap">
-                  <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> 顶楼天面 (电场畸变)
-                </span>
-                <span v-if="alarmCards.length === 0" class="text-emerald-400 font-medium flex items-center gap-1 whitespace-nowrap">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 园区全域防雷指标均已恢复受控
-                </span>
-              </span>
-            </div>
-
-            <!-- 地图视图状态标签 -->
-            <div v-else class="hidden xl:flex items-center gap-1.5 text-[11px] text-cyan-200 truncate border-l border-[#1d4d8c] pl-2">
-              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-              <span>全国宏观雷电云系追踪 · 华北区域 58.7kA 强雷暴预警</span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-1 text-[11px] text-cyan-300 flex-shrink-0 whitespace-nowrap ml-2">
-            <span v-if="activeMainView === '3d'">点击右侧告警定位视角</span>
-            <span v-else>支持滚轮缩放/全国边界/预警圈</span>
-          </div>
-        </div>
-
-        <!-- 核心：三维数字孪生 OR 雷电活动实时地图展示区 -->
-        <div class="relative flex-1 min-h-0 rounded-xl overflow-hidden border border-[#1d4d8c]/80 shadow-lg bg-[#040f24]">
-          <!-- 视图 A：三维数字孪生卡片组件 -->
-          <template v-if="activeMainView === '3d'">
-            <Datacenter3DCard
-              class="h-full w-full"
-              :active-alarms="alarmCards"
-              :focused-alarm-id="focusedId"
-              @switch-to-map="activeMainView = 'map'"
-            />
-
-            <!-- 在原版三维视图上方轻量叠加醒目的当前主焦点 HUD 指引徽标 -->
-            <div class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
-              <div class="px-2.5 py-1 rounded-lg bg-black/85 border border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full" :class="activeScenario.severity === 'red' ? 'bg-red-500 animate-ping' : 'bg-amber-400 animate-ping'"></span>
-                <div class="flex flex-col">
-                  <span class="text-xs font-bold text-white flex items-center gap-1">
-                    <span>当前聚焦:</span>
-                    <span :class="activeScenario.severity === 'red' ? 'text-red-300' : 'text-amber-300'">{{ activeScenario.title }}</span>
-                  </span>
-                  <span class="text-[10.5px] text-slate-300">
-                    物理点位: <strong class="text-white">{{ activeScenario.location }}</strong> · 实时值 <strong class="text-amber-300 font-mono">{{ activeScenario.realtimeValue }}</strong> (门限 {{ activeScenario.threshold }})
-                  </span>
-                </div>
               </div>
             </div>
-          </template>
+          </div>
+        </template>
 
-          <!-- 视图 B：雷电活动实时地图 (全国/华北/园区全域 GIS 态势) -->
-          <template v-else>
-            <LightningMapCard
-              class="h-full w-full"
-              :can-switch-to-3d="true"
-              @switch-to-3d="activeMainView = '3d'"
-            />
-          </template>
-        </div>
+        <!-- 视图 B：雷电活动实时地图 (全国/华北/园区全域 GIS 态势，图例完整内嵌于地图内部) -->
+        <template v-else>
+          <LightningMapCard
+            class="h-full w-full"
+            :can-switch-to-3d="true"
+            @switch-to-3d="activeMainView = '3d'"
+          />
+        </template>
       </div>
 
       <!-- ======================================================== -->
@@ -497,9 +433,7 @@ import {
   LogOut,
   Moon,
   Check,
-  CheckCircle2,
-  Box,
-  Globe
+  CheckCircle2
 } from 'lucide-vue-next';
 import {
   isNightWatchMode,

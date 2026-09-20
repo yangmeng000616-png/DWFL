@@ -85,10 +85,10 @@
       <!-- Leaflet Map Mount Point -->
       <div ref="mapContainerRef" class="w-full h-full min-h-[190px] z-0"></div>
 
-      <!-- Floating HUD: Top-Right Compact Horizontal Legend Bar (Slim, unobtrusive) -->
+      <!-- Floating HUD: Top-Right Compact Horizontal Legend Bar (Slim, unobtrusive, fully self-contained in map) -->
       <div class="absolute right-2 top-2 z-10 pointer-events-auto">
         <div class="bg-[#051838eb] border border-[#235dae]/80 rounded-lg px-2.5 py-1 backdrop-blur-md shadow-lg flex items-center gap-2 text-[11px]">
-          <span class="text-slate-400 font-medium text-[10px]">强度:</span>
+          <span class="text-slate-400 font-medium text-[10px]">雷暴强度:</span>
           <div class="flex items-center gap-1" title="强烈雷暴"><span class="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_5px_#ef4444]"></span><span class="text-slate-200 text-[10px]">强烈</span></div>
           <div class="flex items-center gap-1" title="较强雷暴"><span class="w-2 h-2 rounded-full bg-[#f97316] shadow-[0_0_5px_#f97316]"></span><span class="text-slate-200 text-[10px]">较强</span></div>
           <div class="flex items-center gap-1" title="中等雷暴"><span class="w-2 h-2 rounded-full bg-[#eab308] shadow-[0_0_5px_#eab308]"></span><span class="text-slate-200 text-[10px]">中等</span></div>
@@ -98,6 +98,13 @@
 
           <div class="flex items-center gap-1" title="中国国界高亮轮廓"><span class="w-3.5 h-0.5 bg-[#00f0ff] shadow-[0_0_6px_#00f0ff] rounded"></span><span class="text-cyan-200 text-[10px]">国界</span></div>
           <div class="flex items-center gap-1" title="省级行政边界"><span class="w-3.5 h-0.5 border-t border-dashed border-[#38bdf8]"></span><span class="text-slate-300 text-[10px]">省界</span></div>
+
+          <span class="w-px h-3 bg-[#1e4d8c]"></span>
+
+          <div class="flex items-center gap-1" title="15km核心防护圈 / 30km预警圈 / 50km探测圈">
+            <span class="w-2 h-2 rounded-full border border-cyan-400"></span>
+            <span class="text-slate-200 text-[10px]">15/30/50km防御圈</span>
+          </div>
         </div>
       </div>
 
