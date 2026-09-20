@@ -123,6 +123,7 @@ interface AlertItem {
 const selectedAlertId = ref<number | null>(null);
 const scrollContainer = ref<HTMLElement | null>(null);
 const isHovered = ref(false);
+const scrollSpeed = ref(45); // px/s, dynamic & brisk
 
 const alerts = ref<AlertItem[]>([
   {
@@ -213,8 +214,8 @@ const autoScroll = (timestamp: number) => {
     const el = scrollContainer.value;
     const halfHeight = el.scrollHeight / 2;
     if (halfHeight > 0) {
-      // 18 pixels per second: calm and legible
-      el.scrollTop += (18 * elapsed) / 1000;
+      // dynamic and fluent scrolling at 45 px/s
+      el.scrollTop += (scrollSpeed.value * elapsed) / 1000;
       if (el.scrollTop >= halfHeight) {
         el.scrollTop -= halfHeight;
       }
