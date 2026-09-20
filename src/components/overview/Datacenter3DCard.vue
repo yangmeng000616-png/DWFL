@@ -161,6 +161,14 @@
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
+
+            <filter id="alarmRedGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
 
           <!-- 1. BASE ISOMETRIC CAMPUS PLATFORM -->
@@ -346,6 +354,77 @@
           <!-- 6: 设备机房区域状态 (440, 210) -> (440, 280) -->
           <line x1="440" y1="210" x2="440" y2="260" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
           <circle cx="440" cy="210" r="4" fill="#10b981" />
+
+          <!-- ======================================================== -->
+          <!-- 实时告警精准靶标 (Alarm Hotspots on 3D Map) -->
+          <!-- 当有告警时，在对应三维空间位置渲染醒目红/橙脉冲光晕与声纳光环 -->
+          <!-- ======================================================== -->
+          <g id="alarm-map-beacons" v-if="activeAlarms && activeAlarms.length > 0">
+            <!-- 告警点 1: 2F动力室 SPD (x: 610, y: 218) -->
+            <g v-if="hasAlarm('spd')">
+              <!-- 底盘红色散流报警光环 -->
+              <ellipse cx="610" cy="218" rx="28" ry="16" fill="rgba(239,68,68,0.25)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 2">
+                <animate attributeName="rx" values="20;38;20" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="ry" values="10;20;10" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite" />
+              </ellipse>
+              <!-- 扩散脉冲 -->
+              <circle cx="610" cy="218" r="22" fill="none" stroke="#ef4444" stroke-width="2" class="animate-ping origin-center" opacity="0.75" />
+              <!-- 垂直报警光柱 / 靶标虚线 -->
+              <line x1="610" y1="218" x2="610" y2="160" stroke="#ef4444" stroke-width="2" stroke-dasharray="3 2" filter="url(#alarmRedGlow)" />
+              <!-- 靶标信标圆心 -->
+              <circle cx="610" cy="218" r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2" filter="url(#alarmRedGlow)" />
+              <circle cx="610" cy="218" r="3" fill="#ffffff" />
+              <!-- 顶部悬浮告警标签气泡 (SVG内置) -->
+              <g transform="translate(610, 155)">
+                <rect x="-42" y="-22" width="84" height="20" rx="4" fill="rgba(220,38,38,0.92)" stroke="#fecaca" stroke-width="1" filter="url(#alarmRedGlow)" />
+                <polygon points="0,2 -4,-2 4,-2" fill="#dc2626" />
+                <text x="0" y="-8" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold" font-family="sans-serif">
+                  SPD超标 · 一级
+                </text>
+              </g>
+            </g>
+
+            <!-- 告警点 2: -1F人工地网基准井 Ground (x: 320, y: 330) -->
+            <g v-if="hasAlarm('ground')">
+              <ellipse cx="320" cy="330" rx="30" ry="16" fill="rgba(245,158,11,0.25)" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2">
+                <animate attributeName="rx" values="22;42;22" dur="2.2s" repeatCount="indefinite" />
+                <animate attributeName="ry" values="12;22;12" dur="2.2s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.2s" repeatCount="indefinite" />
+              </ellipse>
+              <circle cx="320" cy="330" r="22" fill="none" stroke="#f59e0b" stroke-width="2" class="animate-ping origin-center" opacity="0.75" />
+              <line x1="320" y1="330" x2="320" y2="280" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3 2" />
+              <circle cx="320" cy="330" r="7" fill="#d97706" stroke="#ffffff" stroke-width="2" />
+              <circle cx="320" cy="330" r="3" fill="#ffffff" />
+              <g transform="translate(320, 275)">
+                <rect x="-46" y="-22" width="92" height="20" rx="4" fill="rgba(217,119,6,0.92)" stroke="#fed7aa" stroke-width="1" />
+                <polygon points="0,2 -4,-2 4,-2" fill="#d97706" />
+                <text x="0" y="-8" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold" font-family="sans-serif">
+                  地网阻抗超限 · 二级
+                </text>
+              </g>
+            </g>
+
+            <!-- 告警点 3: 科研楼天面 12号接闪塔 Lightning (x: 275, y: 105) -->
+            <g v-if="hasAlarm('lightning')">
+              <ellipse cx="275" cy="105" rx="26" ry="14" fill="rgba(234,179,8,0.25)" stroke="#eab308" stroke-width="1.5" stroke-dasharray="4 2">
+                <animate attributeName="rx" values="18;34;18" dur="1.8s" repeatCount="indefinite" />
+                <animate attributeName="ry" values="9;18;9" dur="1.8s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.8s" repeatCount="indefinite" />
+              </ellipse>
+              <circle cx="275" cy="105" r="20" fill="none" stroke="#eab308" stroke-width="2" class="animate-ping origin-center" opacity="0.75" />
+              <line x1="275" y1="105" x2="275" y2="55" stroke="#eab308" stroke-width="2" stroke-dasharray="3 2" />
+              <circle cx="275" cy="105" r="6.5" fill="#ca8a04" stroke="#ffffff" stroke-width="2" />
+              <circle cx="275" cy="105" r="2.5" fill="#ffffff" />
+              <g transform="translate(275, 50)">
+                <rect x="-44" y="-22" width="88" height="20" rx="4" fill="rgba(202,138,4,0.92)" stroke="#fef08a" stroke-width="1" />
+                <polygon points="0,2 -4,-2 4,-2" fill="#ca8a04" />
+                <text x="0" y="-8" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold" font-family="sans-serif">
+                  天面电场畸变 · 三级
+                </text>
+              </g>
+            </g>
+          </g>
         </svg>
       </div>
 
@@ -354,13 +433,30 @@
       <!-- Tag 1: 大气电场仪 (Top-Left) -->
       <div
         @click="openDetail('atmospheric')"
-        class="absolute left-[3%] top-[6%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="focusHotspot === 'atmospheric' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
+        class="absolute left-[3%] top-[6%] z-20 cursor-pointer border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="[
+          hasAlarm('lightning')
+            ? 'bg-amber-950/90 border-yellow-400 text-yellow-200 ring-2 ring-yellow-400/80 shadow-[0_0_20px_rgba(234,179,8,0.8)] animate-pulse'
+            : focusHotspot === 'atmospheric'
+              ? 'bg-[#0a295ee8] border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]'
+              : 'bg-[#0a295ee8] hover:bg-[#113a80] border-cyan-400/50 hover:border-cyan-300'
+        ]"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse flex-shrink-0"></span>
+        <span
+          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+          :class="hasAlarm('lightning') ? 'bg-yellow-400 animate-ping' : 'bg-cyan-300 animate-pulse'"
+        ></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white">大气电场仪</span>
-          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">12.4 kV/m · 正常</span>
+          <span class="text-xs font-bold text-white flex items-center gap-1">
+            <span>大气电场仪</span>
+            <span v-if="hasAlarm('lightning')" class="px-1 rounded bg-yellow-500/30 text-yellow-300 text-[9px]">告警</span>
+          </span>
+          <span
+            class="text-[11px] font-mono font-medium leading-tight"
+            :class="hasAlarm('lightning') ? 'text-yellow-300 font-bold' : 'text-emerald-300'"
+          >
+            {{ hasAlarm('lightning') ? '38.6 kV/m · 电场畸变' : '12.4 kV/m · 正常' }}
+          </span>
         </div>
       </div>
 
@@ -380,26 +476,60 @@
       <!-- Tag 3: SPD监测终端 (Middle-Right) -->
       <div
         @click="openDetail('spd_terminal')"
-        class="absolute right-[3%] top-[24%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="focusHotspot === 'spd_terminal' ? 'border-amber-300 ring-1 ring-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
+        class="absolute right-[3%] top-[24%] z-20 cursor-pointer border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="[
+          hasAlarm('spd')
+            ? 'bg-red-950/90 border-red-400 text-red-200 ring-2 ring-red-500/80 shadow-[0_0_22px_rgba(239,68,68,0.85)] animate-pulse'
+            : focusHotspot === 'spd_terminal'
+              ? 'bg-[#0a295ee8] border-amber-300 ring-1 ring-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.75)]'
+              : 'bg-[#0a295ee8] hover:bg-[#113a80] border-cyan-400/50 hover:border-cyan-300'
+        ]"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
+        <span
+          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+          :class="hasAlarm('spd') ? 'bg-red-400 animate-ping' : 'bg-amber-400 animate-pulse'"
+        ></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white">SPD监测终端</span>
-          <span class="text-[11px] text-amber-300 font-mono font-medium leading-tight">12/12在网 · 正常</span>
+          <span class="text-xs font-bold text-white flex items-center gap-1">
+            <span>SPD监测终端</span>
+            <span v-if="hasAlarm('spd')" class="px-1 rounded bg-red-600/40 text-red-200 text-[9px]">严重</span>
+          </span>
+          <span
+            class="text-[11px] font-mono font-medium leading-tight"
+            :class="hasAlarm('spd') ? 'text-red-300 font-bold' : 'text-amber-300'"
+          >
+            {{ hasAlarm('spd') ? '漏流 148μA · 一级超标' : '12/12在网 · 正常' }}
+          </span>
         </div>
       </div>
 
       <!-- Tag 4: 接地电阻监测 (Bottom-Left) -->
       <div
         @click="openDetail('ground_res')"
-        class="absolute left-[4%] bottom-[6%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="focusHotspot === 'ground_res' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
+        class="absolute left-[4%] bottom-[6%] z-20 cursor-pointer border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
+        :class="[
+          hasAlarm('ground')
+            ? 'bg-orange-950/90 border-orange-400 text-orange-200 ring-2 ring-orange-400/80 shadow-[0_0_20px_rgba(245,158,11,0.8)] animate-pulse'
+            : focusHotspot === 'ground_res'
+              ? 'bg-[#0a295ee8] border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]'
+              : 'bg-[#0a295ee8] hover:bg-[#113a80] border-cyan-400/50 hover:border-cyan-300'
+        ]"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+        <span
+          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+          :class="hasAlarm('ground') ? 'bg-orange-400 animate-ping' : 'bg-emerald-400 animate-pulse'"
+        ></span>
         <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white">地网接地电阻</span>
-          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">0.52 Ω (≤1.0Ω优)</span>
+          <span class="text-xs font-bold text-white flex items-center gap-1">
+            <span>地网接地电阻</span>
+            <span v-if="hasAlarm('ground')" class="px-1 rounded bg-orange-600/40 text-orange-200 text-[9px]">超限</span>
+          </span>
+          <span
+            class="text-[11px] font-mono font-medium leading-tight"
+            :class="hasAlarm('ground') ? 'text-orange-300 font-bold' : 'text-emerald-300'"
+          >
+            {{ hasAlarm('ground') ? '0.88 Ω · 二级超限' : '0.52 Ω (≤1.0Ω优)' }}
+          </span>
         </div>
       </div>
 
@@ -461,7 +591,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue';
+import { ref, onUnmounted, computed, watch } from 'vue';
 import {
   openDeviceInspection,
   activeFocusHotspot,
@@ -469,8 +599,57 @@ import {
   triggerSimulatedLightning
 } from '@/composables/useCockpitState';
 
+interface AlarmTarget {
+  id: string;
+  title: string;
+  deviceCode?: string;
+  location?: string;
+  severity: string;
+  realtimeValue: string;
+  threshold?: string;
+  overValue?: string;
+}
+
+const props = defineProps<{
+  activeAlarms?: AlarmTarget[];
+  focusedAlarmId?: string;
+}>();
+
 const focusHotspot = activeFocusHotspot;
 const isDemoRunning = simulatedLightningActive;
+
+// 报警靶点位置映射 (对应三维模型精准几何坐标)
+// 1. spd (2F动力机房SPD): (610, 218)
+// 2. ground (-1F人工地网基准井): (320, 330)
+// 3. lightning (天面12号接闪塔/电场仪): (275, 105)
+const alarmBeaconCoords: Record<string, { x: number; y: number; label: string; badgePos: string }> = {
+  spd: {
+    x: 610,
+    y: 218,
+    label: '2F动力机房 (SPD-04#)',
+    badgePos: 'right-[2%] top-[24%]'
+  },
+  ground: {
+    x: 320,
+    y: 330,
+    label: '-1F地网基准井 (GW-01#)',
+    badgePos: 'left-[4%] bottom-[6%]'
+  },
+  lightning: {
+    x: 275,
+    y: 105,
+    label: '天面12号接闪塔 (AEFM-01#)',
+    badgePos: 'left-[3%] top-[6%]'
+  }
+};
+
+const hasAlarm = (id: string) => {
+  return props.activeAlarms ? props.activeAlarms.some(a => a.id === id) : false;
+};
+
+const getAlarm = (id: string) => {
+  return props.activeAlarms ? props.activeAlarms.find(a => a.id === id) : null;
+};
 
 const rotateAngle = ref(0);
 const zoomScale = ref(1.0);
@@ -518,6 +697,28 @@ const openDetail = (key: string) => {
 const handleLightningDemo = () => {
   triggerSimulatedLightning();
 };
+
+// 当聚焦告警发生变化时，将3D视角切换到最佳观测模式与角度
+watch(
+  () => props.focusedAlarmId,
+  (newId) => {
+    if (!newId) return;
+    if (newId === 'spd') {
+      activeMode.value = 'server';
+      rotateAngle.value = 15;
+      zoomScale.value = 1.1;
+    } else if (newId === 'ground') {
+      activeMode.value = 'ground';
+      rotateAngle.value = -15;
+      zoomScale.value = 1.1;
+    } else if (newId === 'lightning') {
+      activeMode.value = 'lightning';
+      rotateAngle.value = 0;
+      zoomScale.value = 1.05;
+    }
+  },
+  { immediate: true }
+);
 
 onUnmounted(() => {
   if (autoRotateTimer) clearInterval(autoRotateTimer);

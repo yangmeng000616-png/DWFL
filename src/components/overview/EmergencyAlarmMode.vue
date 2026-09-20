@@ -181,7 +181,11 @@
 
         <!-- 核心：总览三维数字孪生卡片组件，完全复用总览真实的三维建筑/地网/配电/机房透视渲染 -->
         <div class="relative flex-1 min-h-0 rounded-xl overflow-hidden border border-[#1d4d8c]/80 shadow-lg">
-          <Datacenter3DCard class="h-full w-full" />
+          <Datacenter3DCard
+            class="h-full w-full"
+            :active-alarms="alarmCards"
+            :focused-alarm-id="focusedId"
+          />
 
           <!-- 在原版三维视图上方轻量叠加醒目的当前主焦点 HUD 指引徽标 -->
           <div class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
@@ -241,7 +245,12 @@
                     ></span>
                     <span class="font-bold text-white text-[13px] leading-snug tracking-wide">{{ item.title }}</span>
                   </div>
-                  <span class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2">
+                  <span class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                    <span class="text-cyan-300 flex items-center gap-0.5">
+                      <MapPin class="w-3 h-3 text-cyan-400 inline-block" />
+                      <strong>{{ item.location }}</strong>
+                    </span>
+                    <span class="text-slate-600">·</span>
                     <span>编码: <strong class="text-slate-300 font-mono">{{ item.deviceCode }}</strong></span>
                     <span class="text-slate-600">·</span>
                     <span>责任人: <strong class="text-slate-300">{{ item.assignee }}</strong></span>

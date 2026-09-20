@@ -1,41 +1,41 @@
 <template>
   <div class="tech-panel rounded-xl p-3 flex flex-col justify-between h-full relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
     <!-- Header with Icon, Title & Compact Toolbar -->
-    <div class="flex items-center justify-between pb-2 border-b border-[#184682]/60 relative z-20 flex-wrap gap-1.5">
-      <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded-md bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_6px_rgba(6,182,212,0.3)] flex-shrink-0">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="flex items-center justify-between pb-2 border-b border-[#184682]/60 relative z-20 flex-nowrap gap-1 min-w-0">
+      <div class="flex items-center gap-1.5 flex-shrink-0 min-w-0">
+        <div class="w-5 h-5 rounded bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_6px_rgba(6,182,212,0.3)] flex-shrink-0">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="9" />
             <circle cx="12" cy="12" r="3" />
             <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
           </svg>
         </div>
-        <div class="flex items-center gap-1.5">
-          <h3 class="text-sm font-bold text-white tracking-wide">雷电活动实时地图</h3>
-          <span class="px-1.5 py-0.2 text-[9px] bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 rounded font-medium">实时监测</span>
+        <div class="flex items-center gap-1">
+          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide whitespace-nowrap">雷电活动实时地图</h3>
+          <span class="px-1 py-0.2 text-[9px] bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 rounded font-medium whitespace-nowrap">实时监测</span>
         </div>
       </div>
 
       <!-- Compact Map Tool Controls -->
-      <div class="flex items-center gap-1.5 text-xs">
+      <div class="flex items-center gap-1 text-xs flex-nowrap flex-shrink-0">
         <!-- Boundary Highlight Toggle -->
         <button
           @click="toggleBoundaries"
-          class="px-2 py-0.5 rounded text-[11px] border transition-all font-medium cursor-pointer flex items-center gap-1"
+          class="px-1.5 py-0.5 rounded text-[10.5px] border transition-all font-medium cursor-pointer flex items-center gap-1 whitespace-nowrap"
           :class="showBoundaries ? 'bg-gradient-to-r from-[#0d4f9b] to-[#0284c7] text-cyan-200 border-cyan-400 shadow-[0_0_8px_rgba(0,240,255,0.4)] font-semibold' : 'bg-[#0b2b63] text-slate-300 border-[#235dae]/70 hover:text-white'"
           title="显示或隐藏中国行政区划高亮边界"
         >
-          <span class="w-1.5 h-1.5 rounded-full" :class="showBoundaries ? 'bg-cyan-300 shadow-[0_0_6px_#00f0ff] animate-pulse' : 'bg-slate-400'"></span>
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="showBoundaries ? 'bg-cyan-300 shadow-[0_0_6px_#00f0ff] animate-pulse' : 'bg-slate-400'"></span>
           <span>{{ showBoundaries ? '边界高亮:开' : '边界高亮:关' }}</span>
         </button>
 
         <!-- Nationwide View Button -->
         <button
           @click="viewChinaExtent"
-          class="px-2 py-0.5 rounded text-[11px] bg-[#0b2b63] hover:bg-[#133e88] text-slate-200 hover:text-cyan-200 border border-[#235dae]/70 transition-colors font-medium flex items-center gap-1 cursor-pointer"
+          class="px-1.5 py-0.5 rounded text-[10.5px] bg-[#0b2b63] hover:bg-[#133e88] text-slate-200 hover:text-cyan-200 border border-[#235dae]/70 transition-colors font-medium flex items-center gap-1 cursor-pointer whitespace-nowrap"
           title="切换至全国宏观行政区划与雷电全貌视角"
         >
-          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="w-3 h-3 text-cyan-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
@@ -46,7 +46,7 @@
         <!-- Warning radius toggle -->
         <button
           @click="toggleRings"
-          class="px-2 py-0.5 rounded text-[11px] border transition-colors font-medium cursor-pointer"
+          class="px-1.5 py-0.5 rounded text-[10.5px] border transition-colors font-medium cursor-pointer whitespace-nowrap"
           :class="showRings ? 'bg-cyan-900/80 text-cyan-200 border-cyan-400 shadow-[0_0_8px_rgba(0,240,255,0.35)]' : 'bg-[#0b2b63] text-slate-300 border-[#235dae]/70 hover:text-white'"
           title="显示/隐藏防御警戒圈"
         >
@@ -56,10 +56,10 @@
         <!-- Relocate to Datacenter -->
         <button
           @click="recenterMap"
-          class="px-2 py-0.5 rounded text-[11px] bg-[#0b2b63] hover:bg-[#133e88] text-slate-200 hover:text-cyan-200 border border-[#235dae]/70 transition-colors font-medium flex items-center gap-1 cursor-pointer"
+          class="px-1.5 py-0.5 rounded text-[10.5px] bg-[#0b2b63] hover:bg-[#133e88] text-slate-200 hover:text-cyan-200 border border-[#235dae]/70 transition-colors font-medium flex items-center gap-1 cursor-pointer whitespace-nowrap"
           title="快速定位至算力中心主节点"
         >
-          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="w-3 h-3 text-cyan-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
           </svg>
           <span>节点</span>
