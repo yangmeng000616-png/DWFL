@@ -1,18 +1,18 @@
 <template>
-  <div class="tech-panel rounded-xl p-3 flex flex-col justify-between h-full shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+  <div class="tech-panel rounded-xl p-2.5 flex flex-col justify-between h-full shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
     <!-- Header -->
-    <div class="flex items-center justify-between pb-2 border-b border-[#184682]/60">
-      <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded-md bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.3)]">
-          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+    <div class="flex items-center justify-between pb-1.5 border-b border-[#184682]/60">
+      <div class="flex items-center gap-1.5">
+        <div class="w-5 h-5 rounded-md bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.3)] flex-shrink-0">
+          <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
           </svg>
         </div>
-        <h3 class="text-sm font-bold text-white tracking-wide">实时预警信息</h3>
+        <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">实时预警信息</h3>
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-[11px] text-slate-400 hidden xl:inline">点击定位孪生设备</span>
+        <span class="text-[10px] text-slate-400 hidden xl:inline">点击定位孪生设备</span>
         <router-link
           to="/warning"
           class="text-xs text-cyan-400 hover:text-cyan-200 flex items-center gap-0.5 transition-colors font-semibold"
@@ -26,18 +26,18 @@
     </div>
 
     <!-- Alert Table -->
-    <div class="overflow-x-auto my-1 flex-1">
+    <div class="overflow-x-auto my-0.5 flex-1 no-scrollbar">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="text-xs text-slate-200 font-medium border-b border-[#215caa]/75">
-            <th class="py-1.5 px-2 font-medium">时间</th>
-            <th class="py-1.5 px-2 font-medium">类型</th>
-            <th class="py-1.5 px-2 font-medium text-center">等级</th>
-            <th class="py-1.5 px-2 font-medium">监测区域/设备</th>
-            <th class="py-1.5 px-2 font-medium text-right">状态</th>
+          <tr class="text-[11px] text-slate-300 font-medium border-b border-[#215caa]/75">
+            <th class="py-1 px-1.5 font-medium whitespace-nowrap">时间</th>
+            <th class="py-1 px-1.5 font-medium whitespace-nowrap">类型</th>
+            <th class="py-1 px-1 font-medium text-center whitespace-nowrap">等级</th>
+            <th class="py-1 px-1.5 font-medium whitespace-nowrap">监测区域/设备</th>
+            <th class="py-1 px-1.5 font-medium text-right whitespace-nowrap">状态</th>
           </tr>
         </thead>
-        <tbody class="text-sm divide-y divide-[#1e4e8c]/60">
+        <tbody class="divide-y divide-[#1e4e8c]/50">
           <tr
             v-for="alert in alerts"
             :key="alert.id"
@@ -47,20 +47,22 @@
             title="点击在三维数字孪生中定位此设备"
           >
             <!-- Time -->
-            <td class="py-2 px-2 text-slate-200 font-tech text-xs whitespace-nowrap">
+            <td class="py-1.5 px-1.5 text-slate-300 font-tech text-[10px] sm:text-[11px] whitespace-nowrap">
               {{ alert.time }}
             </td>
 
             <!-- Type -->
-            <td class="py-2 px-2 text-white font-medium text-sm whitespace-nowrap flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full" :class="alert.dotClass"></span>
-              <span>{{ alert.type }}</span>
+            <td class="py-1.5 px-1.5 text-white font-medium text-[11px] whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="alert.dotClass"></span>
+                <span>{{ alert.type }}</span>
+              </div>
             </td>
 
             <!-- Severity Level Badge -->
-            <td class="py-2 px-2 text-center whitespace-nowrap">
+            <td class="py-1.5 px-1 text-center whitespace-nowrap">
               <span
-                class="px-2 py-0.5 rounded text-xs font-semibold"
+                class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
                 :class="getLevelBadgeClass(alert.level)"
               >
                 {{ alert.level }}
@@ -68,14 +70,14 @@
             </td>
 
             <!-- Location -->
-            <td class="py-2 px-2 text-cyan-200 group-hover:text-white whitespace-nowrap text-xs">
+            <td class="py-1.5 px-1.5 text-cyan-200 group-hover:text-white whitespace-nowrap text-[11px]">
               <span class="underline decoration-cyan-400/50 decoration-dotted">{{ alert.location }}</span>
             </td>
 
             <!-- Status -->
-            <td class="py-2 px-2 text-right whitespace-nowrap">
+            <td class="py-1.5 px-1.5 text-right whitespace-nowrap">
               <span
-                class="px-2 py-0.5 rounded text-xs font-semibold"
+                class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
                 :class="getStatusBadgeClass(alert.status)"
               >
                 {{ alert.status }}
