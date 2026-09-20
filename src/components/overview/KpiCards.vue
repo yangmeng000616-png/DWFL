@@ -1,5 +1,38 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2">
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+    <!-- Card 0: 在线设备 -->
+    <div
+      @click="openDeviceInspection('datacenter_zone')"
+      class="tech-panel tech-panel-hover rounded-xl py-2 px-2.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer"
+      title="点击查看全域感知设备在线与链路健康状态"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <div class="w-6 h-6 rounded-md bg-gradient-to-br from-[#1c55aa] to-[#0f3b82] border border-cyan-400/60 flex items-center justify-center text-cyan-200 shadow-[0_0_8px_rgba(0,200,255,0.3)] group-hover:scale-105 transition-transform flex-shrink-0">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+              <line x1="6" y1="6" x2="6.01" y2="6" />
+              <line x1="6" y1="18" x2="6.01" y2="18" />
+            </svg>
+          </div>
+          <span class="text-xs text-white font-semibold group-hover:text-cyan-300 transition-colors">在线设备</span>
+        </div>
+        <span class="px-1.5 py-0.2 rounded bg-emerald-900/80 border border-emerald-400/60 text-[10px] text-emerald-300 font-medium flex items-center gap-1">
+          <span class="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+          正常
+        </span>
+      </div>
+
+      <div class="mt-1 flex items-baseline justify-between">
+        <div class="text-lg font-bold font-tech text-emerald-300 tracking-wide glow-text-green">
+          99.4 <span class="text-xs font-normal text-slate-300 font-sans">%</span>
+        </div>
+        <span class="text-[10px] text-cyan-300 font-mono">156 / 157 台</span>
+      </div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">全域感知终端联机率</div>
+    </div>
+
     <!-- Card 1: 雷电监测 -->
     <div
       @click="openDeviceInspection('atmospheric')"
