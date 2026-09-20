@@ -28,12 +28,32 @@
       </div>
     </div>
 
-    <!-- Top Right Status Indicators & Live Clock -->
-    <div class="flex items-center gap-4 text-xs">
+    <!-- Top Right Status Indicators & Live Clock & Emergency Toggle -->
+    <div class="flex items-center gap-3 text-xs">
+      <!-- Mode Quick Switch Toggle Button -->
+      <button
+        @click="toggleMode"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border shadow-sm"
+        :class="isEmergencyMode
+          ? 'bg-red-600/30 border-red-400 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.4)] animate-pulse'
+          : 'bg-[#0d346e]/80 border-[#2363b8] text-cyan-300 hover:bg-[#124185]'"
+        :title="isEmergencyMode ? '点击退出应急极简视图，返回常态全量大屏' : '点击手动切换为应急告警极简模式'"
+      >
+        <span class="w-1.5 h-1.5 rounded-full" :class="isEmergencyMode ? 'bg-red-400 animate-ping' : 'bg-cyan-400'"></span>
+        <span>{{ isEmergencyMode ? '应急视图: 激活中' : '常态视图 (点击切应急)' }}</span>
+      </button>
+
       <!-- System Health Badge -->
-      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-900/70 border border-emerald-400/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="font-medium tracking-wide text-xs">全系统运行正常</span>
+      <div
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm transition-colors"
+        :class="isEmergencyMode
+          ? 'bg-amber-950/80 border-amber-500/60 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
+          : 'bg-emerald-900/70 border-emerald-400/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.3)]'"
+      >
+        <span class="w-1.5 h-1.5 rounded-full" :class="isEmergencyMode ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'"></span>
+        <span class="font-medium tracking-wide text-xs">
+          {{ isEmergencyMode ? '应急响应处置中' : '全系统运行正常' }}
+        </span>
       </div>
 
       <!-- Real-time Clock & Weather -->
@@ -54,13 +74,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-
-const currentTime = ref(new Date());
+import {
+  isEmergencyMode,
+  enterEmergencyMode,
+  exitEmergencyMode
+} from '@/composables/useEmergencyMode';
 
 const formattedDate = ref('2025-04-29');
 const formattedTime = ref('15:42:36');
 
 let timer: number | null = null;
+
+const toggleMode = () => {
+  if (isEmergencyMode.value) {
+    exitEmergencyMode();
+  } else {
+    enterEmergencyMode('ground', false);
+  }
+};
 
 const updateClock = () => {
   const now = new Date();

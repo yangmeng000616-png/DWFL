@@ -14,10 +14,10 @@
       <AppSidebar />
 
       <!-- Main Dynamic Route View Area -->
-      <main class="flex-1 p-2.5 overflow-y-auto max-w-[1920px] mx-auto w-full">
+      <main class="flex-1 p-2.5 overflow-y-auto max-w-[1920px] mx-auto w-full flex flex-col">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <component :is="Component" />
+            <component :is="Component" class="flex-1 flex flex-col" />
           </transition>
         </router-view>
       </main>
