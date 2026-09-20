@@ -128,39 +128,39 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- 中间主视图区：左侧 58% 为三维机房大卡片；右侧 42% 纵向告警胶囊 (空间充裕，绝不截断挤压) -->
+    <!-- 中间主视图区：左侧 74%~76% 超宽放大三维数字孪生机房；右侧 24%~26% 紧凑极简告警卡片 -->
     <!-- ======================================================== -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[58%_42%] gap-3 p-2.5 overflow-hidden">
-      <!-- 左侧：保留总览的原版高保真三维机房态势图，叠加 3 处故障靶标联动 -->
-      <div class="flex flex-col min-w-0 h-full gap-2">
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[74%_26%] xl:grid-cols-[76%_24%] gap-2 p-2 overflow-hidden">
+      <!-- 左侧：保留总览的原版高保真三维机房态势图，叠加 3 处故障靶标联动 (大幅放大，视野开阔) -->
+      <div class="flex flex-col min-w-0 h-full gap-1.5">
         <!-- 3D 联动说明工具栏 -->
-        <div class="flex items-center justify-between px-3 py-1 rounded-lg bg-[#071c3f]/80 border border-[#1d4d8c]/70 text-xs">
-          <div class="flex items-center gap-2">
-            <span class="text-slate-400 text-xs font-medium">3D全域定位:</span>
-            <span class="text-slate-200 flex items-center gap-1.5 text-[11px]">
-              <span v-if="alarmCards.some(c => c.id === 'spd')" class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> 2F动力室 (SPD超标)
+        <div class="flex items-center justify-between px-2.5 py-0.5 rounded-lg bg-[#071c3f]/80 border border-[#1d4d8c]/70 text-[11px]">
+          <div class="flex items-center gap-2 min-w-0 overflow-hidden">
+            <span class="text-slate-400 font-medium whitespace-nowrap">3D全域定位:</span>
+            <span class="text-slate-200 flex items-center gap-1.5 text-[11px] truncate">
+              <span v-if="alarmCards.some(c => c.id === 'spd')" class="flex items-center gap-1 whitespace-nowrap">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span> 2F动力室 (SPD超标)
               </span>
               <span v-if="alarmCards.some(c => c.id === 'spd') && alarmCards.some(c => c.id === 'ground')" class="text-slate-600">|</span>
-              <span v-if="alarmCards.some(c => c.id === 'ground')" class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span> -1F地网 (阻抗超限)
+              <span v-if="alarmCards.some(c => c.id === 'ground')" class="flex items-center gap-1 whitespace-nowrap">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> -1F地网 (阻抗超限)
               </span>
               <span v-if="(alarmCards.some(c => c.id === 'spd') || alarmCards.some(c => c.id === 'ground')) && alarmCards.some(c => c.id === 'lightning')" class="text-slate-600">|</span>
-              <span v-if="alarmCards.some(c => c.id === 'lightning')" class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-yellow-400"></span> 顶楼天面 (电场畸变)
+              <span v-if="alarmCards.some(c => c.id === 'lightning')" class="flex items-center gap-1 whitespace-nowrap">
+                <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> 顶楼天面 (电场畸变)
               </span>
-              <span v-if="alarmCards.length === 0" class="text-emerald-400 font-medium flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 园区全域防雷指标均已恢复正常受控
+              <span v-if="alarmCards.length === 0" class="text-emerald-400 font-medium flex items-center gap-1 whitespace-nowrap">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 园区全域防雷指标均已恢复受控
               </span>
             </span>
           </div>
 
-          <div class="flex items-center gap-1 text-xs text-cyan-300">
-            <span>点击右侧告警卡片切换三维视角定位</span>
+          <div class="flex items-center gap-1 text-[11px] text-cyan-300 flex-shrink-0 whitespace-nowrap ml-2">
+            <span>点击右侧告警定位视角</span>
           </div>
         </div>
 
-        <!-- 核心：总览三维数字孪生卡片组件，完全复用总览真实的三维建筑/地网/配电/机房透视渲染 -->
+        <!-- 核心：总览三维数字孪生卡片组件，享受大面积超宽视域透视渲染 -->
         <div class="relative flex-1 min-h-0 rounded-xl overflow-hidden border border-[#1d4d8c]/80 shadow-lg">
           <Datacenter3DCard
             class="h-full w-full"
@@ -170,14 +170,14 @@
 
           <!-- 在原版三维视图上方轻量叠加醒目的当前主焦点 HUD 指引徽标 -->
           <div class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
-            <div class="px-3 py-1.5 rounded-lg bg-black/85 border border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center gap-2.5">
-              <span class="w-3 h-3 rounded-full" :class="activeScenario.severity === 'red' ? 'bg-red-500 animate-ping' : 'bg-amber-400 animate-ping'"></span>
+            <div class="px-2.5 py-1 rounded-lg bg-black/85 border border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" :class="activeScenario.severity === 'red' ? 'bg-red-500 animate-ping' : 'bg-amber-400 animate-ping'"></span>
               <div class="flex flex-col">
                 <span class="text-xs font-bold text-white flex items-center gap-1">
                   <span>当前聚焦:</span>
                   <span :class="activeScenario.severity === 'red' ? 'text-red-300' : 'text-amber-300'">{{ activeScenario.title }}</span>
                 </span>
-                <span class="text-[11px] text-slate-300">
+                <span class="text-[10.5px] text-slate-300">
                   物理点位: <strong class="text-white">{{ activeScenario.location }}</strong> · 实时值 <strong class="text-amber-300 font-mono">{{ activeScenario.realtimeValue }}</strong> (门限 {{ activeScenario.threshold }})
                 </span>
               </div>
@@ -187,19 +187,19 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 右侧：结构严密、层次清晰、无截断的工业级告警卡片集 -->
+      <!-- 右侧：精简紧凑的工业级告警卡片列表 (缩小体量，紧凑精致) -->
       <!-- ======================================================== -->
-      <div class="flex flex-col gap-2.5 min-w-0 h-full overflow-y-auto no-scrollbar justify-start">
+      <div class="flex flex-col gap-1.5 min-w-0 h-full overflow-y-auto no-scrollbar justify-start">
         <!-- 如果还有活跃告警，渲染卡片列表 -->
         <template v-if="alarmCards.length > 0">
           <div
             v-for="(item, idx) in alarmCards"
             :key="item.id"
             @click="manualSelect(item.id)"
-            class="p-3 rounded-xl border flex flex-col justify-between backdrop-blur-md transition-all cursor-pointer relative overflow-hidden flex-1 group shadow-md"
+            class="p-2 rounded-lg border flex flex-col justify-between backdrop-blur-md transition-all cursor-pointer relative overflow-hidden flex-1 group shadow-sm"
             :class="[
               focusedId === item.id
-                ? 'ring-2 ring-cyan-400/90 shadow-[0_0_18px_rgba(6,182,212,0.3)] bg-gradient-to-r from-[#0c1e3d] to-[#08152e]'
+                ? 'ring-1.5 ring-cyan-400/90 shadow-[0_0_12px_rgba(6,182,212,0.25)] bg-gradient-to-r from-[#0c1e3d] to-[#08152e]'
                 : 'hover:border-slate-500 bg-[#06142a]/95 opacity-95',
               item.severity === 'red'
                 ? 'border-red-500/60 hover:border-red-400'
@@ -208,63 +208,57 @@
                   : 'border-yellow-500/50 hover:border-yellow-400'
             ]"
           >
-            <!-- 顶部行：左侧[序号+标题+设备]+右侧[大字号实时监控值与门限对比] -->
-            <div class="flex items-start justify-between gap-2 pb-1 border-b border-white/5">
-              <!-- 左侧标号与完整标题 -->
-              <div class="flex items-start gap-2 min-w-0 flex-1">
+            <!-- 顶部行：左侧[序号+标题+设备]+右侧[实时值与门限] -->
+            <div class="flex items-start justify-between gap-1.5 pb-0.5 border-b border-white/5">
+              <!-- 左侧标号与标题 -->
+              <div class="flex items-start gap-1.5 min-w-0 flex-1">
                 <span
-                  class="w-5 h-5 rounded flex items-center justify-center text-[11px] font-bold font-mono flex-shrink-0 mt-0.5 shadow-sm"
+                  class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold font-mono flex-shrink-0 mt-0.5 shadow-sm"
                   :class="focusedId === item.id ? 'bg-cyan-500 text-black' : 'bg-black/60 text-slate-300 border border-white/20'"
                 >
                   {{ idx + 1 }}
                 </span>
                 <div class="flex flex-col min-w-0">
-                  <div class="flex items-center gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1 truncate">
                     <span
-                      class="w-2 h-2 rounded-full flex-shrink-0"
+                      class="w-1.5 h-1.5 rounded-full flex-shrink-0"
                       :class="item.severity === 'red' ? 'bg-red-500 animate-ping' : item.severity === 'orange' ? 'bg-amber-400' : 'bg-yellow-400'"
                     ></span>
-                    <span class="font-bold text-white text-[13px] leading-snug tracking-wide">{{ item.title }}</span>
+                    <span class="font-bold text-white text-xs leading-tight tracking-tight truncate">{{ item.title }}</span>
                   </div>
-                  <span class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
-                    <span class="text-cyan-300 flex items-center gap-0.5">
-                      <MapPin class="w-3 h-3 text-cyan-400 inline-block" />
-                      <strong>{{ item.location }}</strong>
+                  <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                    <span class="text-cyan-300 flex items-center gap-0.5 truncate">
+                      <MapPin class="w-2.5 h-2.5 text-cyan-400 inline-block flex-shrink-0" />
+                      <strong class="truncate">{{ item.location }}</strong>
                     </span>
                     <span class="text-slate-600">·</span>
-                    <span>编码: <strong class="text-slate-300 font-mono">{{ item.deviceCode }}</strong></span>
-                    <span class="text-slate-600">·</span>
-                    <span>责任人: <strong class="text-slate-300">{{ item.assignee }}</strong></span>
-                  </span>
+                    <span class="text-slate-300 font-mono text-[9.5px]">{{ item.deviceCode }}</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- 右侧超标大字号数值看板 -->
+              <!-- 右侧超标数值看板 -->
               <div class="flex flex-col items-end flex-shrink-0">
-                <div class="flex items-baseline gap-1">
-                  <span class="font-tech font-extrabold text-base tracking-tight" :class="item.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
-                    {{ item.realtimeValue }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-1 mt-0.5">
-                  <span
-                    class="text-[9.5px] px-1.5 py-0.2 rounded font-mono font-medium border"
-                    :class="item.severity === 'red'
-                      ? 'bg-red-950/80 text-red-300 border-red-500/40'
-                      : item.severity === 'orange'
-                        ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
-                        : 'bg-yellow-950/80 text-yellow-300 border-yellow-500/40'"
-                  >
-                    安全门限 ≤ {{ item.threshold }}
-                  </span>
-                </div>
+                <span class="font-tech font-bold text-xs tracking-tight" :class="item.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
+                  {{ item.realtimeValue }}
+                </span>
+                <span
+                  class="text-[8.5px] px-1 py-0.2 rounded font-mono font-medium border mt-0.5 whitespace-nowrap"
+                  :class="item.severity === 'red'
+                    ? 'bg-red-950/80 text-red-300 border-red-500/40'
+                    : item.severity === 'orange'
+                      ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
+                      : 'bg-yellow-950/80 text-yellow-300 border-yellow-500/40'"
+                >
+                  ≤ {{ item.threshold }}
+                </span>
               </div>
             </div>
 
-            <!-- 中间行：全宽超标曲线趋势 + 偏离指标说明 -->
-            <div class="py-1 flex items-center justify-between gap-3">
+            <!-- 中间行：精简趋势折线 + 越界量化 -->
+            <div class="py-0.5 flex items-center justify-between gap-2">
               <!-- Sparkline 微型趋势图 -->
-              <div class="flex-1 h-9 relative px-1 bg-black/40 rounded-lg border border-white/5 overflow-hidden">
+              <div class="flex-1 h-6 relative px-1 bg-black/40 rounded border border-white/5 overflow-hidden">
                 <svg class="w-full h-full" viewBox="0 0 280 34" preserveAspectRatio="none">
                   <!-- 阈值虚线 (Y=18) -->
                   <line x1="5" y1="18" x2="275" y2="18" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 2" />
@@ -288,59 +282,59 @@
                     :d="item.sparklineStrokeOver"
                     fill="none"
                     :stroke="item.severity === 'red' ? '#ef4444' : '#f59e0b'"
-                    stroke-width="2.5"
+                    stroke-width="2.2"
                   />
 
                   <!-- 越界突变起点 (X=170, Y=18) -->
-                  <circle cx="170" cy="18" r="2.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1" />
+                  <circle cx="170" cy="18" r="2" fill="#f59e0b" stroke="#ffffff" stroke-width="1" />
 
                   <!-- 当前最新测点 -->
-                  <circle cx="250" :cy="item.endY" r="3" :fill="item.severity === 'red' ? '#ef4444' : '#f59e0b'" stroke="#ffffff" stroke-width="1.2" />
+                  <circle cx="250" :cy="item.endY" r="2.5" :fill="item.severity === 'red' ? '#ef4444' : '#f59e0b'" stroke="#ffffff" stroke-width="1" />
                 </svg>
               </div>
 
               <!-- 右侧越界量化标签与起始时间 -->
               <div class="flex flex-col items-end flex-shrink-0 text-right">
-                <span class="text-xs font-bold font-mono tracking-tight" :class="item.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
+                <span class="text-[11px] font-bold font-mono tracking-tight" :class="item.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
                   {{ item.overValue }}
                 </span>
-                <span class="text-[10px] text-slate-400 font-mono mt-0.5">{{ item.timeTag }}</span>
+                <span class="text-[9px] text-slate-400 font-mono">{{ item.timeTag }}</span>
               </div>
             </div>
 
             <!-- 底部行：工单协同步进器与右侧操作按钮 -->
-            <div class="flex items-center justify-between gap-3 pt-1 border-t border-white/5">
+            <div class="flex items-center justify-between gap-1.5 pt-0.5 border-t border-white/5">
               <!-- 4 步流转指示器 -->
-              <div class="flex items-center gap-1.5 text-[10.5px]">
-                <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1 text-[9.5px]">
+                <div class="flex items-center gap-0.5">
                   <span
-                    class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold"
                     :class="item.step >= 1 ? 'bg-emerald-500 text-black' : 'bg-slate-800 text-slate-500'"
                   >1</span>
                   <span :class="item.step >= 1 ? 'text-emerald-300 font-medium' : 'text-slate-500'">触发</span>
                 </div>
-                <span class="w-3 h-0.5 rounded" :class="item.step >= 2 ? 'bg-emerald-500' : 'bg-slate-700'"></span>
+                <span class="w-2 h-0.5 rounded" :class="item.step >= 2 ? 'bg-emerald-500' : 'bg-slate-700'"></span>
 
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-0.5">
                   <span
-                    class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold"
                     :class="item.step >= 2 ? 'bg-emerald-500 text-black' : 'bg-slate-800 text-slate-500'"
                   >2</span>
                   <span :class="item.step >= 2 ? 'text-emerald-300 font-medium' : 'text-slate-500'">派单</span>
                 </div>
-                <span class="w-3 h-0.5 rounded" :class="item.step >= 3 ? 'bg-cyan-400' : 'bg-slate-700'"></span>
+                <span class="w-2 h-0.5 rounded" :class="item.step >= 3 ? 'bg-cyan-400' : 'bg-slate-700'"></span>
 
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-0.5">
                   <span
-                    class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold"
                     :class="item.step >= 3 ? 'bg-cyan-500 text-black animate-pulse' : 'bg-slate-800 text-slate-500'"
                   >3</span>
                   <span :class="item.step >= 3 ? 'text-cyan-300 font-bold' : 'text-slate-500'">排查</span>
                 </div>
-                <span class="w-3 h-0.5 rounded bg-slate-700"></span>
+                <span class="w-2 h-0.5 rounded bg-slate-700"></span>
 
-                <div class="flex items-center gap-1">
-                  <span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold bg-slate-800 text-slate-500">4</span>
+                <div class="flex items-center gap-0.5">
+                  <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold bg-slate-800 text-slate-500">4</span>
                   <span class="text-slate-500">销号</span>
                 </div>
               </div>
@@ -350,26 +344,26 @@
                 <button
                   v-if="item.step === 1"
                   @click.stop="advanceStep(item.id)"
-                  class="px-3 py-1 rounded-md text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white cursor-pointer transition-all active:scale-95 shadow-md flex items-center gap-1"
+                  class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-0.5 whitespace-nowrap"
                 >
-                  <Send class="w-3 h-3" />
+                  <Send class="w-2.5 h-2.5" />
                   <span>立即派单</span>
                 </button>
                 <button
                   v-else-if="item.step === 2"
                   @click.stop="advanceStep(item.id)"
-                  class="px-3 py-1 rounded-md text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-95 shadow-md flex items-center gap-1"
+                  class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-0.5 whitespace-nowrap"
                 >
-                  <MapPin class="w-3 h-3" />
+                  <MapPin class="w-2.5 h-2.5" />
                   <span>到位排查</span>
                 </button>
                 <button
                   v-else-if="item.step === 3"
                   @click.stop="resolveAndRemove(item.id)"
-                  class="px-3 py-1 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer transition-all active:scale-95 shadow-md flex items-center gap-1"
+                  class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-0.5 whitespace-nowrap"
                   title="现场排查结束，闭环并消除此条告警"
                 >
-                  <Check class="w-3.5 h-3.5" />
+                  <Check class="w-3 h-3" />
                   <span>结束排查(销号)</span>
                 </button>
               </div>
