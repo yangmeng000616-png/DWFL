@@ -18,6 +18,19 @@
 
       <!-- Compact Map Tool Controls -->
       <div class="flex items-center gap-1 text-xs flex-nowrap flex-shrink-0">
+        <!-- Switch back to 3D View button (when embedded or switchable) -->
+        <button
+          v-if="canSwitchTo3D"
+          @click="emit('switch-to-3d')"
+          class="px-2 py-0.5 rounded text-[10.5px] bg-gradient-to-r from-[#217bf8] to-[#00a6ff] hover:from-[#1a6de0] hover:to-[#0092e0] text-white border border-cyan-400/80 shadow-[0_0_8px_rgba(33,123,248,0.7)] transition-all font-semibold flex items-center gap-1 cursor-pointer whitespace-nowrap mr-1 active:scale-95"
+          title="切换回算力中心建筑三维数字孪生态势"
+        >
+          <svg class="w-3 h-3 fill-current text-amber-300" viewBox="0 0 24 24">
+            <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
+          </svg>
+          <span>切回三维态势</span>
+        </button>
+
         <!-- Boundary Highlight Toggle -->
         <button
           @click="toggleBoundaries"
@@ -138,6 +151,16 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+const props = withDefaults(defineProps<{
+  canSwitchTo3D?: boolean;
+}>(), {
+  canSwitchTo3D: false
+});
+
+const emit = defineEmits<{
+  (e: 'switch-to-3d'): void;
+}>();
 
 const mapContainerRef = ref<HTMLElement | null>(null);
 let map: L.Map | null = null;

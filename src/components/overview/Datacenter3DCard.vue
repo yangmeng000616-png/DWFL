@@ -20,11 +20,22 @@
           <button
             v-for="mode in viewModes"
             :key="mode.id"
-            @click="activeMode = mode.id"
-            class="px-2 py-0.5 rounded transition-all font-medium text-[11px] whitespace-nowrap"
-            :class="activeMode === mode.id ? 'bg-gradient-to-r from-[#217bf8] to-[#00a6ff] text-white shadow-[0_0_10px_rgba(33,123,248,0.7)]' : 'text-slate-300 hover:text-white'"
+            @click="handleModeClick(mode.id)"
+            class="px-2 py-0.5 rounded transition-all font-medium text-[11px] whitespace-nowrap flex items-center gap-1 cursor-pointer"
+            :class="[
+              mode.id === 'map'
+                ? 'text-cyan-300 hover:text-white hover:bg-cyan-500/25 border border-cyan-500/30'
+                : activeMode === mode.id
+                  ? 'bg-gradient-to-r from-[#217bf8] to-[#00a6ff] text-white shadow-[0_0_10px_rgba(33,123,248,0.7)]'
+                  : 'text-slate-300 hover:text-white'
+            ]"
           >
-            {{ mode.label }}
+            <svg v-if="mode.id === 'map'" class="w-2.5 h-2.5 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+            </svg>
+            <span>{{ mode.label }}</span>
           </button>
         </div>
 
@@ -615,6 +626,10 @@ const props = defineProps<{
   focusedAlarmId?: string;
 }>();
 
+const emit = defineEmits<{
+  (e: 'switch-to-map'): void;
+}>();
+
 const focusHotspot = activeFocusHotspot;
 const isDemoRunning = simulatedLightningActive;
 
@@ -661,8 +676,17 @@ const viewModes = [
   { id: 'lightning', label: '防雷外廓' },
   { id: 'server', label: '机房透视' },
   { id: 'ground', label: '地网拓扑' },
+  { id: 'map', label: '雷电活动地图' }
 ];
 const activeMode = ref('all');
+
+const handleModeClick = (modeId: string) => {
+  if (modeId === 'map') {
+    emit('switch-to-map');
+    return;
+  }
+  activeMode.value = modeId;
+};
 
 const toggleAutoRotate = () => {
   isAutoRotating.value = !isAutoRotating.value;
