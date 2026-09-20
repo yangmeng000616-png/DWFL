@@ -11,103 +11,32 @@
     ]"
   >
     <!-- ======================================================== -->
-    <!-- 区域 1：顶部状态监控与控制栏 (单行紧凑：左侧设备在线与各项指标监测 + 右侧轮播与一键派单) -->
+    <!-- 区域 1：顶部状态监控卡片 (总览同款 5 大 KPI 监控卡片 + 返回常态) -->
     <!-- ======================================================== -->
-    <div
-      class="w-full relative z-20 px-3 py-1.5 flex items-center justify-between gap-3 border-b backdrop-blur-md transition-colors duration-500 flex-nowrap overflow-x-auto no-scrollbar"
-      :class="[
-        activeScenario.severity === 'red'
-          ? 'bg-gradient-to-r from-red-950/95 via-[#1a0a0a]/95 to-[#0b1b36]/90 border-red-500/70 shadow-[0_4px_16px_rgba(239,68,68,0.2)]'
-          : 'bg-gradient-to-r from-amber-950/95 via-[#1a1208]/95 to-[#0b1b36]/90 border-amber-500/70 shadow-[0_4px_16px_rgba(245,158,11,0.2)]'
-      ]"
-    >
-      <!-- 左侧：设备在线率与全域各项防雷/静电指标实时在线监测 (可点击穿透排查) -->
-      <div class="flex items-center gap-2 flex-shrink-0 min-w-0">
-        <!-- 核心设备在网率胶囊 -->
-        <div
-          @click="openDeviceInspection('datacenter_zone')"
-          class="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#092248]/90 border border-cyan-500/50 text-cyan-200 cursor-pointer hover:bg-cyan-950/80 transition-colors shadow-sm"
-          title="点击查看算力中心设备在线与通信链路详情"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-          <span class="text-xs font-semibold text-white whitespace-nowrap">设备在线:</span>
-          <span class="font-tech text-xs font-bold text-emerald-300">99.4%</span>
-          <span class="text-[10px] text-cyan-300 font-mono">(156/157)</span>
-        </div>
-
-        <div class="h-3 w-px bg-white/15 flex-shrink-0"></div>
-
-        <!-- 各种监测指标胶囊：雷电、静电、地网、SPD、动力电源 -->
-        <div class="flex items-center gap-1.5 flex-nowrap text-xs">
-          <!-- 雷电监测 -->
-          <div
-            @click="openDeviceInspection('atmospheric')"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-cyan-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
-            title="雷电空间电场实时监测"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0"></span>
-            <span class="text-[11px] text-slate-300">雷电:</span>
-            <span class="font-tech text-[11px] font-bold text-cyan-300">23.6kA</span>
-          </div>
-
-          <!-- 静电监测 -->
-          <div
-            @click="openDeviceInspection('esd_terminal')"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-emerald-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
-            title="微环境防静电电位遥测"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
-            <span class="text-[11px] text-slate-300">静电:</span>
-            <span class="font-tech text-[11px] font-bold text-emerald-300">0.8kV</span>
-          </div>
-
-          <!-- 接地阻抗 -->
-          <div
-            @click="openDeviceInspection('ground_res')"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-amber-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
-            title="地网接地电阻在线遥测 (当前有超标告警)"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 animate-ping"></span>
-            <span class="text-[11px] text-slate-300">地阻:</span>
-            <span class="font-tech text-[11px] font-bold text-amber-300">1.28Ω</span>
-          </div>
-
-          <!-- SPD在网 -->
-          <div
-            @click="openDeviceInspection('spd_terminal')"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-red-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
-            title="SPD浪涌保护器群组监测 (当前有漏电告警)"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0 animate-pulse"></span>
-            <span class="text-[11px] text-slate-300">SPD:</span>
-            <span class="font-tech text-[11px] font-bold text-red-300">0.28mA</span>
-          </div>
-
-          <!-- 配电电源 -->
-          <div
-            @click="openDeviceInspection('datacenter_zone')"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/40 border border-white/10 hover:border-cyan-400 text-slate-200 hover:text-white cursor-pointer transition-colors whitespace-nowrap"
-            title="主机房供配电相电压质量"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
-            <span class="text-[11px] text-slate-300">电源:</span>
-            <span class="font-tech text-[11px] font-bold text-emerald-300">220.4V</span>
-          </div>
-        </div>
+    <div class="w-full relative z-20 p-2 pb-0 flex items-stretch gap-2 flex-shrink-0">
+      <div class="flex-1 min-w-0">
+        <KpiCards :active-alarms="alarmCards" />
       </div>
 
-      <!-- 右侧：返回常态 -->
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- 返回常态 -->
-        <button
-          @click="exitEmergencyMode"
-          class="px-2.5 py-1 rounded text-xs font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap flex-shrink-0"
-          title="退出应急极简视图，返回全量大屏"
-        >
-          <LogOut class="w-3.5 h-3.5 flex-shrink-0" />
-          <span>返回常态</span>
-        </button>
-      </div>
+      <!-- 右侧：返回常态快捷卡片按钮 (高度与风格同 KPI 卡片一体化) -->
+      <button
+        @click="exitEmergencyMode"
+        class="tech-panel tech-panel-hover rounded-xl py-2 px-3 flex flex-col items-center justify-between gap-1 text-slate-300 hover:text-white border border-[#1e4d8c] hover:border-cyan-400 cursor-pointer transition-all flex-shrink-0 group shadow-sm min-w-[80px]"
+        title="退出应急极简视图，返回全量大屏"
+      >
+        <div class="flex items-center justify-between w-full">
+          <div class="w-6 h-6 rounded-md bg-gradient-to-br from-[#1c55aa] to-[#0f3b82] border border-cyan-400/60 flex items-center justify-center text-cyan-200 shadow-[0_0_8px_rgba(0,200,255,0.3)] group-hover:scale-105 transition-transform flex-shrink-0">
+            <LogOut class="w-3 h-3" />
+          </div>
+          <span class="px-1.5 py-0.2 rounded bg-cyan-950/80 border border-cyan-400/50 text-[10px] text-cyan-300 font-medium">
+            全屏
+          </span>
+        </div>
+        <div class="mt-1 flex flex-col items-center">
+          <span class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">返回常态</span>
+          <span class="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap">退出应急模式</span>
+        </div>
+      </button>
     </div>
 
     <!-- 告警销号后 30秒自动回切常态提示条 -->
@@ -444,6 +373,7 @@ import {
 
 import Datacenter3DCard from '@/components/overview/Datacenter3DCard.vue';
 import LightningMapCard from '@/components/overview/LightningMapCard.vue';
+import KpiCards from '@/components/overview/KpiCards.vue';
 import { openDeviceInspection } from '@/composables/useCockpitState';
 
 // 主视图切换状态：'3d' (三维数字孪生) OR 'map' (雷电活动实时地图)

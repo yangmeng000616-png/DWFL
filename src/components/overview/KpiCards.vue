@@ -15,18 +15,28 @@
           </div>
           <span class="text-xs text-white font-semibold group-hover:text-cyan-300 transition-colors">雷电监测</span>
         </div>
-        <span class="px-1.5 py-0.2 rounded bg-emerald-900/80 border border-emerald-400/60 text-[10px] text-emerald-300 font-medium">
-          正常
+        <span
+          class="px-1.5 py-0.2 rounded border text-[10px] font-medium"
+          :class="hasLightningAlarm
+            ? 'bg-amber-950/80 border-amber-400/60 text-amber-300 animate-pulse'
+            : 'bg-emerald-900/80 border-emerald-400/60 text-emerald-300'"
+        >
+          {{ hasLightningAlarm ? '预警' : '正常' }}
         </span>
       </div>
 
       <div class="mt-1 flex items-baseline justify-between">
-        <div class="text-lg font-bold font-tech text-cyan-300 tracking-wide glow-text-cyan">
+        <div
+          class="text-lg font-bold font-tech tracking-wide"
+          :class="hasLightningAlarm ? 'text-amber-300 glow-text-amber' : 'text-cyan-300 glow-text-cyan'"
+        >
           23.6 <span class="text-xs font-normal text-slate-300 font-sans">kA</span>
         </div>
         <span class="text-[10px] text-slate-400 font-sans">预警阈值 30.0kA</span>
       </div>
-      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">当前雷电电场强度</div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
+        {{ hasLightningAlarm ? '顶楼空间电场畸变' : '当前雷电电场强度' }}
+      </div>
     </div>
 
     <!-- Card 2: 静电监测 -->
@@ -79,18 +89,30 @@
           </div>
           <span class="text-xs text-white font-semibold group-hover:text-cyan-300 transition-colors">接地系统</span>
         </div>
-        <span class="px-1.5 py-0.2 rounded bg-emerald-900/80 border border-emerald-400/60 text-[10px] text-emerald-300 font-medium">
-          正常
+        <span
+          class="px-1.5 py-0.2 rounded border text-[10px] font-medium"
+          :class="hasGroundAlarm
+            ? 'bg-amber-950/80 border-amber-400/60 text-amber-300 animate-pulse'
+            : 'bg-emerald-900/80 border-emerald-400/60 text-emerald-300'"
+        >
+          {{ hasGroundAlarm ? '阻抗超标' : '正常' }}
         </span>
       </div>
 
       <div class="mt-1 flex items-baseline justify-between">
-        <div class="text-lg font-bold font-tech text-emerald-300 tracking-wide glow-text-green">
-          0.52 <span class="text-xs font-normal text-slate-300 font-sans">Ω</span>
+        <div
+          class="text-lg font-bold font-tech tracking-wide"
+          :class="hasGroundAlarm ? 'text-amber-300 glow-text-amber' : 'text-emerald-300 glow-text-green'"
+        >
+          {{ hasGroundAlarm ? '1.28' : '0.52' }} <span class="text-xs font-normal text-slate-300 font-sans">Ω</span>
         </div>
-        <span class="text-[10px] text-slate-400 font-sans">规约基线 ≤ 1.0Ω</span>
+        <span class="text-[10px] font-sans" :class="hasGroundAlarm ? 'text-amber-300 font-medium' : 'text-slate-400'">
+          {{ hasGroundAlarm ? '门限 ≤ 1.0Ω (超标)' : '规约基线 ≤ 1.0Ω' }}
+        </span>
       </div>
-      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">综合地网接地电阻</div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
+        {{ hasGroundAlarm ? '地网降阻接地阻抗超标' : '综合地网接地电阻' }}
+      </div>
     </div>
 
     <!-- Card 4: SPD状态 -->
@@ -111,18 +133,30 @@
           </div>
           <span class="text-xs text-white font-semibold group-hover:text-cyan-300 transition-colors">SPD状态</span>
         </div>
-        <span class="px-1.5 py-0.2 rounded bg-emerald-900/80 border border-emerald-400/60 text-[10px] text-emerald-300 font-medium">
-          正常
+        <span
+          class="px-1.5 py-0.2 rounded border text-[10px] font-medium"
+          :class="hasSpdAlarm
+            ? 'bg-red-950/80 border-red-400/60 text-red-300 animate-pulse'
+            : 'bg-emerald-900/80 border-emerald-400/60 text-emerald-300'"
+        >
+          {{ hasSpdAlarm ? '漏电告警' : '正常' }}
         </span>
       </div>
 
       <div class="mt-1 flex items-baseline justify-between">
-        <div class="text-lg font-bold font-tech text-emerald-300 tracking-wide glow-text-green">
-          12 / 12
+        <div
+          class="text-lg font-bold font-tech tracking-wide"
+          :class="hasSpdAlarm ? 'text-red-400 glow-text-red' : 'text-emerald-300 glow-text-green'"
+        >
+          {{ hasSpdAlarm ? '11 / 12' : '12 / 12' }}
         </div>
-        <span class="text-[10px] text-slate-400 font-sans">在网率 100%</span>
+        <span class="text-[10px] font-sans" :class="hasSpdAlarm ? 'text-red-300' : 'text-slate-400'">
+          {{ hasSpdAlarm ? '在网率 91.7% (1台异常)' : '在网率 100%' }}
+        </span>
       </div>
-      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">浪涌保护终端全部就绪</div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
+        {{ hasSpdAlarm ? 'SPD-04 漏流 0.28mA' : '浪涌保护终端全部就绪' }}
+      </div>
     </div>
 
     <!-- Card 5: 电源质量 -->
@@ -158,5 +192,37 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { openDeviceInspection } from '@/composables/useCockpitState';
+import { isEmergencyMode } from '@/composables/useEmergencyMode';
+
+interface AlarmItem {
+  id: string;
+  [key: string]: any;
+}
+
+const props = defineProps<{
+  activeAlarms?: AlarmItem[];
+}>();
+
+const hasGroundAlarm = computed(() => {
+  if (props.activeAlarms !== undefined) {
+    return props.activeAlarms.some(a => a.id === 'ground');
+  }
+  return isEmergencyMode.value;
+});
+
+const hasSpdAlarm = computed(() => {
+  if (props.activeAlarms !== undefined) {
+    return props.activeAlarms.some(a => a.id === 'spd');
+  }
+  return isEmergencyMode.value;
+});
+
+const hasLightningAlarm = computed(() => {
+  if (props.activeAlarms !== undefined) {
+    return props.activeAlarms.some(a => a.id === 'lightning');
+  }
+  return false;
+});
 </script>
