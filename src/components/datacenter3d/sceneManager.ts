@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createMaterials, MaterialLibrary } from './materials';
 import { buildSite } from './builderSite';
 import { buildMainBuilding } from './builderBuilding';
+import { buildBuildingInterior } from './builderInterior';
 import { buildPowerSubstation } from './builderPower';
 import { buildCoolingPlant } from './builderCooling';
 import { buildEmergencyPower } from './builderEmergency';
@@ -17,6 +18,33 @@ export const VIEW_PRESETS: ViewPreset[] = [
     position: [115, 95, 125],
     target: [0, 8, 0],
     description: '全园区鸟瞰视角，呈现星云计算中心规整工业规划与各功能分区',
+  },
+  {
+    id: 'xray_datacenter',
+    label: '建筑透视 (机房与值班室)',
+    shortLabel: '整楼透视',
+    position: [56, 32, 68],
+    target: [0, 6, 0],
+    description: '外墙半透明透视，纵览1F运维值班大厅与2F核心高密服务器机房排',
+    xrayFocus: true,
+  },
+  {
+    id: 'interior_server_room',
+    label: '2F 核心服务器机房',
+    shortLabel: '2F机房',
+    position: [-8, 9.2, 14],
+    target: [-5, 7.2, 0],
+    description: '深入2F数据机房核心冷通道，近距观测42U高密机柜、冷通道玻璃天幕与LED指示灯',
+    xrayFocus: true,
+  },
+  {
+    id: 'interior_duty_room',
+    label: '1F 运维监控值班室',
+    shortLabel: '1F值班室',
+    position: [-16, 4.0, 10],
+    target: [-16, 2.5, -14],
+    description: '进入1F 7×24小时NOC调度监控大厅，检视微弧8K监控巨幕与值班指挥调度工位',
+    xrayFocus: true,
   },
   {
     id: 'south_entrance',
@@ -239,7 +267,12 @@ export class DatacenterSceneManager {
     this.layers.set('building', building);
     this.scene.add(building);
 
-    // 3. Power Substation & Cable Bridge
+    // 3. Main Datacenter Building Interior (1F Duty Room + 2F Server Room + 3F Storage)
+    const interior = buildBuildingInterior(this.materials);
+    this.layers.set('interior', interior);
+    this.scene.add(interior);
+
+    // 4. Power Substation & Cable Bridge
     const power = buildPowerSubstation(this.materials);
     this.layers.set('power', power);
     this.scene.add(power);
@@ -436,9 +469,13 @@ export class DatacenterSceneManager {
 
     if (preset.undergroundFocus) {
       // Relax polar angle to view underground
-      this.controls.maxPolarAngle = Math.PI * 0.7;
+      this.controls.maxPolarAngle = Math.PI * 0.72;
       this.setLayerVisibility('underground', true);
       this.setBuildingXRay(true);
+    } else if (preset.xrayFocus) {
+      this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      this.setBuildingXRay(true);
+      this.setLayerVisibility('interior', true);
     } else {
       this.controls.maxPolarAngle = Math.PI / 2 - 0.04;
       this.setBuildingXRay(false);
@@ -476,19 +513,37 @@ export class DatacenterSceneManager {
     const buildingGroup = this.layers.get('building');
     if (!buildingGroup) return;
 
+    // 1. 如果绑定了专属外围护材质实例，则精准调优透明度与深度剔除
+    if (buildingGroup.userData && buildingGroup.userData.wallMaterials) {
+      buildingGroup.userData.wallMaterials.forEach((mat: THREE.MeshStandardMaterial) => {
+        mat.transparent = enable;
+        mat.opacity = enable ? 0.12 : 1.0;
+        mat.depthWrite = !enable;
+        mat.needsUpdate = true;
+      });
+    }
+
+    // 2. 遍历整个建筑组，将所有结构网格柔和透视
     buildingGroup.traverse((child) => {
       if (child instanceof THREE.Mesh && child.material) {
         if (Array.isArray(child.material)) {
           child.material.forEach((m) => {
             m.transparent = enable;
-            m.opacity = enable ? 0.28 : 1.0;
+            m.opacity = enable ? 0.15 : 1.0;
+            m.depthWrite = !enable;
           });
         } else {
           child.material.transparent = enable;
-          child.material.opacity = enable ? 0.28 : 1.0;
+          child.material.opacity = enable ? 0.15 : 1.0;
+          child.material.depthWrite = !enable;
         }
       }
     });
+
+    // 3. 透视模式下，确保机房室内层开启
+    if (enable) {
+      this.setLayerVisibility('interior', true);
+    }
   }
 
   public triggerLightningStrike() {

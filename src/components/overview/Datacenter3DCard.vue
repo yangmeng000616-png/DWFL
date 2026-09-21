@@ -74,13 +74,44 @@
           @click="toggleXRay"
           class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
           :class="isXRayEnabled ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-200 border-[#2461b2]/70'"
-          title="透视穿透模式：建筑半透明化，透视地下地网与管线"
+          title="透视穿透模式：建筑外立面半透明，透视内部服务器机房、监控值班室与地下地网"
         >
           <svg class="w-3 h-3 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3" />
             <path d="M3 12h3m12 0h3M12 3v3m0 12v3" />
           </svg>
-          <span>透视</span>
+          <span>{{ isXRayEnabled ? '透视开' : '透视' }}</span>
+        </button>
+
+        <!-- Interior Server Room Quick Button -->
+        <button
+          @click="selectPreset('interior_server_room')"
+          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
+          :class="activePresetId === 'interior_server_room' ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-cyan-200 border-[#2461b2]/70'"
+          title="直接进入 2F 核心高密服务器冷通道机房"
+        >
+          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+            <line x1="6" y1="6" x2="6.01" y2="6" />
+            <line x1="6" y1="18" x2="6.01" y2="18" />
+          </svg>
+          <span>2F机房</span>
+        </button>
+
+        <!-- Interior Duty Room Quick Button -->
+        <button
+          @click="selectPreset('interior_duty_room')"
+          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
+          :class="activePresetId === 'interior_duty_room' ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-cyan-200 border-[#2461b2]/70'"
+          title="直接进入 1F 运维监控调度值班大厅"
+        >
+          <svg class="w-3 h-3 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          <span>1F值班室</span>
         </button>
 
         <!-- Lightning Simulation Button -->
@@ -231,6 +262,12 @@
               全景综合
             </button>
             <button
+              @click="applyLayerPreset('interior')"
+              class="px-2 py-1 rounded bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 text-[10px] text-center border border-indigo-400/40 font-medium"
+            >
+              机房室内透视
+            </button>
+            <button
               @click="applyLayerPreset('lightning_ground')"
               class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
             >
@@ -244,7 +281,7 @@
             </button>
             <button
               @click="applyLayerPreset('underground')"
-              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
+              class="col-span-2 px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
             >
               地下地网透视
             </button>
@@ -424,6 +461,7 @@ const selectedDevice = ref<any | null>(null);
 // Layer Configuration
 const layerList = ref<LayerConfig[]>([
   { id: 'building', name: '建筑主体 (82m×54m)', category: '建筑与土建', color: '#c4cdd9', visible: true, transparent: false, opacity: 1.0, description: '三层数据机房金属幕墙、夹芯板、雨棚及门窗' },
+  { id: 'interior', name: '机房室内 (服务器/值班室/储能)', category: '机房室内', color: '#00f0ff', visible: true, transparent: false, opacity: 1.0, description: '1F运维监控大厅8K大屏与值班台、2F核心高密冷通道机柜排、3F分布式智算与动力电池间' },
   { id: 'roads', name: '场地道路与硬化铺装', category: '建筑与土建', color: '#151c27', visible: true, transparent: false, opacity: 1.0, description: '环形消防车道、货运通道、标线与出入口' },
   { id: 'power', name: '变配电系统 (110kV/10kV)', category: '动力暖通', color: '#243242', visible: true, transparent: false, opacity: 1.0, description: '变配电附属用房、双主变、防爆墙及封闭桥架' },
   { id: 'cooling', name: '冷却设备区 (水冷机房)', category: '动力暖通', color: '#1d4ed8', visible: true, transparent: false, opacity: 1.0, description: '4台离心水机、循环水泵、多色保温管廊及步道' },
@@ -449,6 +487,19 @@ const currentPresetLabel = computed(() => {
 function selectPreset(presetId: ViewPresetId) {
   activePresetId.value = presetId;
   showPresetMenu.value = false;
+  if (
+    presetId === 'xray_datacenter' ||
+    presetId === 'interior_server_room' ||
+    presetId === 'interior_duty_room' ||
+    presetId === 'underground_grid'
+  ) {
+    isXRayEnabled.value = true;
+    const interiorLayer = layerList.value.find((l) => l.id === 'interior');
+    if (interiorLayer) interiorLayer.visible = true;
+  } else {
+    isXRayEnabled.value = false;
+  }
+
   if (sceneManager) {
     sceneManager.setViewPreset(presetId);
   }
@@ -465,13 +516,23 @@ function toggleLayer(layerId: LayerId) {
 }
 
 // Apply Layer Preset combinations
-function applyLayerPreset(mode: 'all' | 'lightning_ground' | 'power_hvac' | 'underground') {
+function applyLayerPreset(mode: 'all' | 'interior' | 'lightning_ground' | 'power_hvac' | 'underground') {
   if (mode === 'all') {
     layerList.value.forEach((l) => (l.visible = true));
     isXRayEnabled.value = false;
     if (sceneManager) {
       layerList.value.forEach((l) => sceneManager!.setLayerVisibility(l.id, true));
       sceneManager.setBuildingXRay(false);
+    }
+  } else if (mode === 'interior') {
+    layerList.value.forEach((l) => {
+      l.visible = ['building', 'interior', 'lightning'].includes(l.id);
+    });
+    isXRayEnabled.value = true;
+    if (sceneManager) {
+      layerList.value.forEach((l) => sceneManager!.setLayerVisibility(l.id, l.visible));
+      sceneManager.setBuildingXRay(true);
+      sceneManager.setViewPreset('interior_server_room');
     }
   } else if (mode === 'lightning_ground') {
     layerList.value.forEach((l) => {
@@ -511,6 +572,11 @@ function toggleXRay() {
   isXRayEnabled.value = !isXRayEnabled.value;
   if (sceneManager) {
     sceneManager.setBuildingXRay(isXRayEnabled.value);
+    if (isXRayEnabled.value) {
+      sceneManager.setLayerVisibility('interior', true);
+      const interiorLayer = layerList.value.find((l) => l.id === 'interior');
+      if (interiorLayer) interiorLayer.visible = true;
+    }
   }
 }
 

@@ -9,84 +9,146 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
   const B_DEPTH = 54; // Z
   const B_HEIGHT = 16.5; // 3 floors: 5.5m each
   const PARAPET_H = 1.2; // 女儿墙高 1.2m
+  const WALL_T = 0.45; // 外墙厚度 0.45m
 
-  // 1. 建筑主体基础与首层清水混凝土裙座 (Y: 0 ~ 1.5m)
-  const plinthGeo = new THREE.BoxGeometry(B_WIDTH + 0.8, 1.5, B_DEPTH + 0.8);
-  const plinthMesh = new THREE.Mesh(plinthGeo, materials.architecturalConcrete);
-  plinthMesh.position.set(0, 0.75, 0);
-  plinthMesh.castShadow = true;
-  plinthMesh.receiveShadow = true;
-  buildingGroup.add(plinthMesh);
+  // 为建筑外围护结构创建专属独立材质实例，便于 X-Ray 透视控制
+  const buildingWallMat = materials.curtainWallLight.clone();
+  buildingWallMat.name = 'buildingWallMat';
 
-  // 2. 主体外墙结构块体 (Y: 1.5 ~ 16.5m)
-  // 采用浅灰色金属幕墙作为主体底色
-  const mainBodyGeo = new THREE.BoxGeometry(B_WIDTH, B_HEIGHT - 1.5, B_DEPTH);
-  const mainBodyMesh = new THREE.Mesh(mainBodyGeo, materials.curtainWallLight);
-  mainBodyMesh.position.set(0, 1.5 + (B_HEIGHT - 1.5) / 2, 0);
-  mainBodyMesh.castShadow = true;
-  mainBodyMesh.receiveShadow = true;
-  mainBodyMesh.userData = {
-    id: 'BUILDING-MAIN',
-    name: '星云计算中心 3层主机房大楼',
-    type: '大型数据中心主体建筑',
-    system: '建筑设施',
-    location: '园区核心区 (82m×54m)',
-    specs: '地上3层 · 建筑高度 17.7m · 耐火等级一级 · 抗震烈度8度',
+  const buildingSandwichMat = materials.sandwichWallDark.clone();
+  buildingSandwichMat.name = 'buildingSandwichMat';
+
+  const buildingConcreteMat = materials.architecturalConcrete.clone();
+  buildingConcreteMat.name = 'buildingConcreteMat';
+
+  const buildingRoofMat = materials.roofDeck.clone();
+  buildingRoofMat.name = 'buildingRoofMat';
+
+  // 挂载材质引用至 buildingGroup.userData 方便 sceneManager 统一精准调节
+  buildingGroup.userData = {
+    isBuildingGroup: true,
+    wallMaterials: [buildingWallMat, buildingSandwichMat, buildingConcreteMat, buildingRoofMat],
   };
-  buildingGroup.add(mainBodyMesh);
+
+  // 1. 建筑裙楼清水混凝土基座 (四周连续环梁, Y: 0 ~ 1.5m)
+  // 南北两侧底梁
+  const plinthNS = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH + 0.8, 1.5, WALL_T + 0.4), buildingConcreteMat);
+  const plinthS = plinthNS.clone();
+  plinthS.position.set(0, 0.75, B_DEPTH / 2 + 0.2);
+  const plinthN = plinthNS.clone();
+  plinthN.position.set(0, 0.75, -B_DEPTH / 2 - 0.2);
+
+  // 东西两侧底梁
+  const plinthEW = new THREE.Mesh(new THREE.BoxGeometry(WALL_T + 0.4, 1.5, B_DEPTH), buildingConcreteMat);
+  const plinthE = plinthEW.clone();
+  plinthE.position.set(B_WIDTH / 2 + 0.2, 0.75, 0);
+  const plinthW = plinthEW.clone();
+  plinthW.position.set(-B_WIDTH / 2 - 0.2, 0.75, 0);
+
+  buildingGroup.add(plinthS, plinthN, plinthE, plinthW);
+
+  // 2. 主体真实空腔外墙围护 (Hollow Exterior Shell, Y: 1.5 ~ 16.5m)
+  const wallHeight = B_HEIGHT - 1.5;
+  const wallCenterY = 1.5 + wallHeight / 2;
+
+  // 东外墙 (X = +B_WIDTH/2)
+  const eastWall = new THREE.Mesh(
+    new THREE.BoxGeometry(WALL_T, wallHeight, B_DEPTH),
+    buildingWallMat
+  );
+  eastWall.position.set(B_WIDTH / 2, wallCenterY, 0);
+  eastWall.castShadow = true;
+  eastWall.receiveShadow = true;
+
+  // 西外墙 (X = -B_WIDTH/2)
+  const westWall = new THREE.Mesh(
+    new THREE.BoxGeometry(WALL_T, wallHeight, B_DEPTH),
+    buildingWallMat
+  );
+  westWall.position.set(-B_WIDTH / 2, wallCenterY, 0);
+  westWall.castShadow = true;
+  westWall.receiveShadow = true;
+
+  // 北外墙 (Z = -B_DEPTH/2)
+  const northWall = new THREE.Mesh(
+    new THREE.BoxGeometry(B_WIDTH, wallHeight, WALL_T),
+    buildingWallMat
+  );
+  northWall.position.set(0, wallCenterY, -B_DEPTH / 2);
+  northWall.castShadow = true;
+  northWall.receiveShadow = true;
+
+  // 南外墙 (Z = +B_DEPTH/2, 中间预留门厅玻璃透视大开口 X: -9 ~ +9, 高度 5m)
+  // 左侧实墙 (X: -41 ~ -9)
+  const southWallL = new THREE.Mesh(
+    new THREE.BoxGeometry(32, wallHeight, WALL_T),
+    buildingWallMat
+  );
+  southWallL.position.set(-25, wallCenterY, B_DEPTH / 2);
+
+  // 右侧实墙 (X: 9 ~ 41)
+  const southWallR = new THREE.Mesh(
+    new THREE.BoxGeometry(32, wallHeight, WALL_T),
+    buildingWallMat
+  );
+  southWallR.position.set(25, wallCenterY, B_DEPTH / 2);
+
+  // 门厅上方实墙 (X: -9 ~ 9, Y: 5.5 ~ 16.5)
+  const southWallTop = new THREE.Mesh(
+    new THREE.BoxGeometry(18, wallHeight - 4.0, WALL_T),
+    buildingWallMat
+  );
+  southWallTop.position.set(0, 1.5 + 4.0 + (wallHeight - 4.0) / 2, B_DEPTH / 2);
+
+  buildingGroup.add(eastWall, westWall, northWall, southWallL, southWallR, southWallTop);
 
   // 3. 立面深灰色金属夹芯板装饰分格带与层间金属嵌条 (RAL 7016)
-  // 为真实工业数据中心立面提供规整、高级的模数感
   const floorBands = new THREE.Group();
 
   // 1F-2F 层间嵌条 (Y = 5.5)
   const band1FGeo = new THREE.BoxGeometry(B_WIDTH + 0.2, 0.4, B_DEPTH + 0.2);
-  const band1F = new THREE.Mesh(band1FGeo, materials.sandwichWallDark);
+  const band1F = new THREE.Mesh(band1FGeo, buildingSandwichMat);
   band1F.position.set(0, 5.5, 0);
   floorBands.add(band1F);
 
   // 2F-3F 层间嵌条 (Y = 11.0)
-  const band2F = new THREE.Mesh(band1FGeo, materials.sandwichWallDark);
+  const band2F = new THREE.Mesh(band1FGeo, buildingSandwichMat);
   band2F.position.set(0, 11.0, 0);
   floorBands.add(band2F);
 
   // 南北外立面深灰金属夹芯板立面模块拼缝 (厚度 0.12m 突出幕墙面)
   const accentPanelGeo = new THREE.BoxGeometry(14, 13.5, 0.25);
-  // 南立面左右两侧深色夹芯对比段
-  const southAccentL = new THREE.Mesh(accentPanelGeo, materials.sandwichWallDark);
+  const southAccentL = new THREE.Mesh(accentPanelGeo, buildingSandwichMat);
   southAccentL.position.set(-28, 8.5, B_DEPTH / 2 + 0.05);
-  const southAccentR = new THREE.Mesh(accentPanelGeo, materials.sandwichWallDark);
+  const southAccentR = new THREE.Mesh(accentPanelGeo, buildingSandwichMat);
   southAccentR.position.set(28, 8.5, B_DEPTH / 2 + 0.05);
 
-  // 北立面对应段
-  const northAccentL = new THREE.Mesh(accentPanelGeo, materials.sandwichWallDark);
+  const northAccentL = new THREE.Mesh(accentPanelGeo, buildingSandwichMat);
   northAccentL.position.set(-28, 8.5, -B_DEPTH / 2 - 0.05);
-  const northAccentR = new THREE.Mesh(accentPanelGeo, materials.sandwichWallDark);
+  const northAccentR = new THREE.Mesh(accentPanelGeo, buildingSandwichMat);
   northAccentR.position.set(28, 8.5, -B_DEPTH / 2 - 0.05);
 
   floorBands.add(southAccentL, southAccentR, northAccentL, northAccentR);
 
   // 东西两侧外墙深灰纵向竖条饰带
   const eastAccentGeo = new THREE.BoxGeometry(0.25, 13.5, 12);
-  const eastAccent1 = new THREE.Mesh(eastAccentGeo, materials.sandwichWallDark);
+  const eastAccent1 = new THREE.Mesh(eastAccentGeo, buildingSandwichMat);
   eastAccent1.position.set(B_WIDTH / 2 + 0.05, 8.5, -12);
-  const eastAccent2 = new THREE.Mesh(eastAccentGeo, materials.sandwichWallDark);
+  const eastAccent2 = new THREE.Mesh(eastAccentGeo, buildingSandwichMat);
   eastAccent2.position.set(B_WIDTH / 2 + 0.05, 8.5, 12);
 
-  const westAccent1 = new THREE.Mesh(eastAccentGeo, materials.sandwichWallDark);
+  const westAccent1 = new THREE.Mesh(eastAccentGeo, buildingSandwichMat);
   westAccent1.position.set(-B_WIDTH / 2 - 0.05, 8.5, -12);
-  const westAccent2 = new THREE.Mesh(eastAccentGeo, materials.sandwichWallDark);
+  const westAccent2 = new THREE.Mesh(eastAccentGeo, buildingSandwichMat);
   westAccent2.position.set(-B_WIDTH / 2 - 0.05, 8.5, 12);
 
   floorBands.add(eastAccent1, eastAccent2, westAccent1, westAccent2);
   buildingGroup.add(floorBands);
 
-  // 4. 高位窄窗 (Data Center High-Level Clerestory Ribbon Windows)
-  // 数据机房核心区为避光保温，仅在辅助走道、运维区开设规整防爆双银低辐射高位窄窗
+  // 4. 高位窄窗 (Clerestory Ribbon Windows)
   const windowGroup = new THREE.Group();
 
-  // 南立面 2F & 3F 高位带状窄窗
-  [-12, 12].forEach((xOffset) => {
+  [-16, 16].forEach((xOffset) => {
     [7.8, 13.3].forEach((yFloor) => {
       const winGeo = new THREE.BoxGeometry(10, 1.1, 0.2);
       const winMesh = new THREE.Mesh(winGeo, materials.glassTinted);
@@ -95,8 +157,7 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
     });
   });
 
-  // 北立面运维走道采光窗
-  [-12, 12].forEach((xOffset) => {
+  [-16, 16].forEach((xOffset) => {
     [7.8, 13.3].forEach((yFloor) => {
       const winGeo = new THREE.BoxGeometry(10, 1.1, 0.2);
       const winMesh = new THREE.Mesh(winGeo, materials.glassTinted);
@@ -105,7 +166,7 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
     });
   });
 
-  // 5. 外墙通风/消音百叶 (数据机房电池间与动力新风进排风百叶)
+  // 外墙消音百叶
   [-30, 30].forEach((xPos) => {
     const louverGeo = new THREE.BoxGeometry(6, 2.2, 0.22);
     const louverMeshS = new THREE.Mesh(louverGeo, materials.ventLouver);
@@ -115,17 +176,16 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
     windowGroup.add(louverMeshS, louverMeshN);
   });
 
-  // 西立面对应管道穿越处的进气百叶
   const westLouver = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.5, 8), materials.ventLouver);
   westLouver.position.set(-B_WIDTH / 2 - 0.1, 3.8, 0);
   windowGroup.add(westLouver);
 
   buildingGroup.add(windowGroup);
 
-  // 6. 南立面主入口、门厅雨棚与访客通道 (Z = +27m)
+  // 5. 南立面主入口、门厅雨棚与访客通道 (Z = +27m)
   const southEntranceGroup = new THREE.Group();
 
-  // 主入口悬挑大雨棚 (18m 宽 x 6m 挑深 x 0.6m 厚，标高 +4.8m)
+  // 主入口悬挑大雨棚
   const canopyPlate = new THREE.Mesh(
     new THREE.BoxGeometry(18, 0.6, 6.2),
     materials.canopyFascia
@@ -134,7 +194,7 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
   canopyPlate.castShadow = true;
   southEntranceGroup.add(canopyPlate);
 
-  // 雨棚立面金属发光招牌字板："星云计算中心 STAR CLOUD DATA CENTER"
+  // 雨棚招牌："星云计算中心 STAR CLOUD DATA CENTER"
   const signBoard = new THREE.Mesh(
     new THREE.BoxGeometry(16, 0.45, 0.08),
     materials.canopyFascia
@@ -142,27 +202,19 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
   signBoard.position.set(0, 4.8, B_DEPTH / 2 + 6.25);
   southEntranceGroup.add(signBoard);
 
-  // 门厅落地结构玻璃幕墙 (14m 宽 x 4.2m 高)
+  // 门厅高通透落地结构玻璃幕墙 (透过此玻璃可直接望见1F内部NOC大厅)
   const lobbyGlass = new THREE.Mesh(
-    new THREE.BoxGeometry(14, 4.2, 0.2),
+    new THREE.BoxGeometry(14, 4.2, 0.1),
     materials.glassTinted
   );
-  lobbyGlass.position.set(0, 2.4, B_DEPTH / 2 + 0.12);
+  lobbyGlass.position.set(0, 2.4, B_DEPTH / 2 + 0.05);
   southEntranceGroup.add(lobbyGlass);
 
-  // 门厅深色自动平移防火玻璃门 (3.2m 宽 x 2.6m 高)
-  const mainDoor = new THREE.Mesh(
-    new THREE.BoxGeometry(3.6, 2.6, 0.25),
-    materials.sandwichWallDark
-  );
-  mainDoor.position.set(0, 1.6, B_DEPTH / 2 + 0.2);
-  southEntranceGroup.add(mainDoor);
-
-  // 入口门廊两侧大理石方柱
+  // 入口门廊大理石方柱
   [-7.5, 7.5].forEach((xPos) => {
     const col = new THREE.Mesh(
       new THREE.BoxGeometry(0.8, 4.5, 0.8),
-      materials.architecturalConcrete
+      buildingConcreteMat
     );
     col.position.set(xPos, 2.55, B_DEPTH / 2 + 5.5);
     col.castShadow = true;
@@ -171,197 +223,128 @@ export function buildMainBuilding(materials: MaterialLibrary): THREE.Group {
 
   buildingGroup.add(southEntranceGroup);
 
-  // 7. 北立面设备运输入口、货运通道与后勤检修 (Z = -27m)
+  // 6. 北立面设备运输入口、货运通道与后勤检修
   const northLogisticsGroup = new THREE.Group();
 
-  // 高出室外地坪 1.2m 的专用装卸货台 (42m 宽 x 4m 进深 x 1.2m 高)
   const dockPlatform = new THREE.Mesh(
     new THREE.BoxGeometry(42, 1.2, 4.2),
-    materials.architecturalConcrete
+    buildingConcreteMat
   );
   dockPlatform.position.set(0, 0.6, -B_DEPTH / 2 - 2.1);
   dockPlatform.receiveShadow = true;
   northLogisticsGroup.add(dockPlatform);
 
-  // 装卸月台防撞橡胶缓冲块 (Dock Bumpers)
-  for (let x = -19; x <= 19; x += 3.5) {
-    const bumper = new THREE.Mesh(
-      new THREE.BoxGeometry(0.4, 0.8, 0.25),
-      materials.sandwichWallDark
-    );
-    bumper.position.set(x, 0.8, -B_DEPTH / 2 - 4.3);
-    northLogisticsGroup.add(bumper);
-  }
+  const doorWidth = 4.2;
+  const doorHeight = 4.5;
+  const doorOffsets = [-12, 0, 12];
 
-  // 3 樘重载工业卷帘货运门 (每樘 4.8m 宽 x 4.5m 高)
-  [-13, 0, 13].forEach((xPos) => {
-    const freightDoor = new THREE.Mesh(
-      new THREE.BoxGeometry(4.8, 4.5, 0.25),
-      materials.sandwichWallDark
+  doorOffsets.forEach((xPos) => {
+    const rollDoor = new THREE.Mesh(
+      new THREE.BoxGeometry(doorWidth, doorHeight, 0.15),
+      buildingSandwichMat
     );
-    freightDoor.position.set(xPos, 3.55, -B_DEPTH / 2 - 0.1);
-    northLogisticsGroup.add(freightDoor);
+    rollDoor.position.set(xPos, 1.2 + doorHeight / 2, -B_DEPTH / 2 - 0.05);
+    northLogisticsGroup.add(rollDoor);
+
+    const louverAbove = new THREE.Mesh(
+      new THREE.BoxGeometry(doorWidth, 1.2, 0.2),
+      materials.ventLouver
+    );
+    louverAbove.position.set(xPos, 1.2 + doorHeight + 0.8, -B_DEPTH / 2 - 0.05);
+    northLogisticsGroup.add(louverAbove);
   });
 
-  // 装卸区上方悬挑钢构防雨吊车梁棚 (44m 宽 x 5m 挑深 x 0.45m 厚，标高 +6.8m)
   const dockCanopy = new THREE.Mesh(
-    new THREE.BoxGeometry(44, 0.45, 5),
-    materials.galvanizedSteel
+    new THREE.BoxGeometry(44, 0.4, 5.0),
+    materials.canopyFascia
   );
-  dockCanopy.position.set(0, 6.8, -B_DEPTH / 2 - 2.5);
+  dockCanopy.position.set(0, 8.2, -B_DEPTH / 2 - 2.5);
   dockCanopy.castShadow = true;
   northLogisticsGroup.add(dockCanopy);
 
-  // 后勤检修人员防火逃生门 (北立面两侧)
-  [-28, 28].forEach((xPos) => {
-    const egressDoor = new THREE.Mesh(
-      new THREE.BoxGeometry(1.6, 2.4, 0.15),
-      materials.sandwichWallDark
-    );
-    egressDoor.position.set(xPos, 2.5, -B_DEPTH / 2 - 0.08);
-    northLogisticsGroup.add(egressDoor);
-  });
-
   buildingGroup.add(northLogisticsGroup);
 
-  // 8. 建筑屋面女儿墙 (Parapet Walls) 与金属收口压顶
+  // 7. 屋面工程：结构层、女儿墙与屋顶设备基础平台
   const roofGroup = new THREE.Group();
 
-  // 屋面底板 (Y = 16.5m)
-  const roofSlab = new THREE.Mesh(
-    new THREE.BoxGeometry(B_WIDTH - 0.8, 0.3, B_DEPTH - 0.8),
-    materials.roofDeck
+  // 屋面板 (82m x 54m x 0.4m, 标高 +16.5m)
+  const roofPlate = new THREE.Mesh(
+    new THREE.BoxGeometry(B_WIDTH, 0.4, B_DEPTH),
+    buildingRoofMat
   );
-  roofSlab.position.set(0, B_HEIGHT - 0.15, 0);
-  roofSlab.receiveShadow = true;
-  roofGroup.add(roofSlab);
+  roofPlate.position.set(0, B_HEIGHT - 0.2, 0);
+  roofPlate.receiveShadow = true;
+  roofGroup.add(roofPlate);
 
-  // 四周 1.2m 高女儿墙 (Y: 16.5m ~ 17.7m)
-  const parapetMat = materials.curtainWallLight;
-  const parapetCapMat = materials.galvanizedSteel;
+  // 四周女儿墙 (高 1.2m, 标高 16.5 ~ 17.7m)
+  const parapetMat = buildingWallMat;
 
-  // 北侧女儿墙与压顶
-  const paraNorth = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH, PARAPET_H, 0.4), parapetMat);
-  paraNorth.position.set(0, B_HEIGHT + PARAPET_H / 2, -B_DEPTH / 2 + 0.2);
-  const capNorth = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH + 0.3, 0.12, 0.55), parapetCapMat);
-  capNorth.position.set(0, B_HEIGHT + PARAPET_H + 0.06, -B_DEPTH / 2 + 0.2);
+  const parapetN = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH, PARAPET_H, 0.35), parapetMat);
+  parapetN.position.set(0, B_HEIGHT + PARAPET_H / 2, -B_DEPTH / 2 + 0.175);
+  const parapetS = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH, PARAPET_H, 0.35), parapetMat);
+  parapetS.position.set(0, B_HEIGHT + PARAPET_H / 2, B_DEPTH / 2 - 0.175);
+  const parapetW = new THREE.Mesh(new THREE.BoxGeometry(0.35, PARAPET_H, B_DEPTH), parapetMat);
+  parapetW.position.set(-B_WIDTH / 2 + 0.175, B_HEIGHT + PARAPET_H / 2, 0);
+  const parapetE = new THREE.Mesh(new THREE.BoxGeometry(0.35, PARAPET_H, B_DEPTH), parapetMat);
+  parapetE.position.set(B_WIDTH / 2 - 0.175, B_HEIGHT + PARAPET_H / 2, 0);
 
-  // 南侧女儿墙与压顶
-  const paraSouth = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH, PARAPET_H, 0.4), parapetMat);
-  paraSouth.position.set(0, B_HEIGHT + PARAPET_H / 2, B_DEPTH / 2 - 0.2);
-  const capSouth = new THREE.Mesh(new THREE.BoxGeometry(B_WIDTH + 0.3, 0.12, 0.55), parapetCapMat);
-  capSouth.position.set(0, B_HEIGHT + PARAPET_H + 0.06, B_DEPTH / 2 - 0.2);
+  roofGroup.add(parapetN, parapetS, parapetW, parapetE);
 
-  // 西侧女儿墙与压顶
-  const paraWest = new THREE.Mesh(new THREE.BoxGeometry(0.4, PARAPET_H, B_DEPTH), parapetMat);
-  paraWest.position.set(-B_WIDTH / 2 + 0.2, B_HEIGHT + PARAPET_H / 2, 0);
-  const capWest = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.12, B_DEPTH + 0.3), parapetCapMat);
-  capWest.position.set(-B_WIDTH / 2 + 0.2, B_HEIGHT + PARAPET_H + 0.06, 0);
+  // 屋面 8台 CRAH 室外换热器 / 干冷器组
+  const coolerPositions = [
+    [-26, -14], [-10, -14], [10, -14], [26, -14],
+    [-26, 14], [-10, 14], [10, 14], [26, 14],
+  ];
 
-  // 东侧女儿墙与压顶
-  const paraEast = new THREE.Mesh(new THREE.BoxGeometry(0.4, PARAPET_H, B_DEPTH), parapetMat);
-  paraEast.position.set(B_WIDTH / 2 - 0.2, B_HEIGHT + PARAPET_H / 2, 0);
-  const capEast = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.12, B_DEPTH + 0.3), parapetCapMat);
-  capEast.position.set(B_WIDTH / 2 - 0.2, B_HEIGHT + PARAPET_H + 0.06, 0);
+  coolerPositions.forEach(([cx, cz], idx) => {
+    const coolerGroup = new THREE.Group();
 
-  roofGroup.add(paraNorth, capNorth, paraSouth, capSouth, paraWest, capWest, paraEast, capEast);
-
-  // 9. 屋面构筑物：屋顶楼梯间/电梯机房与精密空调送排风小室
-  const penthouseGeo = new THREE.BoxGeometry(10, 3.2, 8);
-  const penthouse = new THREE.Mesh(penthouseGeo, materials.curtainWallLight);
-  penthouse.position.set(-18, B_HEIGHT + 1.6, -10);
-  penthouse.castShadow = true;
-  roofGroup.add(penthouse);
-
-  const penthouseCap = new THREE.Mesh(
-    new THREE.BoxGeometry(10.4, 0.2, 8.4),
-    materials.galvanizedSteel
-  );
-  penthouseCap.position.set(-18, B_HEIGHT + 3.3, -10);
-  roofGroup.add(penthouseCap);
-
-  // 10. 屋顶空调及冷却设备基座群与热工散热干冷器机组 (8 台 CRAH 冷却模块)
-  const roofEquipGroup = new THREE.Group();
-
-  const coolerXPositions = [-26, -10, 8, 24];
-  const coolerZPositions = [-12, 12];
-
-  coolerXPositions.forEach((x, cIdx) => {
-    coolerZPositions.forEach((z, rIdx) => {
-      // 混凝土减振基础 (Plinth)
-      const plinth = new THREE.Mesh(
-        new THREE.BoxGeometry(9.2, 0.6, 5.2),
-        materials.architecturalConcrete
-      );
-      plinth.position.set(x, B_HEIGHT + 0.3, z);
-      roofEquipGroup.add(plinth);
-
-      // 干冷器机组外壳 (Dry Cooler Unit)
-      const coolerBox = new THREE.Mesh(
-        new THREE.BoxGeometry(8.8, 1.8, 4.8),
-        materials.chillerBody
-      );
-      coolerBox.position.set(x, B_HEIGHT + 1.5, z);
-      coolerBox.castShadow = true;
-      coolerBox.userData = {
-        id: `ROOF-DRYCOOLER-0${cIdx * 2 + rIdx + 1}`,
-        name: `屋顶高密热交换干式冷却器 #${cIdx * 2 + rIdx + 1}`,
-        type: '屋顶散热设备',
-        system: '暖通冷却',
-        location: `屋面设备区 (X:${x.toFixed(0)}, Z:${z.toFixed(0)})`,
-        specs: '散热能力 350kW/台 · 变频EC轴流风机群 · 进出水温 37/32℃',
-        status: '正常',
-        statusType: 'success',
-        realtimeValue: '运转率 94% · 进水 34.2℃',
-      };
-      roofEquipGroup.add(coolerBox);
-
-      // 顶部轴流风机排风口圆形风筒 (4 个风机/台)
-      [-2.4, 2.4].forEach((fx) => {
-        [-1.2, 1.2].forEach((fz) => {
-          const fanGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.4, 16);
-          const fanMesh = new THREE.Mesh(fanGeo, materials.galvanizedSteel);
-          fanMesh.position.set(x + fx, B_HEIGHT + 2.6, z + fz);
-          roofEquipGroup.add(fanMesh);
-        });
-      });
-    });
-  });
-
-  // 11. 屋面金属检修步道通道与安全护栏 (连接各台干冷器与楼梯间出入口)
-  const catwalkGroup = new THREE.Group();
-
-  // 纵横向镀锌钢格板主步道 (宽 1.2m)
-  const catwalkMat = materials.galvanizedSteel;
-  const yellowRailMat = materials.safetyYellow;
-
-  // 东西向主干步道 (跨越 65m)
-  const mainWalkway = new THREE.Mesh(
-    new THREE.BoxGeometry(68, 0.15, 1.4),
-    catwalkMat
-  );
-  mainWalkway.position.set(0, B_HEIGHT + 0.15, 0);
-  catwalkGroup.add(mainWalkway);
-
-  // 两侧黄色安全护栏
-  const railNorth = new THREE.Mesh(new THREE.BoxGeometry(68, 0.9, 0.08), yellowRailMat);
-  railNorth.position.set(0, B_HEIGHT + 0.6, -0.65);
-  const railSouth = new THREE.Mesh(new THREE.BoxGeometry(68, 0.9, 0.08), yellowRailMat);
-  railSouth.position.set(0, B_HEIGHT + 0.6, 0.65);
-  catwalkGroup.add(railNorth, railSouth);
-
-  // 南北向通达每排干冷器的分支步道
-  coolerXPositions.forEach((x) => {
-    const branchWalk = new THREE.Mesh(
-      new THREE.BoxGeometry(1.4, 0.15, 26),
-      catwalkMat
+    const baseMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(9.0, 0.35, 4.2),
+      buildingConcreteMat
     );
-    branchWalk.position.set(x, B_HEIGHT + 0.15, 0);
-    catwalkGroup.add(branchWalk);
+    baseMesh.position.set(cx, B_HEIGHT + 0.175, cz);
+
+    const bodyMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(8.4, 2.0, 3.6),
+      materials.chillerBody
+    );
+    bodyMesh.position.set(cx, B_HEIGHT + 1.35, cz);
+    bodyMesh.castShadow = true;
+
+    for (let f = -3; f <= 3; f += 2) {
+      const fan = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.8, 0.8, 0.25, 16),
+        materials.galvanizedSteel
+      );
+      fan.position.set(cx + f, B_HEIGHT + 2.45, cz);
+      coolerGroup.add(fan);
+    }
+
+    coolerGroup.add(baseMesh, bodyMesh);
+    coolerGroup.userData = {
+      id: `DEV-ROOF-COOLER-0${idx + 1}`,
+      code: `COOLER-ROOF-0${idx + 1}`,
+      name: `屋顶干式冷却塔 #${idx + 1}`,
+      type: '冷凝自然冷却排热单元',
+      system: '暖通冷却',
+      location: `主机房屋面排热区 (${cx > 0 ? '东' : '西'}${cz > 0 ? '南' : '北'})`,
+      specs: '变频轴流风机组 · 换热量 850kW · 乙二醇封闭回路',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '出水温度 28.5℃ · 风机转速 65%',
+    };
+    roofGroup.add(coolerGroup);
   });
 
-  roofGroup.add(roofEquipGroup);
-  roofGroup.add(catwalkGroup);
+  // 屋面防雷接闪基站中央高台
+  const stationPlinth = new THREE.Mesh(
+    new THREE.BoxGeometry(10, 0.4, 10),
+    buildingConcreteMat
+  );
+  stationPlinth.position.set(18, B_HEIGHT + 0.2, 0);
+  roofGroup.add(stationPlinth);
+
   buildingGroup.add(roofGroup);
 
   return buildingGroup;

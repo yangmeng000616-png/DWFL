@@ -1,5 +1,6 @@
 export type LayerId =
   | 'building'
+  | 'interior'
   | 'roads'
   | 'power'
   | 'cooling'
@@ -16,7 +17,7 @@ export type LayerId =
 export interface LayerConfig {
   id: LayerId;
   name: string;
-  category: '建筑与土建' | '动力暖通' | '防雷防静电' | '辅助标注';
+  category: '建筑与土建' | '机房室内' | '动力暖通' | '防雷防静电' | '辅助标注';
   color: string;
   visible: boolean;
   transparent: boolean;
@@ -27,6 +28,9 @@ export interface LayerConfig {
 
 export type ViewPresetId =
   | 'birds_eye'
+  | 'xray_datacenter'
+  | 'interior_server_room'
+  | 'interior_duty_room'
   | 'south_entrance'
   | 'north_logistics'
   | 'east_power'
@@ -45,6 +49,7 @@ export interface ViewPreset {
   target: [number, number, number];
   description: string;
   undergroundFocus?: boolean;
+  xrayFocus?: boolean;
 }
 
 export interface EquipmentData {

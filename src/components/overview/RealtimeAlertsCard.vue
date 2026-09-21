@@ -174,9 +174,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { ShieldAlert, ArrowRight, MapPin } from 'lucide-vue-next';
 import { activeFocusHotspot, openDeviceInspection } from '@/composables/useCockpitState';
-import { enterEmergencyMode } from '@/composables/useEmergencyMode';
+
+const router = useRouter();
 
 interface AlertItem {
   id: number;
@@ -319,8 +321,8 @@ const locateAndInspect = (alert: AlertItem) => {
 };
 
 const goToDisposal = () => {
-  // Direct entry into emergency disposal workbench
-  enterEmergencyMode('ground');
+  // Navigate directly to the dedicated disposal workbench page
+  router.push('/warning');
 };
 
 const formatAlertTime = (timeStr: string) => {

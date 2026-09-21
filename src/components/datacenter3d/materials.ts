@@ -33,6 +33,15 @@ export interface MaterialLibrary {
   statusWarning: THREE.MeshStandardMaterial;
   statusOrange: THREE.MeshStandardMaterial;
   statusAlarm: THREE.MeshStandardMaterial;
+  serverRackBody: THREE.MeshStandardMaterial;
+  serverRackLeds: THREE.MeshStandardMaterial;
+  serverRackLedsGreen: THREE.MeshStandardMaterial;
+  aisleContainmentRoof: THREE.MeshStandardMaterial;
+  nocScreen: THREE.MeshStandardMaterial;
+  nocConsoleDesk: THREE.MeshStandardMaterial;
+  interiorFloor: THREE.MeshStandardMaterial;
+  interiorPartitionWall: THREE.MeshStandardMaterial;
+  upsBatteryCabinet: THREE.MeshStandardMaterial;
 }
 
 export function createMaterials(): MaterialLibrary {
@@ -266,6 +275,73 @@ export function createMaterials(): MaterialLibrary {
       color: 0xef4444,
       emissive: 0xef4444,
       emissiveIntensity: 0.9,
+    }),
+
+    // 服务器机柜本体 (42U黑色工业冷轧钢板)
+    serverRackBody: new THREE.MeshStandardMaterial({
+      color: 0x161d26,
+      metalness: 0.75,
+      roughness: 0.32,
+    }),
+
+    // 服务器运行蓝光指示灯
+    serverRackLeds: new THREE.MeshStandardMaterial({
+      color: 0x00f0ff,
+      emissive: 0x00f0ff,
+      emissiveIntensity: 1.4,
+    }),
+
+    // 服务器就绪绿光指示灯
+    serverRackLedsGreen: new THREE.MeshStandardMaterial({
+      color: 0x10b981,
+      emissive: 0x10b981,
+      emissiveIntensity: 1.2,
+    }),
+
+    // 冷通道封闭钢化玻璃顶棚与移门
+    aisleContainmentRoof: new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      metalness: 0.8,
+      roughness: 0.15,
+      transparent: true,
+      opacity: 0.55,
+    }),
+
+    // NOC值班监控大屏 (发光微曲面弧形大屏)
+    nocScreen: new THREE.MeshStandardMaterial({
+      color: 0x061e38,
+      metalness: 0.4,
+      roughness: 0.2,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.85,
+    }),
+
+    // NOC监控大厅值班调度指挥台
+    nocConsoleDesk: new THREE.MeshStandardMaterial({
+      color: 0x1c2433,
+      metalness: 0.6,
+      roughness: 0.4,
+    }),
+
+    // 机房防静电全钢架空活动地板面层
+    interiorFloor: new THREE.MeshStandardMaterial({
+      color: 0x253040,
+      metalness: 0.25,
+      roughness: 0.65,
+    }),
+
+    // 室内防火隔墙 (值班室、配电间、冷通道防火隔断)
+    interiorPartitionWall: new THREE.MeshStandardMaterial({
+      color: 0x94a3b8,
+      metalness: 0.15,
+      roughness: 0.8,
+    }),
+
+    // UPS高压直流电池柜与列头配电柜
+    upsBatteryCabinet: new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      metalness: 0.65,
+      roughness: 0.35,
     }),
   };
 }

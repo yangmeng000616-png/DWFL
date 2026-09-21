@@ -183,6 +183,57 @@ export function openDeviceInspection(deviceId: string) {
       lastCheckTime: '每周自动静态自检合格',
       desc: '采用康明斯高压重载机组与低噪声进排风消音房设计，配置24小时日用防爆储油罐与静音排烟立管。',
       recentTrends: [26.8, 26.8, 26.7, 26.8, 26.8, 26.8]
+    },
+    'DEV-NOC-SCREEN': {
+      id: 'DEV-NOC-SCREEN',
+      name: 'NOC 运维总控 8K 超高清数字孪生监控大屏',
+      code: 'NOC-SCREEN-01',
+      category: '智能化与综合运维管控系统',
+      location: '1F NOC 运营监控调度大厅主立面 (18m×3.6m 微弧大屏)',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '8K 超高刷 120Hz · 全球气象与雷电监测专线激活',
+      normalRange: 'P0.9 MicroLED · 冗余双发卡 · 双路2N市电保障',
+      healthScore: 100,
+      ipAddress: '192.168.10.10',
+      protocol: 'DVI/光纤KVM矩阵 / 毫秒级态势推流',
+      lastCheckTime: '实时运行中',
+      desc: '负责全园区电力供应、暖通冷冻循环、雷电预警放电、机房微模块环境等全系统3D数字孪生可视总控。',
+      recentTrends: [100, 100, 100, 100, 100, 100]
+    },
+    'DEV-NOC-DUTY': {
+      id: 'DEV-NOC-DUTY',
+      name: '星云计算中心 7×24小时值班调度长指挥台',
+      code: 'DUTY-DESK-01',
+      category: '运维值班调度保障席',
+      location: '1F NOC 监控大厅主指挥工位 (D-01)',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '双人双审在岗 (张工/李工) · 一级调度权限就绪',
+      normalRange: '支持一键启动应急动力切换与防雷联动',
+      healthScore: 100,
+      ipAddress: '192.168.10.12',
+      protocol: '专网IP指挥对讲 / 应急声光联动总线',
+      lastCheckTime: '当班交接完毕',
+      desc: 'NOC总值班调度席，配备专用应急调度硬按键、无线电防爆对讲专网与一键式数字孪生漫游处置终端。',
+      recentTrends: [100, 100, 100, 100, 100, 100]
+    },
+    'DEV-AISLE-01': {
+      id: 'DEV-AISLE-01',
+      name: '2F 核心算力中心 #1 冷通道微模块集群',
+      code: 'ZONE-A-AISLE-01',
+      category: '高密算力与服务器集群',
+      location: '2F 核心机房大厅 Zone-A 第 01 列冷通道',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '冷通道送风 22.2℃ · 湿度 47.8%RH · 机柜总功耗 142kW',
+      normalRange: '冷通道温控 22±2℃ · 静压差 ≥ 15Pa · 防静电接地 ≤ 1Ω',
+      healthScore: 99,
+      ipAddress: '192.168.20.11',
+      protocol: 'SNMPv3 / BACnet / 列头柜智能母线',
+      lastCheckTime: '实时遥测中',
+      desc: '双排 42U 标准高密服务器机柜封闭冷通道，具备全钢化透明防爆顶棚与平移玻璃门，配置列头智能PDU与等电位防静电铜接地排。',
+      recentTrends: [22.1, 22.3, 22.2, 22.2, 22.1, 22.2]
     }
   };
 
