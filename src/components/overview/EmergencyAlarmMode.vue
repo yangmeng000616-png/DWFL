@@ -91,25 +91,6 @@
             :allow-map-switch="true"
             @switch-to-map="switchMainView('map')"
           />
-
-          <!-- 在三维视图左下角轻量叠加当前主焦点 HUD 指引徽标 -->
-          <div v-if="focusedCard" class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
-            <div class="px-2.5 py-1 rounded-lg bg-black/85 border border-cyan-500/70 shadow-[0_0_15px_rgba(0,200,255,0.3)] backdrop-blur-md flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full" :class="getSeverityDotClass(focusedCard.severity)"></span>
-              <div class="flex flex-col">
-                <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span class="text-slate-400">当前聚焦:</span>
-                  <span class="text-cyan-300">{{ focusedCard.title }}</span>
-                  <span class="px-1 py-0.2 rounded text-[9px] font-medium" :class="getSeverityBadgeClass(focusedCard.severity)">
-                    {{ focusedCard.severityText }}
-                  </span>
-                </span>
-                <span class="text-[10.5px] text-slate-300">
-                  物理点位: <strong class="text-white">{{ focusedCard.location }}</strong> · 实时值 <strong class="text-cyan-300 font-mono">{{ focusedCard.realtimeValue }}</strong> (门限 {{ focusedCard.threshold }})
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- 视图 B：雷电活动实时地图 (保持挂载，平滑切换) -->
