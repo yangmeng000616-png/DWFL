@@ -121,9 +121,21 @@ export const VIEW_PRESETS: ViewPreset[] = [
   },
 ];
 
+export interface AlarmBeaconConfig {
+  id: string;
+  code: string;
+  title: string;
+  value: string;
+  severity: 'red' | 'orange' | 'yellow' | 'blue';
+  position: [number, number, number];
+  needsXRay?: boolean;
+  needsUnderground?: boolean;
+}
+
 export interface SceneManagerCallbacks {
   onHoverObject?: (userData: any | null, mouseEvent: MouseEvent) => void;
   onClickObject?: (userData: any | null) => void;
+  onClickAlarm?: (alarmId: string) => void;
 }
 
 export class DatacenterSceneManager {
@@ -142,6 +154,9 @@ export class DatacenterSceneManager {
   // Highlight pulse ring
   private highlightRing: THREE.Mesh | null = null;
   private activeFocusObject: THREE.Object3D | null = null;
+
+  // 3D Spatial Alarm Beacons Group
+  private alarmMarkersGroup = new THREE.Group();
 
   // Lightning effect elements
   private lightningBolts: THREE.Line[] = [];
@@ -302,6 +317,192 @@ export class DatacenterSceneManager {
     this.scene.add(gl.spdGroup);
     this.scene.add(gl.esdGroup);
     this.scene.add(gl.sensorsGroup);
+
+    // 7. 3D Spatial Alarm Beacons Group
+    this.alarmMarkersGroup.name = 'Layer_alarms';
+    this.scene.add(this.alarmMarkersGroup);
+    this.initDefaultAlarmBeacons();
+  }
+
+  public setHighlightColor(colorHex: number) {
+    if (this.highlightRing && this.highlightRing.material) {
+      (this.highlightRing.material as THREE.MeshBasicMaterial).color.setHex(colorHex);
+    }
+  }
+
+  public initDefaultAlarmBeacons() {
+    this.setAlarmBeacons([
+      {
+        id: 'ground',
+        code: 'DEV-GND-001',
+        title: '地网阻抗超标',
+        value: '阻抗 0.88 Ω (+10%)',
+        severity: 'orange',
+        position: [-38, 0.2, 38],
+        needsUnderground: true,
+        needsXRay: true,
+      },
+      {
+        id: 'spd',
+        code: 'DEV-SPD-004',
+        title: '2F低压母线SPD漏电微变',
+        value: '漏电流 0.28 mA',
+        severity: 'yellow',
+        position: [18, 6.8, -10],
+        needsXRay: true,
+      },
+      {
+        id: 'lightning',
+        code: 'DEV-ENV-001',
+        title: '天面12号接闪塔电场突变',
+        value: '空间电场 38.6 kV/m',
+        severity: 'blue',
+        position: [-8, 18.2, 0],
+      },
+    ]);
+  }
+
+  public setAlarmBeacons(alarms: AlarmBeaconConfig[]) {
+    // Clear previous alarm markers
+    while (this.alarmMarkersGroup.children.length > 0) {
+      const child = this.alarmMarkersGroup.children[0];
+      this.alarmMarkersGroup.remove(child);
+      child.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Sprite) {
+          obj.geometry?.dispose();
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach((m) => m.dispose());
+          } else {
+            obj.material?.dispose();
+          }
+        }
+      });
+    }
+
+    alarms.forEach((alarm) => {
+      const group = new THREE.Group();
+      group.name = `AlarmBeacon_${alarm.id}`;
+      group.position.set(...alarm.position);
+      group.userData = {
+        isAlarmBeacon: true,
+        alarmId: alarm.id,
+        code: alarm.code,
+        title: alarm.title,
+        value: alarm.value,
+        baseY: alarm.position[1] + 2.8,
+      };
+
+      const colorHex =
+        alarm.severity === 'red'
+          ? 0xef4444
+          : alarm.severity === 'orange'
+          ? 0xf59e0b
+          : alarm.severity === 'yellow'
+          ? 0xeab308
+          : 0x06b6d4;
+
+      // 1. Vertical translucent pulsing beam
+      const colGeo = new THREE.CylinderGeometry(0.12, 0.4, 3.2, 16);
+      const colMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.45,
+        depthWrite: false,
+      });
+      const colMesh = new THREE.Mesh(colGeo, colMat);
+      colMesh.position.y = 1.6;
+      colMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(colMesh);
+
+      // 2. Base pulse ring
+      const pulseGeo = new THREE.RingGeometry(0.8, 1.25, 24);
+      const pulseMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+      const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
+      pulseMesh.name = 'pulseRing';
+      pulseMesh.rotation.x = -Math.PI / 2;
+      pulseMesh.position.y = 0.08;
+      pulseMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(pulseMesh);
+
+      // 3. Central floating Diamond beacon
+      const diamondGeo = new THREE.OctahedronGeometry(0.55, 0);
+      const diamondMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+      });
+      const diamondMesh = new THREE.Mesh(diamondGeo, diamondMat);
+      diamondMesh.name = 'diamondMesh';
+      diamondMesh.position.y = 3.2;
+      diamondMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(diamondMesh);
+
+      // 4. Sprite Billboard
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 110;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle =
+          alarm.severity === 'orange'
+            ? 'rgba(45, 20, 5, 0.90)'
+            : alarm.severity === 'yellow'
+            ? 'rgba(42, 32, 5, 0.90)'
+            : 'rgba(8, 30, 60, 0.90)';
+        ctx.strokeStyle =
+          alarm.severity === 'orange'
+            ? '#f59e0b'
+            : alarm.severity === 'yellow'
+            ? '#eab308'
+            : '#00f0ff';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        if (typeof ctx.roundRect === 'function') {
+          ctx.roundRect(6, 6, 388, 98, 16);
+        } else {
+          ctx.rect(6, 6, 388, 98);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px sans-serif';
+        const sevText =
+          alarm.severity === 'orange'
+            ? '【二级高危】'
+            : alarm.severity === 'yellow'
+            ? '【三级关注】'
+            : '【四级提示】';
+        ctx.fillText(`${sevText} ${alarm.code}`, 18, 42);
+
+        ctx.fillStyle =
+          alarm.severity === 'orange'
+            ? '#fcd34d'
+            : alarm.severity === 'yellow'
+            ? '#fef08a'
+            : '#67e8f9';
+        ctx.font = 'bold 22px monospace';
+        ctx.fillText(alarm.value, 18, 80);
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMat = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+      });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.name = 'alarmSprite';
+      sprite.scale.set(10, 2.8, 1);
+      sprite.position.y = 4.8;
+      sprite.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(sprite);
+
+      this.alarmMarkersGroup.add(group);
+    });
   }
 
   private setupHighlightIndicator() {
@@ -365,7 +566,7 @@ export class DatacenterSceneManager {
 
     const interactiveObjects: THREE.Object3D[] = [];
     this.scene.traverse((obj) => {
-      if (obj.userData && obj.userData.name && obj.visible) {
+      if (obj.userData && (obj.userData.name || obj.userData.isAlarmBeacon) && obj.visible) {
         interactiveObjects.push(obj);
       }
     });
@@ -374,11 +575,11 @@ export class DatacenterSceneManager {
 
     if (intersects.length > 0) {
       let targetObj: THREE.Object3D | null = intersects[0].object;
-      while (targetObj && (!targetObj.userData || !targetObj.userData.name)) {
+      while (targetObj && (!targetObj.userData || (!targetObj.userData.name && !targetObj.userData.isAlarmBeacon))) {
         targetObj = targetObj.parent;
       }
 
-      if (targetObj && targetObj.userData && targetObj.userData.name) {
+      if (targetObj && targetObj.userData && (targetObj.userData.name || targetObj.userData.isAlarmBeacon)) {
         this.renderer.domElement.style.cursor = 'pointer';
         if (this.callbacks.onHoverObject) {
           this.callbacks.onHoverObject(targetObj.userData, e);
@@ -401,7 +602,7 @@ export class DatacenterSceneManager {
 
     const interactiveObjects: THREE.Object3D[] = [];
     this.scene.traverse((obj) => {
-      if (obj.userData && obj.userData.name && obj.visible) {
+      if (obj.userData && (obj.userData.name || obj.userData.isAlarmBeacon) && obj.visible) {
         interactiveObjects.push(obj);
       }
     });
@@ -410,14 +611,27 @@ export class DatacenterSceneManager {
 
     if (intersects.length > 0) {
       let targetObj: THREE.Object3D | null = intersects[0].object;
-      while (targetObj && (!targetObj.userData || !targetObj.userData.name)) {
+      while (targetObj && (!targetObj.userData || (!targetObj.userData.name && !targetObj.userData.isAlarmBeacon))) {
         targetObj = targetObj.parent;
       }
 
-      if (targetObj && targetObj.userData && targetObj.userData.name) {
-        this.focusOnObject(targetObj);
-        if (this.callbacks.onClickObject) {
-          this.callbacks.onClickObject(targetObj.userData);
+      if (targetObj && targetObj.userData) {
+        if (targetObj.userData.isAlarmBeacon && targetObj.userData.alarmId) {
+          const alarmRes = this.focusByAlarmId(targetObj.userData.alarmId);
+          if (this.callbacks.onClickAlarm) {
+            this.callbacks.onClickAlarm(targetObj.userData.alarmId);
+          }
+          if (alarmRes.userData && this.callbacks.onClickObject) {
+            this.callbacks.onClickObject(alarmRes.userData);
+          }
+          return;
+        }
+
+        if (targetObj.userData.name) {
+          this.focusOnObject(targetObj);
+          if (this.callbacks.onClickObject) {
+            this.callbacks.onClickObject(targetObj.userData);
+          }
         }
       }
     }
@@ -445,7 +659,144 @@ export class DatacenterSceneManager {
     );
   }
 
+  public focusByAlarmId(alarmId: string): { found: boolean; userData?: any } {
+    if (alarmId === 'ground' || alarmId === 'DEV-GND-001' || alarmId === 'ground_res') {
+      this.setLayerVisibility('underground', true);
+      this.setLayerVisibility('grounding', true);
+      this.setBuildingXRay(true);
+      this.controls.maxPolarAngle = Math.PI * 0.72;
+      this.setHighlightColor(0xf59e0b);
+      this.flyTo(
+        new THREE.Vector3(-18, 16, 56),
+        new THREE.Vector3(-38, 0.2, 38),
+        1200
+      );
+      if (this.highlightRing) {
+        this.highlightRing.position.set(-38, 0.25, 38);
+        this.highlightRing.visible = true;
+      }
+      return {
+        found: true,
+        userData: {
+          id: 'ground_res',
+          code: 'DEV-GND-001',
+          name: '园区室外 -1F 人工地网基准测试井 (GW-01#)',
+          type: '联合接地电网基准测试井',
+          system: '接地网',
+          location: '园区地下 -1F 人工地网基准测试井 (标高 -4.2m)',
+          status: '预警',
+          statusType: 'orange',
+          realtimeValue: '0.88 Ω (设计限值 ≤ 0.80 Ω · 国标 ≤ 1.0 Ω)',
+          threshold: '≤ 0.80 Ω',
+          specs: '四极交流异频抗干扰注入法 · 紫铜热熔焊网格',
+          desc: '地网接地阻抗持续微变超限，地网均压差扩大，遇直接雷或感应雷击时可能引发反击过电压。',
+        },
+      };
+    } else if (alarmId === 'spd' || alarmId === 'DEV-SPD-004' || alarmId === 'spd_terminal') {
+      this.setBuildingXRay(true);
+      this.setLayerVisibility('interior', true);
+      this.setLayerVisibility('spd', true);
+      this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      this.setHighlightColor(0xeab308);
+      this.flyTo(
+        new THREE.Vector3(30, 15, 2),
+        new THREE.Vector3(18, 7.2, -10),
+        1200
+      );
+      if (this.highlightRing) {
+        this.highlightRing.position.set(18, 5.8, -10);
+        this.highlightRing.visible = true;
+      }
+      return {
+        found: true,
+        userData: {
+          id: 'spd_terminal',
+          code: 'DEV-SPD-004',
+          name: '2F动力配电室低压母线二级SPD监测终端 (SPD-04#)',
+          type: '电源配电二级浪涌监测',
+          system: '浪涌保护SPD',
+          location: '2F 数据机房动力配电室低压母线柜 A-02',
+          status: '关注',
+          statusType: 'warning',
+          realtimeValue: '漏电流 0.28 mA · 动作累计 12次',
+          threshold: '≤ 0.20 mA',
+          specs: '冲击电流 Imax 80kA · 氧化锌高能压敏阀片 · CAN-Bus总线',
+          desc: 'SPD内部氧化锌阀片进入早期微劣化阶段，漏电微安增加，建议红外巡视并在维保窗口更换。',
+        },
+      };
+    } else if (alarmId === 'lightning' || alarmId === 'atmospheric' || alarmId === 'DEV-ENV-001') {
+      this.setBuildingXRay(false);
+      this.setLayerVisibility('lightning', true);
+      this.setHighlightColor(0x06b6d4);
+      this.flyTo(
+        new THREE.Vector3(12, 28, 24),
+        new THREE.Vector3(-8, 19, 0),
+        1200
+      );
+      if (this.highlightRing) {
+        this.highlightRing.position.set(-8, 17.8, 0);
+        this.highlightRing.visible = true;
+      }
+      return {
+        found: true,
+        userData: {
+          id: 'atmospheric',
+          code: 'DEV-ENV-001',
+          name: '天面大气电场动态监测探针 (AEFM-01)',
+          type: '空间电场监测探针',
+          system: '防雷接闪',
+          location: '科研楼天面 12号主动接闪塔顶端 (标高 +48.5m)',
+          status: '关注',
+          statusType: 'info',
+          realtimeValue: '38.6 kV/m (雷暴云前沿)',
+          threshold: '≤ 25.0 kV/m',
+          specs: '动态范围 ±50kV/m · 采样率 1000Hz · Modbus-TCP光纤环网',
+          desc: '探测到上方对流层雷云强电荷集聚，大气电场迅速畸变，预计30分钟内有强对流雷闪可能。',
+        },
+      };
+    } else if (alarmId === 'esd' || alarmId === 'DEV-ESD-008' || alarmId === 'esd_terminal' || alarmId === 'esd_channel') {
+      this.setBuildingXRay(true);
+      this.setLayerVisibility('interior', true);
+      this.setHighlightColor(0x06b6d4);
+      this.flyTo(
+        new THREE.Vector3(6, 11, 14),
+        new THREE.Vector3(0, 6.9, 0),
+        1200
+      );
+      if (this.highlightRing) {
+        this.highlightRing.position.set(0, 5.7, 0);
+        this.highlightRing.visible = true;
+      }
+      return {
+        found: true,
+        userData: {
+          id: 'esd_terminal',
+          code: 'DEV-ESD-008',
+          name: '微环境静电综合监测终端 (ESD-MON)',
+          type: '机房防静电微环境',
+          system: '防静电ESD',
+          location: '2F 核心算力机房 A01-A16 列冷通道',
+          status: '正常',
+          statusType: 'success',
+          realtimeValue: '0.72 MΩ (人员残存电压 < 25V)',
+          threshold: '≤ 1.00 MΩ',
+          specs: '防静电耗散地板 · 等电位铜排 · Zigbee无线网',
+          desc: '核心服务器通道防静电接地阻抗稳定，在控无威胁。',
+        },
+      };
+    }
+    return { found: false };
+  }
+
   public focusByEquipmentId(id: string): boolean {
+    const alarmCheck = this.focusByAlarmId(id);
+    if (alarmCheck.found) {
+      if (alarmCheck.userData && this.callbacks.onClickObject) {
+        this.callbacks.onClickObject(alarmCheck.userData);
+      }
+      return true;
+    }
+
     let found: THREE.Object3D | null = null;
     this.scene.traverse((obj) => {
       if (
@@ -458,6 +809,9 @@ export class DatacenterSceneManager {
 
     if (found) {
       this.focusOnObject(found);
+      if (this.callbacks.onClickObject) {
+        this.callbacks.onClickObject((found as THREE.Object3D).userData);
+      }
       return true;
     }
     return false;
@@ -634,6 +988,30 @@ export class DatacenterSceneManager {
     if (this.highlightRing && this.highlightRing.visible) {
       const scale = 1 + Math.sin(time * 0.005) * 0.15;
       this.highlightRing.scale.set(scale, scale, scale);
+    }
+
+    // Animate 3D Spatial Alarm Beacons
+    if (this.alarmMarkersGroup && this.alarmMarkersGroup.visible) {
+      this.alarmMarkersGroup.children.forEach((group) => {
+        const ring = group.getObjectByName('pulseRing');
+        if (ring) {
+          const ringScale = 1 + ((time * 0.0015) % 1) * 1.5;
+          ring.scale.set(ringScale, ringScale, ringScale);
+          const mat = (ring as THREE.Mesh).material as THREE.MeshBasicMaterial;
+          if (mat) {
+            mat.opacity = Math.max(0, 0.85 - ((time * 0.0015) % 1) * 0.85);
+          }
+        }
+        const diamond = group.getObjectByName('diamondMesh');
+        if (diamond) {
+          diamond.rotation.y = time * 0.002;
+          diamond.position.y = 3.2 + Math.sin(time * 0.004) * 0.25;
+        }
+        const sprite = group.getObjectByName('alarmSprite');
+        if (sprite) {
+          sprite.position.y = 4.8 + Math.sin(time * 0.003) * 0.15;
+        }
+      });
     }
 
     this.controls.update();

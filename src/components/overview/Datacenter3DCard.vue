@@ -169,6 +169,47 @@
       <!-- Canvas Mount Container -->
       <div ref="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
 
+      <!-- 3D 空间告警即时联动定位栏 (Top Center Overlay) -->
+      <div class="absolute top-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-[#071938]/95 px-2.5 py-1 rounded-full border border-cyan-500/50 backdrop-blur-md shadow-2xl max-w-[96%] overflow-x-auto no-scrollbar">
+        <div class="flex items-center gap-1 text-[10px] text-cyan-300 font-bold px-1 whitespace-nowrap">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <span>告警透视联动:</span>
+        </div>
+
+        <!-- 告警 1: 地网阻抗 -->
+        <button
+          @click="focusAlarm('ground')"
+          class="px-2.5 py-0.8 rounded-full text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+          :class="currentFocusedAlarmId === 'ground' ? 'bg-amber-500 text-slate-950 font-bold shadow-[0_0_10px_rgba(245,158,11,0.6)] ring-1 ring-white' : 'bg-amber-950/80 hover:bg-amber-900/90 text-amber-200 border border-amber-500/50'"
+          title="一键透视地下-1F地网，定位超标测试井 GW-01#"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          <span>[二级] -1F地网 0.88Ω</span>
+        </button>
+
+        <!-- 告警 2: 2F SPD 漏电 -->
+        <button
+          @click="focusAlarm('spd')"
+          class="px-2.5 py-0.8 rounded-full text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+          :class="currentFocusedAlarmId === 'spd' ? 'bg-yellow-400 text-slate-950 font-bold shadow-[0_0_10px_rgba(234,179,8,0.6)] ring-1 ring-white' : 'bg-yellow-950/80 hover:bg-yellow-900/90 text-yellow-200 border border-yellow-500/50'"
+          title="一键透视2F动力配电室，定位低压柜SPD-04#"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+          <span>[三级] 2F母线SPD 0.28mA</span>
+        </button>
+
+        <!-- 告警 3: 天面大气电场 -->
+        <button
+          @click="focusAlarm('lightning')"
+          class="px-2.5 py-0.8 rounded-full text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+          :class="currentFocusedAlarmId === 'lightning' ? 'bg-cyan-500 text-slate-950 font-bold shadow-[0_0_10px_rgba(6,182,212,0.6)] ring-1 ring-white' : 'bg-cyan-950/80 hover:bg-cyan-900/90 text-cyan-200 border border-cyan-500/50'"
+          title="一键视角推至屋面12号接闪塔探针"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          <span>[四级] 天面探针 38.6kV/m</span>
+        </button>
+      </div>
+
       <!-- Quick Preset Buttons Pill Overlay (Bottom Center of 3D Scene) -->
       <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-[#071d3e]/90 p-1 rounded-full border border-cyan-500/40 backdrop-blur-md shadow-lg shadow-black/60 overflow-x-auto max-w-[95%]">
         <button
@@ -441,6 +482,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'switch-to-map'): void;
+  (e: 'select-alarm', alarmId: string): void;
 }>();
 
 // Template Refs & Scene Instances
@@ -454,6 +496,7 @@ const isXRayEnabled = ref(false);
 const isPatrolling = ref(false);
 const isLightningFiring = ref(false);
 const activePresetId = ref<ViewPresetId>('birds_eye');
+const currentFocusedAlarmId = ref<string>(props.focusedAlarmId || 'ground');
 
 const hoveredObject = ref<any | null>(null);
 const selectedDevice = ref<any | null>(null);
@@ -615,54 +658,36 @@ function openGlobalDetail() {
   }
 }
 
-// Watch bidirectional focus alarms
+function focusAlarm(alarmId: string) {
+  currentFocusedAlarmId.value = alarmId;
+  emit('select-alarm', alarmId);
+
+  if (alarmId === 'ground' || alarmId === 'DEV-GND-001' || alarmId === 'ground_res') {
+    isXRayEnabled.value = true;
+    activePresetId.value = 'underground_grid';
+  } else if (alarmId === 'spd' || alarmId === 'DEV-SPD-004' || alarmId === 'spd_terminal') {
+    isXRayEnabled.value = true;
+    activePresetId.value = 'interior_server_room';
+  } else if (alarmId === 'lightning' || alarmId === 'atmospheric' || alarmId === 'DEV-ENV-001') {
+    activePresetId.value = 'roof_lightning';
+  }
+
+  if (sceneManager) {
+    const res = sceneManager.focusByAlarmId(alarmId);
+    if (res.userData) {
+      selectedDevice.value = res.userData;
+    }
+  }
+}
+
+// Watch bidirectional focus alarms from parent
 watch(
   () => props.focusedAlarmId,
   (newId) => {
-    if (!newId || !sceneManager) return;
-
-    if (newId === 'spd') {
-      sceneManager.focusByEquipmentId('spd_terminal');
-      selectedDevice.value = {
-        id: 'spd_terminal',
-        code: 'DEV-SPD-004',
-        name: '智能浪涌保护器SPD监测终端 (SPD-04)',
-        type: '电源配电二级浪涌监测',
-        system: '浪涌保护SPD',
-        location: '2F 数据机房动力配电室低压柜 A-02',
-        status: '关注',
-        statusType: 'warning',
-        realtimeValue: '漏电流 0.18 mA · 动作累计 12次',
-        specs: '冲击电流 Iimp 25kA · 漏电流监测 · CAN-Bus',
-      };
-    } else if (newId === 'ground') {
-      sceneManager.focusByEquipmentId('ground_res');
-      selectedDevice.value = {
-        id: 'ground_res',
-        code: 'DEV-GND-001',
-        name: '地网电阻在线监测终端 (GW-01#)',
-        type: '联合接地电网基准测试井',
-        system: '接地网',
-        location: '园区室外 -1F 人工地网基准测试井',
-        status: '正常',
-        statusType: 'success',
-        realtimeValue: '0.52 Ω (国标 ≤ 1.0 Ω)',
-        specs: '四极交流异频抗干扰注入法 · 测量范围 0.001~100Ω',
-      };
-    } else if (newId === 'lightning') {
-      sceneManager.focusByEquipmentId('atmospheric');
-      selectedDevice.value = {
-        id: 'atmospheric',
-        code: 'DEV-ENV-001',
-        name: '大气电场仪 (AEFM-01)',
-        type: '空间电场监测',
-        system: '防雷接闪',
-        location: '主建筑屋面 12号接闪塔顶端',
-        status: '正常',
-        statusType: 'success',
-        realtimeValue: '12.4 kV/m (正常阈值 ±15.0 kV/m)',
-        specs: '动态范围 ±50kV/m · 采样率 1000Hz · Modbus-TCP',
-      };
+    if (!newId) return;
+    currentFocusedAlarmId.value = newId;
+    if (sceneManager) {
+      focusAlarm(newId);
     }
   },
   { immediate: true }
@@ -690,20 +715,16 @@ onMounted(() => {
           openDeviceInspection(userData.id);
         }
       },
+      onClickAlarm: (alarmId) => {
+        focusAlarm(alarmId);
+      },
     });
 
-    // If there is an initial focused alarm, handle it
-    if (props.focusedAlarmId) {
-      setTimeout(() => {
-        if (props.focusedAlarmId === 'spd') {
-          sceneManager?.focusByEquipmentId('spd_terminal');
-        } else if (props.focusedAlarmId === 'ground') {
-          sceneManager?.focusByEquipmentId('ground_res');
-        } else if (props.focusedAlarmId === 'lightning') {
-          sceneManager?.focusByEquipmentId('atmospheric');
-        }
-      }, 500);
-    }
+    // Handle initial alarm or preset focus
+    const initialTarget = props.focusedAlarmId || 'ground';
+    setTimeout(() => {
+      focusAlarm(initialTarget);
+    }, 600);
   }
 });
 

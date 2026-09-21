@@ -16,15 +16,37 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons & Mode Switcher -->
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- 3D 联动与纯清单模式切换 Pill -->
+        <div class="flex items-center bg-[#071c3e] p-0.5 rounded-lg border border-cyan-500/40">
+          <button
+            @click="viewMode = '3d'"
+            class="px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+            :class="viewMode === '3d' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold shadow-[0_0_8px_rgba(6,182,212,0.5)]' : 'text-slate-300 hover:text-white'"
+            title="展示机房三维数字孪生告警空间定位与透视"
+          >
+            <Box class="w-3.5 h-3.5 text-cyan-300" />
+            <span>三维孪生联动</span>
+          </button>
+          <button
+            @click="viewMode = 'list'"
+            class="px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+            :class="viewMode === 'list' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold shadow-[0_0_8px_rgba(6,182,212,0.5)]' : 'text-slate-300 hover:text-white'"
+            title="切换为大屏纯表格清单排障模式"
+          >
+            <FileText class="w-3.5 h-3.5 text-slate-300" />
+            <span>纯清单工作台</span>
+          </button>
+        </div>
+
         <button
           @click="openEmergency3D"
           class="px-3 py-1.5 rounded-lg bg-[#0e3b7a] hover:bg-[#154fa0] border border-cyan-500/50 text-cyan-200 text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
           title="切换至全屏三维数字孪生应急处置工作台"
         >
           <Layers class="w-3.5 h-3.5 text-cyan-300" />
-          <span>全屏三维应急孪生</span>
+          <span>全屏应急孪生</span>
         </button>
 
         <button
@@ -74,12 +96,12 @@
       </div>
     </div>
 
-    <!-- 3. 主体工作台：左侧 38% 具体告警列表与雷达微视窗；右侧 62% 设备详情与闭环处置工作台 -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-[560px]">
+    <!-- 3. 主体工作台：支持三维孪生联动与纯清单排障双模式 -->
+    <div class="grid grid-cols-1 gap-3 flex-1 min-h-[580px]" :class="viewMode === '3d' ? 'xl:grid-cols-12' : 'lg:grid-cols-12'">
       <!-- ==================================================== -->
-      <!-- 左列 (5/12 列)：待处置具体告警列表 + 雷达测距微模块 -->
+      <!-- 左列：待处置具体告警列表 + 雷达测距微模块 -->
       <!-- ==================================================== -->
-      <div class="lg:col-span-5 flex flex-col gap-2.5 min-w-0">
+      <div :class="viewMode === '3d' ? 'xl:col-span-3 lg:col-span-4 flex flex-col gap-2.5 min-w-0' : 'lg:col-span-5 flex flex-col gap-2.5 min-w-0'">
         <!-- 告警紧凑分类卡片列表 -->
         <div class="tech-panel rounded-xl p-3 flex flex-col flex-1 border border-[#1b4382]/80 shadow-md min-h-[300px]">
           <div class="flex items-center justify-between pb-2 border-b border-[#184682]/60 flex-shrink-0">
@@ -228,9 +250,19 @@
       </div>
 
       <!-- ==================================================== -->
-      <!-- 右列 (7/12 列)：设备专属深度处置工作台 (压缩重复信息，留给设备详情) -->
+      <!-- 中列：机房三维数字孪生告警空间透视底座 (仅在 3D 联动模式渲染) -->
       <!-- ==================================================== -->
-      <div class="lg:col-span-7 flex flex-col gap-2 min-w-0">
+      <div v-if="viewMode === '3d'" class="xl:col-span-5 lg:col-span-8 flex flex-col min-w-0 h-full min-h-[500px]">
+        <Datacenter3DCard
+          :focused-alarm-id="selectedAlertId"
+          @select-alarm="handle3DSelectAlarm"
+        />
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- 右列：设备专属深度闭环处置工作台 -->
+      <!-- ==================================================== -->
+      <div :class="viewMode === '3d' ? 'xl:col-span-4 lg:col-span-12 flex flex-col gap-2 min-w-0' : 'lg:col-span-7 flex flex-col gap-2 min-w-0'">
         <div
           v-if="activeAlert"
           class="tech-panel rounded-xl p-3 flex flex-col justify-between flex-1 border border-[#1b4382]/80 shadow-lg gap-2.5 overflow-hidden"
@@ -494,12 +526,15 @@ import {
   Eye,
   Send,
   Check,
-  RotateCcw
+  RotateCcw,
+  Box
 } from 'lucide-vue-next';
+import Datacenter3DCard from '@/components/overview/Datacenter3DCard.vue';
 import { enterEmergencyMode } from '@/composables/useEmergencyMode';
 import { activeFocusHotspot, openDeviceInspection } from '@/composables/useCockpitState';
 
 const router = useRouter();
+const viewMode = ref<'3d' | 'list'>('3d');
 const feedbackNotice = ref('');
 const filterStatus = ref<'all' | 'active' | 'resolved'>('all');
 const selectedAlertId = ref<string>('ground');
@@ -846,10 +881,34 @@ function openEmergency3D() {
   router.push('/overview');
 }
 
+function handle3DSelectAlarm(alarmId: string) {
+  const match = currentAlerts.value.find(
+    (a) =>
+      a.id === alarmId ||
+      a.deviceId === alarmId ||
+      a.deviceCode === alarmId ||
+      (alarmId === 'ground' && a.id === 'ground') ||
+      (alarmId === 'spd' && a.id === 'spd') ||
+      (alarmId === 'lightning' && a.id === 'lightning')
+  );
+  if (match) {
+    selectedAlertId.value = match.id;
+  }
+}
+
 function viewDeviceIn3D(deviceId: string) {
+  viewMode.value = '3d';
+  const match = currentAlerts.value.find(
+    (a) => a.id === deviceId || a.deviceId === deviceId || a.deviceCode === deviceId
+  );
+  if (match) {
+    selectedAlertId.value = match.id;
+  }
   activeFocusHotspot.value = deviceId;
-  openDeviceInspection(deviceId);
-  router.push('/overview');
+  feedbackNotice.value = `已在中央三维数字孪生底座中聚焦【${activeAlert.value.deviceName}】，并智能启用对应区域透视！`;
+  setTimeout(() => {
+    feedbackNotice.value = '';
+  }, 4500);
 }
 
 function triggerDefenseTest() {

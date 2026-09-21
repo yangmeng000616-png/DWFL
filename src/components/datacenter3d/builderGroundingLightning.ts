@@ -434,6 +434,19 @@ export function buildGroundingAndLightning(materials: MaterialLibrary): Groundin
       value: '漏电流 0.05 mA · 动作累计 0次',
       threshold: '0.15 mA',
     },
+    {
+      id: 'spd_terminal',
+      code: 'DEV-SPD-004',
+      name: '2F动力配电室低压母线二级SPD监测终端 (SPD-04#)',
+      x: 18,
+      y: 7.2,
+      z: -10,
+      loc: '2F 数据机房动力配电室低压母线柜 A-02',
+      status: '关注',
+      statusType: 'warning' as const,
+      value: '漏电流 0.28 mA · 动作累计 12次',
+      threshold: '0.20 mA',
+    },
   ];
 
   spdConfigs.forEach((cfg) => {

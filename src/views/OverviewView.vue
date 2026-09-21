@@ -21,7 +21,7 @@
 
         <!-- Center Column: 机房三维态势图 (常态保持三维数字孪生，右侧专列雷电活动地图) -->
         <div class="flex flex-col min-w-0">
-          <Datacenter3DCard />
+          <Datacenter3DCard :focused-alarm-id="activeFocusedAlarmId" />
         </div>
 
         <!-- Right Column: 实时预警信息 + 雷电活动实时地图 -->
@@ -93,6 +93,7 @@ import {
   isEmergencyMode,
   enterEmergencyMode
 } from '@/composables/useEmergencyMode';
+import { activeFocusedAlarmId } from '@/composables/useCockpitState';
 
 import EmergencyAlarmMode from '@/components/overview/EmergencyAlarmMode.vue';
 import KpiCards from '@/components/overview/KpiCards.vue';

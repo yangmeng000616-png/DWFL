@@ -176,7 +176,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ShieldAlert, ArrowRight, MapPin } from 'lucide-vue-next';
-import { activeFocusHotspot, openDeviceInspection } from '@/composables/useCockpitState';
+import { activeFocusHotspot, activeFocusedAlarmId, openDeviceInspection } from '@/composables/useCockpitState';
 
 const router = useRouter();
 
@@ -317,6 +317,7 @@ onUnmounted(() => {
 const locateAndInspect = (alert: AlertItem) => {
   selectedAlertId.value = alert.id;
   activeFocusHotspot.value = alert.deviceId;
+  activeFocusedAlarmId.value = alert.scenarioKey || alert.deviceId;
   openDeviceInspection(alert.deviceId);
 };
 

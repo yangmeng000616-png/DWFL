@@ -19,6 +19,7 @@ export interface CockpitDeviceDetail {
 }
 
 export const activeFocusHotspot = ref<string | null>(null);
+export const activeFocusedAlarmId = ref<string>('ground');
 export const activeInspectionDevice = ref<CockpitDeviceDetail | null>(null);
 export const simulatedLightningActive = ref<boolean>(false);
 
