@@ -25,11 +25,11 @@
         </div>
 
         <!-- Right Column: 实时预警信息 + 雷电活动实时地图 -->
-        <div class="flex flex-col gap-2.5 min-w-0">
-          <div class="h-[190px] flex-shrink-0">
+        <div class="flex flex-col gap-2 min-w-0">
+          <div class="h-[215px] flex-shrink-0">
             <RealtimeAlertsCard />
           </div>
-          <div class="flex-1 min-h-[220px]">
+          <div class="flex-1 min-h-[200px]">
             <LightningMapCard />
           </div>
         </div>

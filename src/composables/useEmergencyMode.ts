@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 
-export type AlarmSeverity = 'orange' | 'red' | 'yellow';
+export type AlarmSeverity = 'red' | 'orange' | 'yellow' | 'blue';
 
 export interface EmergencyScenario {
   id: string;
@@ -20,7 +20,7 @@ export interface EmergencyScenario {
   durationSeconds: number;
   historyCount: number;
   riskNotice: string;
-  category: 'ground' | 'spd' | 'lightning';
+  category: 'ground' | 'spd' | 'lightning' | 'power';
 }
 
 export const SCENARIOS: Record<string, EmergencyScenario> = {
@@ -29,7 +29,7 @@ export const SCENARIOS: Record<string, EmergencyScenario> = {
     title: '园区人工地网基准测试井接地阻抗超限',
     subNotice: '接地阻抗持续抬升，超出安全控制线。',
     severity: 'orange',
-    severityText: '橙色告警 (二级)',
+    severityText: '二级高危预警',
     deviceCode: 'GW-01# (DEV-GND-001)',
     deviceName: '地网电阻在线监测终端 (GND-NET)',
     location: '园区地下 -1F 人工地网基准测试井 (标高 -4.2m)',
@@ -46,42 +46,42 @@ export const SCENARIOS: Record<string, EmergencyScenario> = {
   },
   spd: {
     id: 'spd',
-    title: '2F动力配电室二级SPD漏电流超标且热敏预动',
-    subNotice: '压敏电阻泄漏电流劣化剧增，内部热敏脱扣预警。',
-    severity: 'red',
-    severityText: '红色严重告警 (一级)',
+    title: '2F动力配电室二级SPD漏电流超标',
+    subNotice: '压敏电阻泄漏电流轻度劣化，触发预防性排查。',
+    severity: 'yellow',
+    severityText: '三级关注预警',
     deviceCode: 'SPD-04# (DEV-SPD-004)',
     deviceName: '智能浪涌保护器监测终端 (SPD-M)',
     location: '2F 数据机房动力配电室低压母线柜 A-02',
     realtimeValue: '0.28 mA',
     threshold: '0.20 mA',
-    overValue: '+0.08 mA (劣化超阈值 40%)',
-    trendDesc: '压敏电阻阻抗骤降，伴随腔体温升 +8.5℃',
+    overValue: '+0.08 mA (超阈值 40%)',
+    trendDesc: '压敏电阻轻微发热，处于早期衰减期',
     unit: 'mA',
     alarmTime: '15:41:05',
     durationSeconds: 91,
     historyCount: 1,
-    riskNotice: 'SPD内部氧化锌阀片已进入雪崩衰老区，如遭遇后续雷暴波将失去泄流防护能力，严重时有电弧自燃短路风险，必须紧急断路更替或旁路投切！',
+    riskNotice: 'SPD内部氧化锌阀片进入早期衰退区间，建议在下一个维护窗口期更换或进行离线高压直流泄漏测试。',
     category: 'spd'
   },
   lightning: {
     id: 'lightning',
-    title: '强雷暴云系临近接闪塔空间电场剧烈畸变',
-    subNotice: '雷暴云电荷快速聚集，下行先导处于触发临界区。',
-    severity: 'yellow',
-    severityText: '黄色雷电预警 (三级)',
+    title: '强雷暴云系临近接闪塔空间电场畸变',
+    subNotice: '雷暴云电荷快速聚集，进入预警警戒区。',
+    severity: 'blue',
+    severityText: '四级提示信息',
     deviceCode: 'AEFM-01# (DEV-ENV-001)',
     deviceName: '大气电场动态监测探针 (AEFM)',
     location: '科研楼天面 12号主动接闪塔顶端 (标高 +48.5m)',
     realtimeValue: '38.6 kV/m',
     threshold: '25.0 kV/m',
-    overValue: '+13.6 kV/m (雷暴云先导已建立)',
-    trendDesc: '极性由负转正，跃变速率 > 4.2 kV/(m·min)',
+    overValue: '+13.6 kV/m (雷暴云前沿)',
+    trendDesc: '跃变速率 > 4.2 kV/(m·min)',
     unit: 'kV/m',
     alarmTime: '15:35:48',
     durationSeconds: 408,
     historyCount: 3,
-    riskNotice: '天面接闪塔上空电荷剧烈积聚，15分钟内算力园区发生对地直击雷概率超过 85%，需立即启动精密服务器等电位联防与备用发电机预温！',
+    riskNotice: '天面接闪塔上空电荷剧烈积聚，15分钟内算力园区发生对地直击雷概率上升，保持巡检与监测。',
     category: 'lightning'
   }
 };

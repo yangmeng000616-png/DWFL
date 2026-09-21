@@ -169,26 +169,26 @@
         <span
           class="px-1.5 py-0.2 rounded border text-[10px] font-medium"
           :class="hasSpdAlarm
-            ? 'bg-red-950/80 border-red-400/60 text-red-300 animate-pulse'
+            ? 'bg-amber-950/80 border-amber-400/60 text-amber-300'
             : 'bg-emerald-900/80 border-emerald-400/60 text-emerald-300'"
         >
-          {{ hasSpdAlarm ? '漏电告警' : '正常' }}
+          {{ hasSpdAlarm ? '三级关注' : '正常' }}
         </span>
       </div>
 
       <div class="mt-1 flex items-baseline justify-between">
         <div
           class="text-lg font-bold font-tech tracking-wide"
-          :class="hasSpdAlarm ? 'text-red-400 glow-text-red' : 'text-emerald-300 glow-text-green'"
+          :class="hasSpdAlarm ? 'text-amber-300 glow-text-amber' : 'text-emerald-300 glow-text-green'"
         >
           {{ hasSpdAlarm ? '11 / 12' : '12 / 12' }}
         </div>
-        <span class="text-[10px] font-sans" :class="hasSpdAlarm ? 'text-red-300' : 'text-slate-400'">
-          {{ hasSpdAlarm ? '在网率 91.7% (1台异常)' : '在网率 100%' }}
+        <span class="text-[10px] font-sans" :class="hasSpdAlarm ? 'text-amber-300' : 'text-slate-400'">
+          {{ hasSpdAlarm ? '在网率 91.7% (1台待检)' : '在网率 100%' }}
         </span>
       </div>
       <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
-        {{ hasSpdAlarm ? 'SPD-04 漏流 0.28mA' : '浪涌保护终端全部就绪' }}
+        {{ hasSpdAlarm ? 'SPD-04 漏流 0.28mA 劣化' : '浪涌保护终端全部就绪' }}
       </div>
     </div>
 

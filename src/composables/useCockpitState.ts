@@ -132,10 +132,83 @@ export function openDeviceInspection(deviceId: string) {
       lastCheckTime: '系统实时联防联动中',
       desc: '六面体连续法拉第笼屏蔽结构，机房内机柜、线槽、金属管道均可靠连接至星型等电位铜带 (MEB)。',
       recentTrends: [99, 99, 98, 99, 99, 100]
+    },
+    'DEV-TR-01': {
+      id: 'DEV-TR-01',
+      name: '1# 110kV/10kV 油浸式主变压器',
+      code: 'DEV-TR-01',
+      category: '高压供配电系统',
+      location: '东侧变配电中心室外变压器场 1# 隔离仓',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '负载率 62.4% · 顶层油温 54.2℃',
+      normalRange: '额定容量 25000kVA · 油温 ≤ 85℃',
+      healthScore: 98,
+      ipAddress: '192.168.30.10',
+      protocol: 'IEC 61850 光纤变电站总线',
+      lastCheckTime: '实时遥测 (在线色谱监测)',
+      desc: '三相双绕组低损耗有载调压变压器，配备瓦斯继电器、压力释放阀与高阻抗氧化锌避雷器组。',
+      recentTrends: [52, 53, 54, 54.2, 54.1, 54.2]
+    },
+    'DEV-CHILLER-01': {
+      id: 'DEV-CHILLER-01',
+      name: '1# 离心式变频冷水机组',
+      code: 'DEV-CHILLER-01',
+      category: '暖通冷冻站系统',
+      location: '西侧冷水机组设备区基础平台 #1',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: 'COP 6.82 · 出水温度 7.2℃',
+      normalRange: '制冷量 1200RT · 出水温控 7.0±0.5℃',
+      healthScore: 99,
+      ipAddress: '192.168.30.50',
+      protocol: 'BACnet-IP / BA中控',
+      lastCheckTime: '实时在线',
+      desc: '采用环保制冷剂与高效变频双级压缩机，大温差小流量节能工况运行，出水温度波动小于±0.2℃。',
+      recentTrends: [7.3, 7.2, 7.1, 7.2, 7.2, 7.2]
+    },
+    'DEV-GEN-01': {
+      id: 'DEV-GEN-01',
+      name: '1# 2000kW 应急高压柴油发电机组',
+      code: 'DEV-GEN-01',
+      category: '应急后备动力系统',
+      location: '东南侧独立柴发动力用房 1# 机位',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '蓄电池电压 26.8V · 水温预热 42℃',
+      normalRange: '自启动并机响应时间 ≤ 15秒',
+      healthScore: 99,
+      ipAddress: '192.168.30.80',
+      protocol: 'Modbus-TCP / 应急自启动控制柜',
+      lastCheckTime: '每周自动静态自检合格',
+      desc: '采用康明斯高压重载机组与低噪声进排风消音房设计，配置24小时日用防爆储油罐与静音排烟立管。',
+      recentTrends: [26.8, 26.8, 26.7, 26.8, 26.8, 26.8]
     }
   };
 
-  activeInspectionDevice.value = mockDevices[deviceId] || mockDevices.atmospheric;
+  const found = mockDevices[deviceId];
+  if (found) {
+    activeInspectionDevice.value = found;
+  } else {
+    // Generate dynamic card for other devices (e.g. pumps, coolers, test boxes)
+    activeInspectionDevice.value = {
+      id: deviceId,
+      name: `${deviceId} 设备对象`,
+      code: deviceId,
+      category: '数据中心工业设施',
+      location: '星云计算中心园区',
+      status: '正常',
+      statusType: 'success',
+      realtimeValue: '运行指标正常 · 通讯心跳在线',
+      normalRange: '工况指标符合设计基准',
+      healthScore: 98,
+      ipAddress: '192.168.30.200',
+      protocol: '工业物联网/Modbus网关',
+      lastCheckTime: '实时监测中',
+      desc: '星云计算中心数字化工业孪生模型挂载设备，支持实时数据遥测与态势告警联动。',
+      recentTrends: [98, 98, 99, 98, 98, 98]
+    };
+  }
 }
 
 export function closeDeviceInspection() {

@@ -1,13 +1,10 @@
 <template>
   <div
-    class="relative w-full h-full rounded-xl overflow-hidden flex flex-col transition-all duration-300 border"
+    class="relative w-full h-full rounded-xl overflow-hidden flex flex-col transition-all duration-300 border shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
     :class="[
       isNightWatchMode
-        ? 'bg-[#030a16] border-[#102a54]/60 text-slate-400'
-        : 'bg-[#040f26] border-[#1b4382]/80 text-slate-200',
-      activeScenario.severity === 'red'
-        ? 'shadow-[0_0_25px_rgba(239,68,68,0.15)]'
-        : 'shadow-[0_0_25px_rgba(245,158,11,0.15)]'
+        ? 'bg-[#030a16] border-[#102a54]/70 text-slate-400'
+        : 'bg-[#040f26] border-[#1b4382]/80 text-slate-200'
     ]"
   >
     <!-- ======================================================== -->
@@ -18,11 +15,11 @@
         <KpiCards :active-alarms="alarmCards" />
       </div>
 
-      <!-- 右侧：返回常态快捷卡片按钮 (高度与风格同 KPI 卡片一体化) -->
+      <!-- 右侧：返回常态快捷卡片按钮 -->
       <button
         @click="exitEmergencyMode"
         class="tech-panel tech-panel-hover rounded-xl py-2 px-3 flex flex-col items-center justify-between gap-1 text-slate-300 hover:text-white border border-[#1e4d8c] hover:border-cyan-400 cursor-pointer transition-all flex-shrink-0 group shadow-sm min-w-[80px]"
-        title="退出应急极简视图，返回全量大屏"
+        title="退出应急处置视图，返回全量大屏"
       >
         <div class="flex items-center justify-between w-full">
           <div class="w-6 h-6 rounded-md bg-gradient-to-br from-[#1c55aa] to-[#0f3b82] border border-cyan-400/60 flex items-center justify-center text-cyan-200 shadow-[0_0_8px_rgba(0,200,255,0.3)] group-hover:scale-105 transition-transform flex-shrink-0">
@@ -57,10 +54,10 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- 中间主视图区：左侧 74%~76% 超宽放大三维数字孪生机房 / 地图；右侧 24%~26% 紧凑极简告警卡片 -->
+    <!-- 中间主视图区：左侧 68%~70% 三维数字孪生/地图；右侧 30%~32% 紧凑告警选择器 + 设备详情与处置工作台 -->
     <!-- ======================================================== -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[74%_26%] xl:grid-cols-[76%_24%] gap-2 p-2 overflow-hidden">
-      <!-- 左侧：三维数字孪生 OR 雷电活动实时地图展示区 (纯净通高布局，无外部冗余横条) -->
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[68%_32%] xl:grid-cols-[70%_30%] gap-2 p-2 overflow-hidden">
+      <!-- 左侧：三维数字孪生 OR 雷电活动实时地图展示区 -->
       <div class="relative min-w-0 h-full rounded-xl overflow-hidden border border-[#1d4d8c]/80 shadow-lg bg-[#040f24]">
         <!-- 视图 A：三维数字孪生卡片组件 -->
         <template v-if="activeMainView === '3d'">
@@ -72,24 +69,27 @@
             @switch-to-map="activeMainView = 'map'"
           />
 
-          <!-- 在三维视图左下角轻量叠加醒目的当前主焦点 HUD 指引徽标 -->
-          <div class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
-            <div class="px-2.5 py-1 rounded-lg bg-black/85 border border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.4)] backdrop-blur-md flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full" :class="activeScenario.severity === 'red' ? 'bg-red-500 animate-ping' : 'bg-amber-400 animate-ping'"></span>
+          <!-- 在三维视图左下角轻量叠加当前主焦点 HUD 指引徽标 -->
+          <div v-if="focusedCard" class="absolute bottom-3 left-3 z-30 pointer-events-none transition-all duration-300">
+            <div class="px-2.5 py-1 rounded-lg bg-black/85 border border-cyan-500/70 shadow-[0_0_15px_rgba(0,200,255,0.3)] backdrop-blur-md flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" :class="getSeverityDotClass(focusedCard.severity)"></span>
               <div class="flex flex-col">
-                <span class="text-xs font-bold text-white flex items-center gap-1">
-                  <span>当前聚焦:</span>
-                  <span :class="activeScenario.severity === 'red' ? 'text-red-300' : 'text-amber-300'">{{ activeScenario.title }}</span>
+                <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span class="text-slate-400">当前聚焦:</span>
+                  <span class="text-cyan-300">{{ focusedCard.title }}</span>
+                  <span class="px-1 py-0.2 rounded text-[9px] font-medium" :class="getSeverityBadgeClass(focusedCard.severity)">
+                    {{ focusedCard.severityText }}
+                  </span>
                 </span>
                 <span class="text-[10.5px] text-slate-300">
-                  物理点位: <strong class="text-white">{{ activeScenario.location }}</strong> · 实时值 <strong class="text-amber-300 font-mono">{{ activeScenario.realtimeValue }}</strong> (门限 {{ activeScenario.threshold }})
+                  物理点位: <strong class="text-white">{{ focusedCard.location }}</strong> · 实时值 <strong class="text-cyan-300 font-mono">{{ focusedCard.realtimeValue }}</strong> (门限 {{ focusedCard.threshold }})
                 </span>
               </div>
             </div>
           </div>
         </template>
 
-        <!-- 视图 B：雷电活动实时地图 (全国/华北/园区全域 GIS 态势，图例完整内嵌于地图内部) -->
+        <!-- 视图 B：雷电活动实时地图 -->
         <template v-else>
           <LightningMapCard
             class="h-full w-full"
@@ -100,184 +100,261 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 右侧：精简紧凑的工业级告警卡片列表 (高度适中紧凑，不强行铺满拉伸) -->
+      <!-- 右侧：结构化处置工作台 (压缩重复信息，留给设备详情、趋势、流程与记录) -->
       <!-- ======================================================== -->
-      <div class="flex flex-col gap-2 min-w-0 h-full overflow-y-auto no-scrollbar justify-start">
-        <!-- 如果还有活跃告警，渲染卡片列表 (紧凑紧贴式卡片，不拉伸) -->
+      <div class="flex flex-col gap-2 min-w-0 h-full overflow-hidden justify-between">
         <template v-if="alarmCards.length > 0">
+          <!-- 1. 顶部：待处置告警紧凑选择列表 (压缩重复信息，仅展示核心状态) -->
+          <div class="tech-panel rounded-xl p-2 flex flex-col gap-1.5 flex-shrink-0 border border-[#1d4d8c]/70">
+            <div class="flex items-center justify-between pb-1 border-b border-white/10 text-xs">
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                <span class="font-bold text-white">待处置告警 ({{ alarmCards.length }})</span>
+              </div>
+              <span class="text-[10px] text-slate-400">点击行切换下方设备工作台</span>
+            </div>
+
+            <!-- 紧凑单行选择器 -->
+            <div class="flex flex-col gap-1 max-h-[115px] overflow-y-auto no-scrollbar">
+              <div
+                v-for="item in alarmCards"
+                :key="item.id"
+                @click="manualSelect(item.id)"
+                class="px-2 py-1.5 rounded-lg border flex items-center justify-between gap-2 transition-all cursor-pointer group"
+                :class="[
+                  focusedId === item.id
+                    ? 'bg-[#0f2e5c] border-cyan-400 text-white shadow-[0_0_10px_rgba(0,240,255,0.2)]'
+                    : 'bg-[#06152d]/90 border-slate-700/60 text-slate-300 hover:border-slate-500 hover:bg-[#0b2042]'
+                ]"
+              >
+                <!-- 左侧：等级微标 + 简略标题 + 测点编码 -->
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                  <span
+                    class="px-1 py-0.2 rounded text-[9px] font-semibold flex-shrink-0 whitespace-nowrap"
+                    :class="getSeverityBadgeClass(item.severity)"
+                  >
+                    {{ item.severityText }}
+                  </span>
+                  <span class="font-medium text-[11px] truncate" :class="focusedId === item.id ? 'text-white font-bold' : 'text-slate-300'">
+                    {{ item.title }}
+                  </span>
+                </div>
+
+                <!-- 右侧：实时值与处置步进 -->
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="font-tech text-xs font-bold" :class="getSeverityTextClass(item.severity)">
+                    {{ item.realtimeValue }}
+                  </span>
+                  <span
+                    class="px-1.5 py-0.2 rounded text-[9px] font-medium font-mono"
+                    :class="item.step >= 3 ? 'bg-cyan-950 text-cyan-300 border border-cyan-500/40' : item.step === 2 ? 'bg-amber-950 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-400'"
+                  >
+                    {{ item.step === 1 ? '待派单' : item.step === 2 ? '已派单' : '排查中' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 下部：选中告警的【设备详情与应急处置工作台】 (独立且详实) -->
           <div
-            v-for="(item, idx) in alarmCards"
-            :key="item.id"
-            @click="manualSelect(item.id)"
-            class="px-2.5 py-2 rounded-lg border flex flex-col gap-1.5 backdrop-blur-md transition-all cursor-pointer relative overflow-hidden flex-shrink-0 group shadow-sm"
-            :class="[
-              focusedId === item.id
-                ? 'ring-1.5 ring-cyan-400/90 shadow-[0_0_12px_rgba(6,182,212,0.25)] bg-gradient-to-r from-[#0c1e3d] to-[#08152e]'
-                : 'hover:border-slate-500 bg-[#06142a]/95 opacity-95',
-              item.severity === 'red'
-                ? 'border-red-500/60 hover:border-red-400'
-                : item.severity === 'orange'
-                  ? 'border-amber-500/60 hover:border-amber-400'
-                  : 'border-yellow-500/50 hover:border-yellow-400'
-            ]"
+            v-if="focusedCard"
+            class="tech-panel rounded-xl p-2.5 flex-1 flex flex-col justify-between overflow-hidden border border-[#1e4e8e]/80 shadow-md gap-2"
           >
-            <!-- 顶部行：左侧[序号+标题+设备]+右侧[实时值与门限] -->
-            <div class="flex items-start justify-between gap-1.5 pb-1 border-b border-white/5">
-              <!-- 左侧标号与标题 -->
-              <div class="flex items-start gap-1.5 min-w-0 flex-1">
-                <span
-                  class="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold font-mono flex-shrink-0 mt-0.5 shadow-sm"
-                  :class="focusedId === item.id ? 'bg-cyan-500 text-black' : 'bg-black/60 text-slate-300 border border-white/20'"
-                >
-                  {{ idx + 1 }}
-                </span>
+            <!-- A. 设备详情与测点参数看板 -->
+            <div class="flex flex-col gap-1 pb-1.5 border-b border-white/10 flex-shrink-0">
+              <div class="flex items-start justify-between gap-2">
                 <div class="flex flex-col min-w-0">
-                  <div class="flex items-center gap-1 truncate">
-                    <span
-                      class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      :class="item.severity === 'red' ? 'bg-red-500 animate-ping' : item.severity === 'orange' ? 'bg-amber-400' : 'bg-yellow-400'"
-                    ></span>
-                    <span class="font-bold text-white text-xs leading-tight tracking-tight truncate">{{ item.title }}</span>
-                  </div>
-                  <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                    <span class="text-cyan-300 flex items-center gap-0.5 truncate">
-                      <MapPin class="w-2.5 h-2.5 text-cyan-400 inline-block flex-shrink-0" />
-                      <strong class="truncate">{{ item.location }}</strong>
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-1.5 py-0.2 rounded bg-cyan-950/80 border border-cyan-400/50 text-[10px] text-cyan-300 font-mono font-bold">
+                      {{ focusedCard.deviceCode }}
                     </span>
-                    <span class="text-slate-600">·</span>
-                    <span class="text-slate-300 font-mono text-[9.5px]">{{ item.deviceCode }}</span>
+                    <h4 class="text-xs sm:text-sm font-bold text-white truncate">{{ focusedCard.deviceName }}</h4>
+                  </div>
+                  <div class="flex items-center gap-1 text-[10.5px] text-slate-400 mt-0.5 truncate">
+                    <MapPin class="w-3 h-3 text-cyan-400 flex-shrink-0" />
+                    <span class="text-slate-300 truncate">{{ focusedCard.location }}</span>
+                  </div>
+                </div>
+
+                <!-- 右侧超限量化看板 -->
+                <div class="flex flex-col items-end flex-shrink-0 bg-[#071d42] px-2 py-1 rounded border border-[#1b4885]">
+                  <div class="text-xs font-tech font-bold" :class="getSeverityTextClass(focusedCard.severity)">
+                    当前值: {{ focusedCard.realtimeValue }}
+                  </div>
+                  <div class="text-[9.5px] text-slate-300 font-mono mt-0.5">
+                    安全限值: ≤ {{ focusedCard.threshold }}
+                  </div>
+                  <div class="text-[9px] font-medium" :class="getSeverityTextClass(focusedCard.severity)">
+                    {{ focusedCard.overValue }}
                   </div>
                 </div>
               </div>
 
-              <!-- 右侧超标数值看板 -->
-              <div class="flex flex-col items-end flex-shrink-0">
-                <span class="font-tech font-bold text-xs tracking-tight" :class="item.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
-                  {{ item.realtimeValue }}
-                </span>
-                <span
-                  class="text-[8.5px] px-1 py-0.2 rounded font-mono font-medium border mt-0.5 whitespace-nowrap"
-                  :class="item.severity === 'red'
-                    ? 'bg-red-950/80 text-red-300 border-red-500/40'
-                    : item.severity === 'orange'
-                      ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
-                      : 'bg-yellow-950/80 text-yellow-300 border-yellow-500/40'"
-                >
-                  ≤ {{ item.threshold }}
+              <!-- 工程电气技术规格 -->
+              <div class="mt-1 px-2 py-1 rounded bg-[#05132b]/80 border border-white/5 text-[10px] text-slate-400 flex items-center justify-between">
+                <span class="truncate">规格标准: <span class="text-slate-300">{{ focusedCard.specs }}</span></span>
+                <span class="text-cyan-300/80 cursor-pointer hover:underline text-[9.5px] whitespace-nowrap ml-2" @click="openDeviceDetail">
+                  查阅台账 &rarr;
                 </span>
               </div>
             </div>
 
-            <!-- 中间行：精简趋势折线 + 越界量化 -->
-            <div class="py-0.5 flex items-center justify-between gap-2">
-              <!-- Sparkline 微型趋势图 -->
-              <div class="flex-1 h-5 relative px-1 bg-black/40 rounded border border-white/5 overflow-hidden">
-                <svg class="w-full h-full" viewBox="0 0 280 34" preserveAspectRatio="none">
-                  <!-- 阈值虚线 (Y=18) -->
-                  <line x1="5" y1="18" x2="275" y2="18" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 2" />
+            <!-- B. 异常趋势时序监测 (单条设备专属精细趋势) -->
+            <div class="flex flex-col gap-1 flex-shrink-0 bg-[#041228]/80 p-2 rounded-lg border border-white/5">
+              <div class="flex items-center justify-between text-[10.5px]">
+                <span class="text-slate-300 font-medium flex items-center gap-1">
+                  <Activity class="w-3 h-3 text-cyan-400" />
+                  <span>异常时序突变趋势</span>
+                </span>
+                <span class="text-[9.5px] text-slate-400 font-mono">
+                  {{ focusedCard.durationText }} · {{ focusedCard.trendDesc }}
+                </span>
+              </div>
+
+              <!-- 独立放大高质感趋势图 -->
+              <div class="h-10 w-full relative px-1 bg-black/40 rounded border border-white/5 overflow-hidden">
+                <svg class="w-full h-full" viewBox="0 0 320 40" preserveAspectRatio="none">
+                  <!-- 安全基准阈值虚线 (Y=20) -->
+                  <line x1="5" y1="20" x2="315" y2="20" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 2" />
                   
-                  <!-- 超标高亮渐变区域 (X=170到X=270) -->
+                  <!-- 越限突变阴影区 -->
                   <path
-                    :d="item.sparklineOverArea"
-                    :fill="item.severity === 'red' ? 'rgba(239, 68, 68, 0.45)' : 'rgba(245, 158, 11, 0.45)'"
+                    :d="focusedCard.sparklineOverArea"
+                    :fill="focusedCard.severity === 'red' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(245, 158, 11, 0.25)'"
                   />
 
-                  <!-- 历史基础折线 -->
+                  <!-- 历史常态线 -->
                   <path
-                    :d="item.sparklineStrokeBefore"
+                    :d="focusedCard.sparklineStrokeBefore"
                     fill="none"
                     stroke="#38bdf8"
                     stroke-width="1.8"
                   />
 
-                  <!-- 实时超标高亮折线 -->
+                  <!-- 越限抬升线 -->
                   <path
-                    :d="item.sparklineStrokeOver"
+                    :d="focusedCard.sparklineStrokeOver"
                     fill="none"
-                    :stroke="item.severity === 'red' ? '#ef4444' : '#f59e0b'"
+                    :stroke="focusedCard.severity === 'red' ? '#ef4444' : focusedCard.severity === 'orange' ? '#f59e0b' : '#eab308'"
                     stroke-width="2.2"
                   />
 
-                  <!-- 越界突变起点 (X=170, Y=18) -->
-                  <circle cx="170" cy="18" r="2" fill="#f59e0b" stroke="#ffffff" stroke-width="1" />
-
-                  <!-- 当前最新测点 -->
-                  <circle cx="250" :cy="item.endY" r="2.5" :fill="item.severity === 'red' ? '#ef4444' : '#f59e0b'" stroke="#ffffff" stroke-width="1" />
+                  <!-- 突变点 -->
+                  <circle cx="180" cy="20" r="2.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1" />
+                  <!-- 实时测点 -->
+                  <circle cx="280" :cy="focusedCard.endY" r="3" :fill="focusedCard.severity === 'red' ? '#ef4444' : '#f59e0b'" stroke="#ffffff" stroke-width="1.5" />
                 </svg>
-              </div>
-
-              <!-- 右侧越界量化标签与起始时间 -->
-              <div class="flex flex-col items-end flex-shrink-0 text-right">
-                <span class="text-[11px] font-bold font-mono tracking-tight" :class="item.severity === 'red' ? 'text-red-400' : 'text-amber-300'">
-                  {{ item.overValue }}
-                </span>
-                <span class="text-[9px] text-slate-400 font-mono">{{ item.timeTag }}</span>
               </div>
             </div>
 
-            <!-- 底部行：工单协同步进器与右侧操作按钮 -->
-            <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-white/5">
-              <!-- 4 步流转指示器 -->
-              <div class="flex items-center gap-1 text-[9.5px]">
-                <div class="flex items-center gap-0.5">
-                  <span
-                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold"
-                    :class="item.step >= 1 ? 'bg-emerald-500 text-black' : 'bg-slate-800 text-slate-500'"
-                  >1</span>
-                  <span :class="item.step >= 1 ? 'text-emerald-300 font-medium' : 'text-slate-500'">触发</span>
-                </div>
-                <span class="w-2 h-0.5 rounded" :class="item.step >= 2 ? 'bg-emerald-500' : 'bg-slate-700'"></span>
-
-                <div class="flex items-center gap-0.5">
-                  <span
-                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold"
-                    :class="item.step >= 2 ? 'bg-emerald-500 text-black' : 'bg-slate-800 text-slate-500'"
-                  >2</span>
-                  <span :class="item.step >= 2 ? 'text-emerald-300 font-medium' : 'text-slate-500'">派单</span>
-                </div>
-                <span class="w-2 h-0.5 rounded" :class="item.step >= 3 ? 'bg-cyan-400' : 'bg-slate-700'"></span>
-
-                <div class="flex items-center gap-0.5">
-                  <span
-                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold"
-                    :class="item.step >= 3 ? 'bg-cyan-500 text-black animate-pulse' : 'bg-slate-800 text-slate-500'"
-                  >3</span>
-                  <span :class="item.step >= 3 ? 'text-cyan-300 font-bold' : 'text-slate-500'">排查</span>
-                </div>
-                <span class="w-2 h-0.5 rounded bg-slate-700"></span>
-
-                <div class="flex items-center gap-0.5">
-                  <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] font-bold bg-slate-800 text-slate-500">4</span>
-                  <span class="text-slate-500">销号</span>
-                </div>
+            <!-- C. 标准处置流程与责任人 -->
+            <div class="flex flex-col gap-1.5 py-1 border-t border-b border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between text-[10.5px]">
+                <span class="text-slate-300 font-medium">处置流程 (4步标准化闭环)</span>
+                <span class="text-cyan-300 text-[10px]">
+                  责任人: <strong class="text-white font-medium">{{ focusedCard.assignee }}</strong> ({{ focusedCard.phone }})
+                </span>
               </div>
 
-              <!-- 状态推进按钮 -->
-              <div>
-                <button
-                  v-if="item.step === 1"
-                  @click.stop="advanceStep(item.id)"
-                  class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-0.5 whitespace-nowrap"
+              <!-- 4 步流转步进指示器 -->
+              <div class="grid grid-cols-4 gap-1 text-[10px]">
+                <!-- 1. 触发 -->
+                <div
+                  class="px-1.5 py-1 rounded border flex flex-col items-center justify-center text-center transition-colors"
+                  :class="focusedCard.step >= 1 ? 'bg-emerald-950/70 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-500'"
                 >
-                  <Send class="w-2.5 h-2.5" />
+                  <span class="font-bold">1. 阈值触发</span>
+                  <span class="text-[8.5px] text-slate-400">{{ focusedCard.dispatchTime }}</span>
+                </div>
+
+                <!-- 2. 派单 -->
+                <div
+                  class="px-1.5 py-1 rounded border flex flex-col items-center justify-center text-center transition-colors"
+                  :class="focusedCard.step >= 2 ? 'bg-emerald-950/70 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/60 border-slate-800 text-slate-500'"
+                >
+                  <span class="font-bold">2. 调度派单</span>
+                  <span class="text-[8.5px] text-slate-400">{{ focusedCard.step >= 2 ? '工单已下发' : '等待调度' }}</span>
+                </div>
+
+                <!-- 3. 排查 -->
+                <div
+                  class="px-1.5 py-1 rounded border flex flex-col items-center justify-center text-center transition-colors"
+                  :class="focusedCard.step >= 3 ? 'bg-cyan-950/90 border-cyan-400 text-cyan-200 ring-1 ring-cyan-400/50' : 'bg-slate-900/60 border-slate-800 text-slate-500'"
+                >
+                  <span class="font-bold flex items-center gap-1">
+                    <span>3. 现场排查</span>
+                    <span v-if="focusedCard.step === 3" class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                  </span>
+                  <span class="text-[8.5px] text-slate-400">{{ focusedCard.step >= 3 ? '正在核验' : '待响应' }}</span>
+                </div>
+
+                <!-- 4. 销号 -->
+                <div class="px-1.5 py-1 rounded border border-slate-800 bg-slate-900/60 text-slate-500 flex flex-col items-center justify-center text-center">
+                  <span class="font-bold">4. 复测销号</span>
+                  <span class="text-[8.5px] text-slate-500">待完成</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- D. 操作记录流水 -->
+            <div class="flex-1 flex flex-col min-h-0 bg-[#041026]/70 p-1.5 rounded-lg border border-white/5 overflow-hidden">
+              <div class="text-[10px] text-slate-400 mb-1 flex items-center justify-between flex-shrink-0">
+                <span class="flex items-center gap-1">
+                  <FileText class="w-3 h-3 text-cyan-400" />
+                  <span class="font-medium text-slate-300">处置流水记录</span>
+                </span>
+                <span class="text-[9px] text-slate-500 font-mono">最新调度跟踪</span>
+              </div>
+              <div class="flex-1 overflow-y-auto no-scrollbar space-y-1 text-[10px]">
+                <div
+                  v-for="(log, lIdx) in focusedCard.logs"
+                  :key="lIdx"
+                  class="flex items-start gap-1.5 text-slate-300 leading-tight"
+                >
+                  <span class="text-cyan-400/80 font-mono text-[9px] flex-shrink-0 mt-0.5">{{ log.time }}</span>
+                  <span class="text-slate-400 font-medium flex-shrink-0">[{{ log.user }}]</span>
+                  <span class="text-slate-200">{{ log.text }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- E. 处置操作按键栏 (针对当前设备执行具体闭环) -->
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/10 flex-shrink-0">
+              <button
+                @click="openDeviceDetail"
+                class="px-2.5 py-1 rounded-lg bg-[#0c244d] hover:bg-[#13356e] text-cyan-200 text-xs border border-cyan-500/40 transition-all cursor-pointer flex items-center gap-1"
+                title="打开该设备的深度台账检视弹窗"
+              >
+                <Sliders class="w-3 h-3" />
+                <span>设备台账</span>
+              </button>
+
+              <div class="flex items-center gap-1.5">
+                <button
+                  v-if="focusedCard.step === 1"
+                  @click="advanceStep(focusedCard.id)"
+                  class="px-3 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-1"
+                >
+                  <Send class="w-3 h-3" />
                   <span>立即派单</span>
                 </button>
                 <button
-                  v-else-if="item.step === 2"
-                  @click.stop="advanceStep(item.id)"
-                  class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-0.5 whitespace-nowrap"
+                  v-else-if="focusedCard.step === 2"
+                  @click="advanceStep(focusedCard.id)"
+                  class="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-1"
                 >
-                  <MapPin class="w-2.5 h-2.5" />
-                  <span>到位排查</span>
+                  <MapPin class="w-3 h-3" />
+                  <span>确认到位排查</span>
                 </button>
                 <button
-                  v-else-if="item.step === 3"
-                  @click.stop="resolveAndRemove(item.id)"
-                  class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-0.5 whitespace-nowrap"
-                  title="现场排查结束，闭环并消除此条告警"
+                  v-else-if="focusedCard.step === 3"
+                  @click="resolveAndRemove(focusedCard.id)"
+                  class="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer transition-all active:scale-95 shadow flex items-center gap-1"
+                  title="现场排查与复测合格，闭环销号"
                 >
-                  <Check class="w-3 h-3" />
-                  <span>结束排查(销号)</span>
+                  <Check class="w-3.5 h-3.5" />
+                  <span>复测合格·闭环销号</span>
                 </button>
               </div>
             </div>
@@ -300,20 +377,11 @@
             返回常态监控大屏
           </button>
         </div>
-
-        <!-- 底部微型日志条 (简明展示 1 行最新联动动态) -->
-        <div class="px-2.5 py-1.5 rounded-lg bg-[#071c3f]/80 border border-[#1d4d8c]/60 flex items-center justify-between text-[10.5px] text-slate-400 flex-shrink-0">
-          <span class="flex items-center gap-1.5 truncate">
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            <span class="text-slate-300 truncate">最新调度: {{ latestActionText }}</span>
-          </span>
-          <span class="text-slate-500 font-mono text-[9px] flex-shrink-0">处置流水</span>
-        </div>
       </div>
     </div>
 
     <!-- ======================================================== -->
-    <!-- 区域 4：底部极简单行状态栏 (非常窄、极低亮度，绝无冗余图表) -->
+    <!-- 区域 4：底部极简单行状态栏 -->
     <!-- ======================================================== -->
     <div
       class="w-full relative z-20 px-4 py-1.5 flex items-center justify-between border-t text-[11px] backdrop-blur-md"
@@ -326,8 +394,8 @@
         </div>
         <div class="h-3 w-px bg-slate-700"></div>
         <div class="flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
-          <span>当前并发告警: <strong class="text-red-400">{{ activeCount }} 条 (处置中)</strong></span>
+          <span class="w-1.5 h-1.5 rounded-full" :class="activeCount > 0 ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'"></span>
+          <span>待处置告警: <strong class="text-amber-300">{{ activeCount }} 项</strong></span>
         </div>
         <div class="h-3 w-px bg-slate-700"></div>
         <div class="flex items-center gap-1.5 text-slate-400">
@@ -347,7 +415,7 @@
           <span>{{ isNightWatchMode ? '夜间模式: 开' : '夜间模式:关' }}</span>
         </button>
         <span class="text-[10px] text-slate-500">
-          极简应急模式 · 3处告警空间靶标联动与快速处置
+          工业防雷管控中枢 · 异常排查与标准化销号流转
         </span>
       </div>
     </div>
@@ -357,13 +425,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import {
-  AlertTriangle,
   MapPin,
   Send,
   LogOut,
   Moon,
   Check,
-  CheckCircle2
+  CheckCircle2,
+  Activity,
+  FileText,
+  Sliders
 } from 'lucide-vue-next';
 import {
   isNightWatchMode,
@@ -377,141 +447,197 @@ import LightningMapCard from '@/components/overview/LightningMapCard.vue';
 import KpiCards from '@/components/overview/KpiCards.vue';
 import { openDeviceInspection } from '@/composables/useCockpitState';
 
-// 主视图切换状态：'3d' (三维数字孪生) OR 'map' (雷电活动实时地图)
+// 主视图切换：'3d' (三维孪生) OR 'map' (雷电地图)
 const activeMainView = ref<'3d' | 'map'>('3d');
 
-// 3 个并发告警的独立状态对象
+// 告警卡片列表：严格规范色彩（红色严格保留给一级严重故障，当前不滥用红色）
 const alarmCards = ref([
-  {
-    id: 'spd',
-    title: '2F动力配电室 SPD 漏电超标',
-    deviceCode: 'SPD-04#',
-    location: '2F 数据机房动力母线柜 A-02',
-    severity: 'red',
-    realtimeValue: '0.28 mA',
-    threshold: '0.20 mA',
-    overValue: '+0.08 mA (超40%)',
-    overText: '超标 +0.08mA',
-    timeTag: '15:10 起始',
-    endY: 6,
-    sparklineOverArea: 'M 170,18 Q 210,10 250,6 L 250,18 L 170,18 Z',
-    sparklineStrokeBefore: 'M 5,26 Q 90,25 130,22 T 170,18',
-    sparklineStrokeOver: 'M 170,18 Q 210,10 250,6',
-    step: 3, // 默认已经现场排查中，方便直接点【结束排查(销号)】
-    assignee: '动力组 李工'
-  },
   {
     id: 'ground',
     title: '园区人工地网基准测试井阻抗超限',
-    deviceCode: 'GW-01#',
-    location: '地下 -1F 人工地网基准井',
+    deviceCode: 'GW-01# (DEV-GND-001)',
+    deviceName: '地网接地电阻在线遥测仪 (GND-NET)',
+    location: '园区地下 -1F 人工地网基准井 (标高 -4.2m)',
     severity: 'orange',
+    severityText: '二级高危',
     realtimeValue: '0.88 Ω',
     threshold: '0.80 Ω',
-    overValue: '+0.08 Ω (超10%)',
-    overText: '超标 +0.08Ω',
+    overValue: '+0.08 Ω (超标 10%)',
+    specs: '设计基准 ≤ 0.80Ω · 汇流排铜排 50×5mm · 土壤电阻率 120Ω·m',
+    trendDesc: '连续抬升 +0.06 Ω/h',
+    durationText: '已持续 28 分钟',
     timeTag: '15:10 起始',
-    endY: 9,
-    sparklineOverArea: 'M 170,18 Q 210,13 250,9 L 250,18 L 170,18 Z',
-    sparklineStrokeBefore: 'M 5,27 Q 85,26 130,23 T 170,18',
-    sparklineStrokeOver: 'M 170,18 Q 210,13 250,9',
-    step: 2, // 处于派单后
-    assignee: '高压防雷 张工'
+    endY: 10,
+    sparklineOverArea: 'M 180,20 Q 230,14 280,10 L 280,20 L 180,20 Z',
+    sparklineStrokeBefore: 'M 10,28 Q 90,26 140,24 T 180,20',
+    sparklineStrokeOver: 'M 180,20 Q 230,14 280,10',
+    step: 2, // 已派单
+    assignee: '高压防雷 张工 (工号 #8104)',
+    phone: '138-0021-8104',
+    dispatchTime: '15:12',
+    logs: [
+      { time: '15:10:15', user: '系统感知', text: '监测到基准测试井接地电阻越过 0.80Ω 控制线' },
+      { time: '15:12:00', user: '智能调度', text: '自动下发高压防雷抢修工单 #WO-GND-01 至张工班组' },
+      { time: '15:20:30', user: '张工', text: '已确认接单，携带高频钳形地阻仪正前往地下 -1F' }
+    ]
+  },
+  {
+    id: 'spd',
+    title: '2F动力配电室二级SPD漏电劣化',
+    deviceCode: 'SPD-04# (DEV-SPD-004)',
+    deviceName: '智能浪涌保护器监测终端 (SPD-M)',
+    location: '2F 数据机房动力配电室低压母线柜 A-02',
+    severity: 'yellow',
+    severityText: '三级关注',
+    realtimeValue: '0.28 mA',
+    threshold: '0.20 mA',
+    overValue: '+0.08 mA (超阈值 40%)',
+    specs: '标称泄流容量 40kA (8/20μs) · 残压 Up ≤ 1.5kV · 供电相别 L1-PE',
+    trendDesc: '微发热温升 +3.2℃，早期衰减期',
+    durationText: '已持续 25 分钟',
+    timeTag: '15:15 起始',
+    endY: 8,
+    sparklineOverArea: 'M 180,20 Q 230,12 280,8 L 280,20 L 180,20 Z',
+    sparklineStrokeBefore: 'M 10,27 Q 90,25 140,22 T 180,20',
+    sparklineStrokeOver: 'M 180,20 Q 230,12 280,8',
+    step: 3, // 现场排查中
+    assignee: '动力配电 李工 (工号 #8201)',
+    phone: '139-1102-8201',
+    dispatchTime: '15:16',
+    logs: [
+      { time: '15:15:22', user: '系统感知', text: 'SPD-04# 采集泄漏电流 0.28mA，触发三级预防性排查' },
+      { time: '15:16:40', user: '智能调度', text: '派单至动力配电保障一班 李工' },
+      { time: '15:24:10', user: '李工', text: '现场到位，红外热成像显示阀片温升 3.2℃，正执行绝缘测试' }
+    ]
   },
   {
     id: 'lightning',
     title: '12号接闪塔空间电场突变预警',
-    deviceCode: 'AEFM-01#',
-    location: '科研楼天面 12号主动接闪塔',
-    severity: 'yellow',
+    deviceCode: 'AEFM-01# (DEV-ENV-001)',
+    deviceName: '大气电场动态监测探针 (AEFM)',
+    location: '科研楼天面 12号主动接闪塔顶端 (标高 +48.5m)',
+    severity: 'blue',
+    severityText: '四级提示',
     realtimeValue: '38.6 kV/m',
     threshold: '25.0 kV/m',
-    overValue: '+13.6 kV/m (畸变)',
-    overText: '畸变 +13.6kV',
+    overValue: '+13.6 kV/m (雷暴云前沿)',
+    specs: '动态量程 ±50 kV/m · 采样率 100Hz · 极性正负双向感应',
+    trendDesc: '电场极性跃变，雷云前沿靠近',
+    durationText: '已持续 30 分钟',
     timeTag: '15:18 起始',
-    endY: 7,
-    sparklineOverArea: 'M 170,18 Q 210,11 250,7 L 250,18 L 170,18 Z',
-    sparklineStrokeBefore: 'M 5,26 Q 90,24 130,21 T 170,18',
-    sparklineStrokeOver: 'M 170,18 Q 210,11 250,7',
-    step: 1, // 待派单
-    assignee: '天面设施 赵工'
+    endY: 12,
+    sparklineOverArea: 'M 180,20 Q 230,15 280,12 L 280,20 L 180,20 Z',
+    sparklineStrokeBefore: 'M 10,26 Q 90,24 140,22 T 180,20',
+    sparklineStrokeOver: 'M 180,20 Q 230,15 280,12',
+    step: 1, // 待调度
+    assignee: '天面设施 赵工 (工号 #8302)',
+    phone: '137-0019-8302',
+    dispatchTime: '15:18',
+    logs: [
+      { time: '15:18:05', user: '环境总线', text: '天面 12号塔电场探针感应到雷暴云先导电荷聚集' },
+      { time: '15:18:30', user: '系统策略', text: '联动科研楼双流向主动接闪器进入就绪拦截态' }
+    ]
   }
 ]);
 
-// 当前 3D 镜头焦点
-const focusedId = ref('spd');
+// 当前选中的告警
+const focusedId = ref('ground');
 
-const activeScenario = computed(() => {
-  if (alarmCards.value.length === 0) {
-    return {
-      id: 'none',
-      title: '全部告警已消除',
-      location: '园区整体',
-      severity: 'green',
-      realtimeValue: '受控正常',
-      threshold: '正常',
-      overValue: '安全'
-    };
-  }
+const focusedCard = computed(() => {
   return alarmCards.value.find(c => c.id === focusedId.value) || alarmCards.value[0];
 });
 
-// 各严重等级实时统计
-const countRed = computed(() => alarmCards.value.filter(c => c.severity === 'red').length);
-const countOrange = computed(() => alarmCards.value.filter(c => c.severity === 'orange').length);
-const countYellow = computed(() => alarmCards.value.filter(c => c.severity === 'yellow').length);
-
-// 点选任意告警卡片：锁定并在 3D 视图中聚焦对应靶点
+// 手动点选
 const manualSelect = (id: string) => {
   focusedId.value = id;
 };
 
-// 推进单张卡片的进度 (1 -> 2 -> 3)
+// 推进单步流程
 const advanceStep = (id: string) => {
   const card = alarmCards.value.find(c => c.id === id);
   if (card && card.step < 3) {
     card.step++;
-    latestActionText.value = `${card.title} 进度推进至 [${card.step === 2 ? '已派发工单' : '现场排查中'}]`;
+    const stepLabel = card.step === 2 ? '已派发工单' : '现场排查中';
+    card.logs.push({
+      time: new Date().toTimeString().slice(0, 8),
+      user: '值班调度',
+      text: `工单进度推进至 [${stepLabel}]`
+    });
   }
 };
 
-// 关键业务闭环：排查结束，闭环销号，该告警立刻从列表中消失！
+// 复测合格并销号
 const resolveAndRemove = (id: string) => {
   const targetIndex = alarmCards.value.findIndex(c => c.id === id);
   if (targetIndex !== -1) {
-    const removedTitle = alarmCards.value[targetIndex].title;
     alarmCards.value.splice(targetIndex, 1);
-    latestActionText.value = `[销号成功] ${removedTitle} 隐患排除，告警已移出活跃看板`;
 
-    // 如果当前聚焦的正是被销号的这一项，自动对焦到剩余的第一项
-    if (focusedId.value === id) {
-      if (alarmCards.value.length > 0) {
-        focusedId.value = alarmCards.value[0].id;
-      }
+    if (alarmCards.value.length > 0) {
+      focusedId.value = alarmCards.value[0].id;
     }
 
-    // 如果全部告警均已销号完毕，延迟 1.5 秒自动退出应急模式，平滑返回常态大屏
     if (alarmCards.value.length === 0) {
       setTimeout(() => {
         exitEmergencyMode();
-      }, 1800);
+      }, 2000);
     }
   }
 };
 
-// 一键全部派单
-const handleDispatchAll = () => {
-  alarmCards.value.forEach(c => {
-    if (c.step === 1) c.step = 2;
-  });
-  latestActionText.value = '值班中心已一键协同派发全部应急工单至各责任班组';
+// 打开设备台账弹窗
+const openDeviceDetail = () => {
+  if (!focusedCard.value) return;
+  const devMap: Record<string, string> = {
+    spd: 'spd_terminal',
+    ground: 'ground_res',
+    lightning: 'atmospheric'
+  };
+  openDeviceInspection(devMap[focusedCard.value.id] || 'datacenter_zone');
 };
 
-const latestActionText = ref('系统已捕获 3 处并发告警，三维孪生已锁定关联靶点');
-
-// 统计未销号的告警数量
 const activeCount = computed(() => alarmCards.value.length);
-
-// 全部销号判断
 const allResolved = computed(() => alarmCards.value.length === 0);
+
+// 色彩规范函数
+const getSeverityBadgeClass = (severity: string) => {
+  switch (severity) {
+    case 'red':
+      return 'bg-[#450a0a] text-red-300 border border-red-500/70';
+    case 'orange':
+      return 'bg-[#401b07] text-amber-300 border border-amber-500/60';
+    case 'yellow':
+      return 'bg-[#3b2b06] text-yellow-300 border border-yellow-500/60';
+    case 'blue':
+    default:
+      return 'bg-[#0d2a58] text-cyan-300 border border-cyan-500/60';
+  }
+};
+
+const getSeverityTextClass = (severity: string) => {
+  switch (severity) {
+    case 'red':
+      return 'text-red-400';
+    case 'orange':
+      return 'text-amber-400';
+    case 'yellow':
+      return 'text-yellow-300';
+    case 'blue':
+    default:
+      return 'text-cyan-300';
+  }
+};
+
+const getSeverityDotClass = (severity: string) => {
+  switch (severity) {
+    case 'red':
+      return 'bg-red-500 animate-ping';
+    case 'orange':
+      return 'bg-amber-400 animate-pulse';
+    case 'yellow':
+      return 'bg-yellow-400';
+    case 'blue':
+    default:
+      return 'bg-cyan-400';
+  }
+};
 </script>

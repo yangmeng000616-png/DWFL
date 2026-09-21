@@ -1,613 +1,383 @@
 <template>
-  <div class="tech-panel rounded-xl p-3.5 flex flex-col justify-between h-full relative overflow-hidden group shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
-    <!-- Card Top Header with Mode & Controls -->
+  <div class="tech-panel rounded-xl p-3 flex flex-col justify-between h-full relative overflow-hidden group shadow-[0_8px_32px_rgba(0,0,0,0.6)] select-none">
+    <!-- 1. Card Top Control Bar -->
     <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#184682]/60 relative z-20">
+      <!-- Title & Facility Badge -->
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 rounded-md bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_6px_rgba(6,182,212,0.3)]">
           <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
             <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
           </svg>
         </div>
-        <h3 class="text-sm font-bold text-white tracking-wide">
-          算力中心建筑三维数字孪生态势
-        </h3>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
+              <span>星云计算中心 · 三维数字孪生</span>
+            </h3>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-950/80 text-cyan-300 border border-blue-500/40">
+              82m×54m 主机房 · PBR仿真
+            </span>
+          </div>
+        </div>
       </div>
 
-      <!-- Mode & Interactive Tools -->
-      <div class="flex items-center gap-1.5">
-        <!-- View Mode Selector -->
-        <div class="hidden sm:flex items-center bg-[#092960]/90 p-0.5 rounded-md border border-[#2461b2]/70 text-xs">
+      <!-- Quick Control Actions -->
+      <div class="flex items-center gap-1.5 text-xs flex-wrap">
+        <!-- View Preset Dropdown / Quick Switcher -->
+        <div class="relative">
           <button
-            v-for="mode in viewModes"
-            :key="mode.id"
-            @click="handleModeClick(mode.id)"
-            class="px-2 py-0.5 rounded transition-all font-medium text-[11px] whitespace-nowrap flex items-center gap-1 cursor-pointer"
-            :class="[
-              mode.id === 'map'
-                ? 'text-cyan-300 hover:text-white hover:bg-cyan-500/25 border border-cyan-500/30'
-                : activeMode === mode.id
-                  ? 'bg-gradient-to-r from-[#217bf8] to-[#00a6ff] text-white shadow-[0_0_10px_rgba(33,123,248,0.7)]'
-                  : 'text-slate-300 hover:text-white'
-            ]"
+            @click="showPresetMenu = !showPresetMenu"
+            class="h-6.5 px-2.5 rounded-md bg-[#092960]/90 hover:bg-[#123e84] border border-[#2461b2]/70 text-[11px] font-medium text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="切换漫游预设视角"
           >
-            <svg v-if="mode.id === 'map'" class="w-2.5 h-2.5 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 10l-3 3-3-3" />
               <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
             </svg>
-            <span>{{ mode.label }}</span>
+            <span class="text-cyan-300 font-semibold">{{ currentPresetLabel }}</span>
           </button>
+
+          <!-- Preset Menu Popover -->
+          <div
+            v-if="showPresetMenu"
+            class="absolute top-8 left-0 z-50 w-52 bg-[#081c3c]/95 border border-cyan-500/50 rounded-lg shadow-2xl p-1.5 backdrop-blur-md grid grid-cols-2 gap-1 text-[11px]"
+          >
+            <button
+              v-for="p in VIEW_PRESETS"
+              :key="p.id"
+              @click="selectPreset(p.id)"
+              class="px-2 py-1.5 rounded text-left transition-colors flex flex-col cursor-pointer"
+              :class="activePresetId === p.id ? 'bg-cyan-600/30 text-cyan-200 border border-cyan-400/50 font-bold' : 'text-slate-300 hover:bg-white/10'"
+            >
+              <span>{{ p.label }}</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Lightning Simulation Button (For Presales & Demonstration) -->
+        <!-- Layer Control Drawer Toggle -->
         <button
-          @click="handleLightningDemo"
-          :disabled="isDemoRunning"
+          @click="showLayerDrawer = !showLayerDrawer"
+          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
+          :class="showLayerDrawer ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-200 border-[#2461b2]/70'"
+          title="图层管理：建筑/供配电/冷却/防雷/地网"
+        >
+          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </svg>
+          <span>图层 ({{ activeLayerCount }})</span>
+        </button>
+
+        <!-- X-Ray Translucent Toggle -->
+        <button
+          @click="toggleXRay"
+          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
+          :class="isXRayEnabled ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-200 border-[#2461b2]/70'"
+          title="透视穿透模式：建筑半透明化，透视地下地网与管线"
+        >
+          <svg class="w-3 h-3 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M3 12h3m12 0h3M12 3v3m0 12v3" />
+          </svg>
+          <span>透视</span>
+        </button>
+
+        <!-- Lightning Simulation Button -->
+        <button
+          @click="triggerLightning"
+          :disabled="isLightningFiring"
           class="h-6.5 px-2 rounded-md border text-[11px] font-semibold flex items-center gap-1 transition-all shadow-[0_0_8px_rgba(0,240,255,0.2)] disabled:opacity-50 cursor-pointer"
-          :class="isDemoRunning ? 'bg-amber-600/90 text-white border-amber-400 animate-pulse' : 'bg-[#0f3b7d] hover:bg-[#184ea0] text-cyan-200 border-cyan-400/50'"
+          :class="isLightningFiring ? 'bg-amber-600 text-white border-amber-400 animate-pulse' : 'bg-[#0f3b7d] hover:bg-[#184ea0] text-cyan-200 border-cyan-400/50'"
+          title="触发模拟雷击与地网泄流"
         >
           <svg class="w-3 h-3 fill-current text-amber-300" viewBox="0 0 24 24">
             <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
           </svg>
-          <span>{{ isDemoRunning ? '模拟泄流中...' : '防雷模拟' }}</span>
+          <span>{{ isLightningFiring ? '放电泄流中' : '模拟防雷' }}</span>
         </button>
 
-        <!-- 3D Transform Controls (Rotate & Zoom) -->
-        <div class="flex items-center bg-[#092960]/90 p-0.5 rounded-md border border-[#2461b2]/70 text-xs text-slate-200 h-6.5">
-          <button
-            @click="rotateAngle -= 15"
-            title="左旋 15°"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs cursor-pointer"
-          >
-            ↺
-          </button>
-          <button
-            @click="toggleAutoRotate"
-            :title="isAutoRotating ? '暂停巡航' : '自动巡航'"
-            class="px-1 py-0.5 hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors font-tech text-[10px] cursor-pointer"
-            :class="isAutoRotating ? 'text-cyan-300 font-bold' : 'text-slate-300'"
-          >
-            {{ isAutoRotating ? '巡航中' : '巡航' }}
-          </button>
-          <button
-            @click="rotateAngle += 15"
-            title="右旋 15°"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs cursor-pointer"
-          >
-            ↻
-          </button>
-          <span class="w-px h-3 bg-slate-600 mx-0.5"></span>
-          <button
-            @click="zoomIn"
-            title="放大"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs font-bold cursor-pointer"
-          >
-            +
-          </button>
-          <button
-            @click="zoomOut"
-            title="缩小"
-            class="w-5 h-5 flex items-center justify-center hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-xs font-bold cursor-pointer"
-          >
-            -
-          </button>
-          <button
-            @click="resetView"
-            title="重置视角"
-            class="px-1 py-0.5 hover:text-cyan-200 hover:bg-[#124286] rounded transition-colors text-[10px] cursor-pointer"
-          >
-            复位
-          </button>
-        </div>
+        <!-- Auto Patrol Toggle -->
+        <button
+          @click="toggleAutoPatrol"
+          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
+          :class="isPatrolling ? 'bg-cyan-600/30 text-cyan-200 border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-300 border-[#2461b2]/70'"
+          title="自动环绕漫游巡检"
+        >
+          <span>{{ isPatrolling ? '巡航中' : '巡航' }}</span>
+        </button>
+
+        <!-- Switch to GIS Map (when in Emergency mode) -->
+        <button
+          v-if="allowMapSwitch"
+          @click="emit('switch-to-map')"
+          class="h-6.5 px-2 rounded-md bg-[#0f356e] hover:bg-[#194c96] border border-cyan-400/60 text-[11px] font-semibold text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
+          title="切换至雷电活动实时电子地图"
+        >
+          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+          </svg>
+          <span>切地图</span>
+        </button>
+
+        <!-- Reset Camera -->
+        <button
+          @click="resetCamera"
+          class="h-6.5 px-2 rounded-md bg-[#092960]/90 hover:bg-[#123e84] border border-[#2461b2]/70 text-[11px] text-slate-300 transition-colors cursor-pointer"
+          title="复位默认鸟瞰视角"
+        >
+          复位
+        </button>
       </div>
     </div>
 
-    <!-- Center 3D Isometric View Stage -->
-    <div class="relative flex-1 min-h-[320px] flex items-center justify-center overflow-hidden my-1 select-none">
-      <!-- Ambient Cyber Glows & Grid Floor -->
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#144ba0]/55 via-[#0b2b68]/75 to-[#061940] pointer-events-none"></div>
+    <!-- 2. Center 3D WebGL Canvas Viewport -->
+    <div class="relative flex-1 min-h-[340px] flex items-center justify-center overflow-hidden my-1 rounded-lg border border-[#163a6b]/60 bg-[#06142a]">
+      <!-- Canvas Mount Container -->
+      <div ref="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
 
-      <!-- High-Fidelity 3D Isometric Architectural SVG -->
-      <div
-        class="w-full h-full flex items-center justify-center transition-transform duration-300 ease-out"
-        :style="{
-          transform: `scale(${zoomScale}) rotate(${rotateAngle}deg)`,
-          transformOrigin: 'center center'
-        }"
-      >
-        <svg class="w-full h-full max-h-[380px] object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]" viewBox="0 0 880 540">
-          <defs>
-            <!-- Ground & Shadow Gradients -->
-            <linearGradient id="groundGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#0a224a" stop-opacity="0.85" />
-              <stop offset="50%" stop-color="#051533" stop-opacity="0.95" />
-              <stop offset="100%" stop-color="#020a1c" stop-opacity="1" />
-            </linearGradient>
+      <!-- Quick Preset Buttons Pill Overlay (Bottom Center of 3D Scene) -->
+      <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-[#071d3e]/90 p-1 rounded-full border border-cyan-500/40 backdrop-blur-md shadow-lg shadow-black/60 overflow-x-auto max-w-[95%]">
+        <button
+          v-for="preset in VIEW_PRESETS"
+          :key="preset.id"
+          @click="selectPreset(preset.id)"
+          class="px-2.5 py-1 rounded-full text-[10px] font-medium transition-all whitespace-nowrap cursor-pointer"
+          :class="activePresetId === preset.id
+            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-[0_0_8px_rgba(6,182,212,0.6)]'
+            : 'text-slate-300 hover:text-white hover:bg-white/10'"
+          :title="preset.description"
+        >
+          {{ preset.shortLabel }}
+        </button>
+      </div>
 
-            <linearGradient id="roadGrad" x1="0" y1="0" x2="1" y2="0.8">
-              <stop offset="0%" stop-color="#14213d" />
-              <stop offset="100%" stop-color="#091326" />
-            </linearGradient>
+      <!-- Navigation & Compass Guide Overlay (Top Left of 3D Scene) -->
+      <div class="absolute top-2.5 left-2.5 z-20 pointer-events-none flex flex-col gap-1 text-[10px] text-slate-300 bg-[#06193d]/85 px-2 py-1.5 rounded border border-[#194883]/60 backdrop-blur-sm">
+        <div class="flex items-center gap-1.5 font-mono text-cyan-300 font-bold">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>星云计算中心 · 三维数字孪生底座</span>
+        </div>
+        <div class="text-[9px] text-slate-400">
+          左键旋转 · 右键平移 · 滚轮缩放 · 单击设备检视
+        </div>
+      </div>
 
-            <!-- Building Facade Gradients -->
-            <linearGradient id="wallFront" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#1b457e" />
-              <stop offset="100%" stop-color="#0b1e3d" />
-            </linearGradient>
-
-            <linearGradient id="wallSide" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#123260" />
-              <stop offset="100%" stop-color="#061226" />
-            </linearGradient>
-
-            <linearGradient id="glassFacade" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.65" />
-              <stop offset="50%" stop-color="#0284c7" stop-opacity="0.35" />
-              <stop offset="100%" stop-color="#0369a1" stop-opacity="0.75" />
-            </linearGradient>
-
-            <!-- Server Hall Floor & Glow -->
-            <linearGradient id="serverFloor" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#041229" />
-              <stop offset="100%" stop-color="#020817" />
-            </linearGradient>
-
-            <!-- Lightning Arc Gradient -->
-            <linearGradient id="lightningGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ffffff" />
-              <stop offset="30%" stop-color="#fef08a" />
-              <stop offset="70%" stop-color="#00f0ff" />
-              <stop offset="100%" stop-color="#3b82f6" />
-            </linearGradient>
-
-            <!-- Drop Shadow Filter -->
-            <filter id="shadow3D" x="-10%" y="-10%" width="130%" height="130%">
-              <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.85" />
-            </filter>
-
-            <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-
-            <filter id="alarmRedGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="6" result="blur"/>
-              <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-
-          <!-- 1. BASE ISOMETRIC CAMPUS PLATFORM -->
-          <g id="campus-base" filter="url(#shadow3D)">
-            <!-- Outer Island -->
-            <polygon points="440,30 840,240 440,490 40,240" fill="url(#groundGrad)" stroke="#1a4885" stroke-width="1.8" />
-
-            <!-- High-tech Floor Cyber Grid Lines -->
-            <g stroke="#133d74" stroke-width="0.7" opacity="0.45" fill="none">
-              <path d="M 120 200 L 520 430 M 200 160 L 600 390 M 280 120 L 680 350 M 360 80 L 760 310" />
-              <path d="M 760 200 L 360 430 M 680 160 L 280 390 M 600 120 L 200 350 M 520 80 L 120 310" />
-            </g>
-
-            <!-- Glowing Grounding Grid Mesh (Perimeter Lightning Net) -->
-            <polygon
-              points="440,48 820,240 440,475 60,240"
-              fill="none"
-              :stroke="isDemoRunning ? '#f59e0b' : '#00f0ff'"
-              :stroke-width="isDemoRunning ? '3.5' : '2'"
-              stroke-dasharray="8 4"
-              opacity="0.85"
-              filter="url(#neonGlow)"
-            />
-            
-            <!-- Moving Pulse Particles on Ground Net -->
-            <circle cx="630" cy="144" r="3.5" :fill="isDemoRunning ? '#f59e0b' : '#00f0ff'">
-              <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="250" cy="355" r="3.5" :fill="isDemoRunning ? '#f59e0b' : '#00f0ff'">
-              <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
-            </circle>
-
-            <!-- 2. ASPHALT PERIMETER ROADWAY WITH STRIPING -->
-            <g id="campus-road">
-              <polygon points="440,70 790,240 440,455 90,240" fill="url(#roadGrad)" stroke="#1c3a6b" stroke-width="1" />
-              <polygon points="440,100 740,240 440,420 140,240" fill="#071836" stroke="#1c3a6b" stroke-width="1" />
-              <polygon points="440,85 765,240 440,438 115,240" fill="none" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="6 6" opacity="0.75" />
-            </g>
-
-            <!-- Corner Landscaping Greenery -->
-            <polygon points="120,230 150,215 165,225 135,240" fill="#08332a" stroke="#10b981" stroke-width="0.8" opacity="0.8" />
-            <polygon points="725,230 755,215 770,225 740,240" fill="#08332a" stroke="#10b981" stroke-width="0.8" opacity="0.8" />
-            <polygon points="425,60 455,45 470,55 440,70" fill="#08332a" stroke="#10b981" stroke-width="0.8" opacity="0.8" />
-            <polygon points="425,455 455,440 470,450 440,465" fill="#08332a" stroke="#10b981" stroke-width="0.8" opacity="0.8" />
-          </g>
-
-          <!-- 3. ISOMETRIC DATACENTER BUILDING COMPLEX -->
-          <g id="datacenter-main-building" filter="url(#shadow3D)">
-            <!-- Foundation Slab -->
-            <polygon points="210,240 440,370 670,240 440,110" fill="#071b3d" stroke="#1c4d8e" stroke-width="2" />
-            
-            <!-- South-West Facade (Left Wall) -->
-            <polygon points="210,240 440,370 440,320 210,190" fill="url(#wallFront)" stroke="#2563eb" stroke-width="1.2" />
-            <!-- Architectural Glass Windows -->
-            <polygon points="230,220 320,270 320,255 230,205" fill="url(#glassFacade)" stroke="#00f0ff" stroke-width="0.8" />
-            <polygon points="340,280 420,325 420,310 340,265" fill="url(#glassFacade)" stroke="#00f0ff" stroke-width="0.8" />
-
-            <!-- South-East Facade (Right Wall) -->
-            <polygon points="440,370 670,240 670,190 440,320" fill="url(#wallSide)" stroke="#1d4ed8" stroke-width="1.2" />
-            <polygon points="460,325 540,280 540,265 460,310" fill="url(#glassFacade)" stroke="#00f0ff" stroke-width="0.8" />
-            <polygon points="560,270 650,220 650,205 560,255" fill="url(#glassFacade)" stroke="#00f0ff" stroke-width="0.8" />
-
-            <!-- Main Entrance -->
-            <polygon points="420,340 460,340 440,360" fill="#00f0ff" opacity="0.4" />
-            <polygon points="420,340 440,352 460,340 440,328" fill="#1e40af" stroke="#60a5fa" stroke-width="1" />
-
-            <!-- 4. COMPUTER SERVER HALL INTERIOR -->
-            <!-- Sunken Server Room Floor -->
-            <polygon
-              points="250,200 440,310 630,200 440,90"
-              fill="url(#serverFloor)"
-              :stroke="activeMode === 'server' || focusHotspot === 'datacenter_zone' ? '#00f0ff' : '#00e5ff'"
-              :stroke-width="activeMode === 'server' || focusHotspot === 'datacenter_zone' ? '3' : '1.5'"
-              :class="{ 'animate-pulse': focusHotspot === 'datacenter_zone' }"
-            />
-
-            <!-- Raised Floor Grid inside Server Hall -->
-            <g stroke="#0e2a56" stroke-width="0.8" opacity="0.7">
-              <path d="M 290 180 L 480 290 M 330 160 L 520 270 M 370 140 L 560 250 M 410 120 L 600 230" />
-              <path d="M 590 180 L 400 290 M 550 160 L 360 270 M 510 140 L 320 250 M 470 120 L 280 230" />
-            </g>
-
-            <!-- Blue LED Floor Runway Stripes (Cold Aisle Lighting) -->
-            <line x1="320" y1="210" x2="500" y2="170" stroke="#00f0ff" stroke-width="3" opacity="0.7" filter="url(#neonGlow)" />
-            <line x1="360" y1="240" x2="540" y2="200" stroke="#00f0ff" stroke-width="3" opacity="0.7" filter="url(#neonGlow)" />
-
-            <!-- 5. 3D ISOMETRIC HIGH-DENSITY SERVER RACKS -->
-            <g id="isometric-server-racks">
-              <!-- Rack Cluster 1 -->
-              <polygon points="320,195 360,172 368,177 328,200" fill="#00f0ff" opacity="0.35" />
-              <polygon points="328,200 368,177 368,205 328,228" fill="#091b3b" stroke="#1d4ed8" stroke-width="0.8" />
-              <polygon points="320,195 328,200 328,228 320,223" fill="#153a73" stroke="#1d4ed8" stroke-width="0.8" />
-              <line x1="332" y1="205" x2="364" y2="186" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="2 2" />
-              <line x1="332" y1="212" x2="364" y2="193" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3 2" />
-
-              <polygon points="375,163 415,140 423,145 383,168" fill="#00f0ff" opacity="0.35" />
-              <polygon points="383,168 423,145 423,173 383,196" fill="#091b3b" stroke="#1d4ed8" stroke-width="0.8" />
-              <polygon points="375,163 383,168 383,196 375,191" fill="#153a73" stroke="#1d4ed8" stroke-width="0.8" />
-              <line x1="387" y1="173" x2="419" y2="154" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="2 2" />
-
-              <polygon points="430,131 470,108 478,113 438,136" fill="#00f0ff" opacity="0.35" />
-              <polygon points="438,136 478,113 478,141 438,164" fill="#091b3b" stroke="#1d4ed8" stroke-width="0.8" />
-              <polygon points="430,131 438,136 438,164 430,159" fill="#153a73" stroke="#1d4ed8" stroke-width="0.8" />
-
-              <!-- Rack Cluster 2 -->
-              <polygon points="360,225 400,202 408,207 368,230" fill="#00f0ff" opacity="0.35" />
-              <polygon points="368,230 408,207 408,235 368,258" fill="#091b3b" stroke="#1d4ed8" stroke-width="0.8" />
-              <polygon points="360,225 368,230 368,258 360,253" fill="#153a73" stroke="#1d4ed8" stroke-width="0.8" />
-              <line x1="372" y1="235" x2="404" y2="216" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="2 2" />
-
-              <polygon points="415,193 455,170 463,175 423,198" fill="#00f0ff" opacity="0.35" />
-              <polygon points="423,198 463,175 463,203 423,226" fill="#091b3b" stroke="#1d4ed8" stroke-width="0.8" />
-              <polygon points="415,193 423,198 423,226 415,221" fill="#153a73" stroke="#1d4ed8" stroke-width="0.8" />
-              <line x1="427" y1="203" x2="459" y2="184" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="2 2" />
-            </g>
-
-            <!-- 6. ROOFTOP HV UNITS & LIGHTNING ROD ARRESTORS -->
-            <polygon points="230,165 275,140 320,165 275,190" fill="#0e2954" stroke="#3b82f6" stroke-width="1.2" />
-            <line x1="250" y1="155" x2="295" y2="180" stroke="#60a5fa" stroke-width="1" />
-
-            <!-- Rooftop Dual Protection Lightning Arrester Tower -->
-            <line x1="440" y1="85" x2="440" y2="30" stroke="#e0f2fe" stroke-width="3" />
-            <line x1="436" y1="30" x2="444" y2="30" stroke="#00f0ff" stroke-width="3.5" />
-            <circle cx="440" cy="30" r="8" fill="none" stroke="#00f0ff" stroke-width="1.5" opacity="0.8" class="animate-ping origin-center" />
-            <circle cx="440" cy="30" r="4.5" fill="#00f0ff" filter="url(#neonGlow)" />
-
-            <!-- Rooftop Atmospheric Field Mill Sensor (Left) -->
-            <line x1="275" y1="135" x2="275" y2="105" stroke="#38bdf8" stroke-width="2.5" />
-            <circle cx="275" cy="105" r="5" fill="#0284c7" stroke="#00f0ff" stroke-width="1.5" />
-            <circle cx="275" cy="105" r="8" fill="none" stroke="#00f0ff" stroke-width="1" stroke-dasharray="3 3" class="animate-spin origin-center" />
-
-            <!-- Power Distribution / SPD Center (Right Flank) -->
-            <polygon points="570,225 620,195 650,212 600,242" fill="#0d244c" stroke="#6366f1" stroke-width="1.2" />
-            <circle cx="610" cy="218" r="4.5" fill="#f59e0b" filter="url(#neonGlow)" />
-          </g>
-
-          <!-- 7. SIMULATED LIGHTNING DISCHARGE FLASH (Interactive Demonstration) -->
-          <g v-if="isDemoRunning" id="lightning-strike-demonstration">
-            <!-- Sky strike arc down to tower -->
-            <path
-              d="M 440 0 L 435 15 L 445 22 L 440 30"
-              stroke="url(#lightningGrad)"
-              stroke-width="5"
-              fill="none"
-              filter="url(#neonGlow)"
-            />
-            <!-- Down-conductor diversion paths into ground grid -->
-            <path
-              d="M 440 30 L 440 85 L 440 370 L 440 475"
-              stroke="#00f0ff"
-              stroke-width="3"
-              stroke-dasharray="8 4"
-              fill="none"
-              filter="url(#neonGlow)"
+      <!-- Hover Tooltip HUD (Follows or Anchors Hovered Device) -->
+      <transition name="fade">
+        <div
+          v-if="hoveredObject"
+          class="absolute top-2.5 right-2.5 z-20 bg-[#071f45]/90 border border-cyan-400/60 rounded-lg p-2.5 shadow-2xl backdrop-blur-md max-w-xs text-xs pointer-events-none"
+        >
+          <div class="flex items-center justify-between gap-2 pb-1 border-b border-cyan-500/30">
+            <span class="font-bold text-white tracking-wide text-xs">{{ hoveredObject.name }}</span>
+            <span
+              class="px-1.5 py-0.2 rounded text-[10px] font-mono"
+              :class="hoveredObject.statusType === 'warning' ? 'bg-amber-950 text-amber-300 border border-amber-500/40' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'"
             >
-              <animate attributeName="stroke-dashoffset" values="50;0" dur="0.3s" repeatCount="indefinite" />
-            </path>
-            <!-- Ground grid lightning dissipation shockwave -->
-            <circle cx="440" cy="475" r="35" fill="none" stroke="#00f0ff" stroke-width="2.5" opacity="0.85" class="animate-ping" />
-          </g>
+              {{ hoveredObject.status || '正常' }}
+            </span>
+          </div>
+          <div class="text-[11px] text-slate-300 mt-1.5 space-y-0.5">
+            <div class="flex justify-between text-slate-400">
+              <span>系统:</span>
+              <span class="text-cyan-200">{{ hoveredObject.system || '综合系统' }}</span>
+            </div>
+            <div v-if="hoveredObject.location" class="flex justify-between text-slate-400">
+              <span>位置:</span>
+              <span class="text-slate-200 text-right truncate max-w-[170px]">{{ hoveredObject.location }}</span>
+            </div>
+            <div v-if="hoveredObject.realtimeValue" class="flex justify-between font-mono text-cyan-300 pt-0.5 font-semibold">
+              <span>实时遥测:</span>
+              <span>{{ hoveredObject.realtimeValue }}</span>
+            </div>
+          </div>
+          <div class="text-[9px] text-cyan-400/80 pt-1 text-right">
+            单击可展开设备工况与技术档案 →
+          </div>
+        </div>
+      </transition>
 
-          <!-- 8. CYAN CONNECTING LASER LINES TO SENSOR HOTSPOTS -->
-          <!-- 1: 大气电场仪 (275, 105) -> (210, 85) -->
-          <line x1="275" y1="105" x2="220" y2="85" stroke="#00f0ff" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
-          <circle cx="275" cy="105" r="4" fill="#00f0ff" />
+      <!-- 3. Layer Management Drawer Panel (Left Slide-in) -->
+      <transition name="slide-left">
+        <div
+          v-if="showLayerDrawer"
+          class="absolute top-0 left-0 bottom-0 z-30 w-72 bg-[#071a38]/95 border-r border-cyan-500/40 shadow-2xl backdrop-blur-md p-3 flex flex-col text-xs"
+        >
+          <div class="flex items-center justify-between pb-2 border-b border-cyan-500/30">
+            <div class="flex items-center gap-1.5 font-bold text-white">
+              <svg class="w-4 h-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+              </svg>
+              <span>数字孪生独立图层管理</span>
+            </div>
+            <button
+              @click="showLayerDrawer = false"
+              class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-white rounded hover:bg-white/10"
+            >
+              ✕
+            </button>
+          </div>
 
-          <!-- 2: 双流向主动防雷装置 (440, 30) -> (470, 40) -->
-          <line x1="440" y1="30" x2="480" y2="40" stroke="#00f0ff" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
-          <circle cx="440" cy="30" r="4.5" fill="#00f0ff" />
+          <!-- Layer Quick Presets -->
+          <div class="grid grid-cols-2 gap-1 my-2">
+            <button
+              @click="applyLayerPreset('all')"
+              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
+            >
+              全景综合
+            </button>
+            <button
+              @click="applyLayerPreset('lightning_ground')"
+              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
+            >
+              防雷接地专项
+            </button>
+            <button
+              @click="applyLayerPreset('power_hvac')"
+              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
+            >
+              动力暖通运维
+            </button>
+            <button
+              @click="applyLayerPreset('underground')"
+              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
+            >
+              地下地网透视
+            </button>
+          </div>
 
-          <!-- 3: SPD监测终端 (610, 218) -> (660, 205) -->
-          <line x1="610" y1="218" x2="660" y2="205" stroke="#00f0ff" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
-          <circle cx="610" cy="218" r="4" fill="#00f0ff" />
+          <!-- Layer Switch List -->
+          <div class="flex-1 overflow-y-auto space-y-1 pr-1 custom-scroll">
+            <div
+              v-for="layer in layerList"
+              :key="layer.id"
+              class="flex items-center justify-between p-1.5 rounded hover:bg-white/5 border transition-colors"
+              :class="layer.visible ? 'border-cyan-500/20 bg-[#092247]/60' : 'border-transparent opacity-60'"
+            >
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: layer.color }"></span>
+                <div>
+                  <div class="font-medium text-slate-100 text-[11px]">{{ layer.name }}</div>
+                  <div class="text-[9px] text-slate-400">{{ layer.description }}</div>
+                </div>
+              </div>
 
-          <!-- 4: 接地电阻监测 (320, 330) -> (240, 385) -->
-          <line x1="320" y1="330" x2="240" y2="385" stroke="#00f0ff" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
-          <circle cx="320" cy="330" r="4" fill="#00f0ff" />
+              <!-- Toggle Eye Icon -->
+              <button
+                @click="toggleLayer(layer.id)"
+                class="w-6 h-6 flex items-center justify-center rounded hover:bg-cyan-500/20 text-cyan-300 transition-colors"
+                :title="layer.visible ? '隐藏图层' : '显示图层'"
+              >
+                <svg v-if="layer.visible" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg v-else class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
 
-          <!-- 5: 静电监测终端 (480, 280) -> (550, 365) -->
-          <line x1="480" y1="280" x2="550" y2="365" stroke="#00f0ff" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
-          <circle cx="480" cy="280" r="4" fill="#00f0ff" />
+      <!-- 4. Selected Device Inspector Bottom Bar / Modal -->
+      <transition name="slide-up">
+        <div
+          v-if="selectedDevice"
+          class="absolute bottom-12 left-4 right-4 z-30 bg-[#071f45]/95 border border-cyan-400/80 rounded-xl p-3 shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-3 text-xs"
+        >
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 flex-shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                <line x1="6" y1="6" x2="6.01" y2="6" />
+                <line x1="6" y1="18" x2="6.01" y2="18" />
+              </svg>
+            </div>
 
-          <!-- 6: 设备机房区域状态 (440, 210) -> (440, 280) -->
-          <line x1="440" y1="210" x2="440" y2="260" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" filter="url(#neonGlow)" />
-          <circle cx="440" cy="210" r="4" fill="#10b981" />
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-sm tracking-wide">{{ selectedDevice.name }}</span>
+                <span class="font-mono text-[10px] text-cyan-300 bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-500/40">
+                  {{ selectedDevice.code || selectedDevice.id }}
+                </span>
+                <span
+                  class="px-2 py-0.5 rounded text-[10px] font-bold"
+                  :class="selectedDevice.statusType === 'warning' ? 'bg-amber-950 text-amber-300 border border-amber-500/50' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/50'"
+                >
+                  {{ selectedDevice.status || '状态正常' }}
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-300 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
+                <span>位置: <strong class="text-slate-100 font-normal">{{ selectedDevice.location }}</strong></span>
+                <span>所属系统: <strong class="text-cyan-300 font-normal">{{ selectedDevice.system }}</strong></span>
+                <span v-if="selectedDevice.specs">技术规格: <strong class="text-slate-300 font-normal">{{ selectedDevice.specs }}</strong></span>
+              </div>
+            </div>
+          </div>
 
-          <!-- ======================================================== -->
-          <!-- 实时告警精准靶标 (Alarm Hotspots on 3D Map) -->
-          <!-- 当有告警时，在对应三维空间位置渲染醒目红/橙脉冲光晕与声纳光环 -->
-          <!-- ======================================================== -->
-          <g id="alarm-map-beacons" v-if="activeAlarms && activeAlarms.length > 0">
-            <!-- 告警点 1: 2F动力室 SPD (x: 610, y: 218) -->
-            <g v-if="hasAlarm('spd')">
-              <!-- 底盘红色散流报警光环 -->
-              <ellipse cx="610" cy="218" rx="28" ry="16" fill="rgba(239,68,68,0.25)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 2">
-                <animate attributeName="rx" values="20;38;20" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="ry" values="10;20;10" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite" />
-              </ellipse>
-              <!-- 扩散脉冲 -->
-              <circle cx="610" cy="218" r="22" fill="none" stroke="#ef4444" stroke-width="2" class="animate-ping origin-center" opacity="0.75" />
-              <!-- 垂直报警光柱 / 靶标虚线 -->
-              <line x1="610" y1="218" x2="610" y2="160" stroke="#ef4444" stroke-width="2" stroke-dasharray="3 2" filter="url(#alarmRedGlow)" />
-              <!-- 靶标信标圆心 -->
-              <circle cx="610" cy="218" r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2" filter="url(#alarmRedGlow)" />
-              <circle cx="610" cy="218" r="3" fill="#ffffff" />
-              <!-- 顶部悬浮告警标签气泡 (SVG内置) -->
-              <g transform="translate(610, 155)">
-                <rect x="-42" y="-22" width="84" height="20" rx="4" fill="rgba(220,38,38,0.92)" stroke="#fecaca" stroke-width="1" filter="url(#alarmRedGlow)" />
-                <polygon points="0,2 -4,-2 4,-2" fill="#dc2626" />
-                <text x="0" y="-8" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold" font-family="sans-serif">
-                  SPD超标 · 一级
-                </text>
-              </g>
-            </g>
+          <div class="flex items-center gap-3">
+            <div v-if="selectedDevice.realtimeValue" class="bg-[#051633] px-3 py-1.5 rounded-lg border border-cyan-500/30 font-mono text-center">
+              <div class="text-[10px] text-slate-400">实时遥测监测值</div>
+              <div class="text-sm font-bold text-cyan-300">{{ selectedDevice.realtimeValue }}</div>
+            </div>
 
-            <!-- 告警点 2: -1F人工地网基准井 Ground (x: 320, y: 330) -->
-            <g v-if="hasAlarm('ground')">
-              <ellipse cx="320" cy="330" rx="30" ry="16" fill="rgba(245,158,11,0.25)" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2">
-                <animate attributeName="rx" values="22;42;22" dur="2.2s" repeatCount="indefinite" />
-                <animate attributeName="ry" values="12;22;12" dur="2.2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.2s" repeatCount="indefinite" />
-              </ellipse>
-              <circle cx="320" cy="330" r="22" fill="none" stroke="#f59e0b" stroke-width="2" class="animate-ping origin-center" opacity="0.75" />
-              <line x1="320" y1="330" x2="320" y2="280" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3 2" />
-              <circle cx="320" cy="330" r="7" fill="#d97706" stroke="#ffffff" stroke-width="2" />
-              <circle cx="320" cy="330" r="3" fill="#ffffff" />
-              <g transform="translate(320, 275)">
-                <rect x="-46" y="-22" width="92" height="20" rx="4" fill="rgba(217,119,6,0.92)" stroke="#fed7aa" stroke-width="1" />
-                <polygon points="0,2 -4,-2 4,-2" fill="#d97706" />
-                <text x="0" y="-8" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold" font-family="sans-serif">
-                  地网阻抗超限 · 二级
-                </text>
-              </g>
-            </g>
+            <button
+              @click="openGlobalDetail"
+              class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold text-xs transition-all shadow-[0_0_10px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              查看诊断档案
+            </button>
 
-            <!-- 告警点 3: 科研楼天面 12号接闪塔 Lightning (x: 275, y: 105) -->
-            <g v-if="hasAlarm('lightning')">
-              <ellipse cx="275" cy="105" rx="26" ry="14" fill="rgba(234,179,8,0.25)" stroke="#eab308" stroke-width="1.5" stroke-dasharray="4 2">
-                <animate attributeName="rx" values="18;34;18" dur="1.8s" repeatCount="indefinite" />
-                <animate attributeName="ry" values="9;18;9" dur="1.8s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.8s" repeatCount="indefinite" />
-              </ellipse>
-              <circle cx="275" cy="105" r="20" fill="none" stroke="#eab308" stroke-width="2" class="animate-ping origin-center" opacity="0.75" />
-              <line x1="275" y1="105" x2="275" y2="55" stroke="#eab308" stroke-width="2" stroke-dasharray="3 2" />
-              <circle cx="275" cy="105" r="6.5" fill="#ca8a04" stroke="#ffffff" stroke-width="2" />
-              <circle cx="275" cy="105" r="2.5" fill="#ffffff" />
-              <g transform="translate(275, 50)">
-                <rect x="-44" y="-22" width="88" height="20" rx="4" fill="rgba(202,138,4,0.92)" stroke="#fef08a" stroke-width="1" />
-                <polygon points="0,2 -4,-2 4,-2" fill="#ca8a04" />
-                <text x="0" y="-8" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold" font-family="sans-serif">
-                  天面电场畸变 · 三级
-                </text>
-              </g>
-            </g>
-          </g>
-        </svg>
+            <button
+              @click="selectedDevice = null"
+              class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>
+
+    <!-- 3. Bottom Status Bar with KPI Indicators -->
+    <div class="pt-1.5 flex items-center justify-between text-[11px] text-slate-300 border-t border-[#184682]/40 relative z-20">
+      <div class="flex items-center gap-3 font-mono">
+        <span class="flex items-center gap-1.5 text-cyan-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>地网电阻: 0.52Ω</span>
+        </span>
+        <span class="text-slate-500">|</span>
+        <span class="text-slate-300">空间电场: 12.4 kV/m</span>
+        <span class="text-slate-500">|</span>
+        <span class="text-amber-300">SPD-04 漏电关注: 0.18mA</span>
       </div>
 
-      <!-- 9. THE 6 FLOATING HOLOGRAPHIC 3D CALLOUT BADGES (Sleek Cockpit HUD Badges) -->
-
-      <!-- Tag 1: 大气电场仪 (Top-Left) -->
-      <div
-        @click="openDetail('atmospheric')"
-        class="absolute left-[3%] top-[6%] z-20 cursor-pointer border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="[
-          hasAlarm('lightning')
-            ? 'bg-amber-950/90 border-yellow-400 text-yellow-200 ring-2 ring-yellow-400/80 shadow-[0_0_20px_rgba(234,179,8,0.8)] animate-pulse'
-            : focusHotspot === 'atmospheric'
-              ? 'bg-[#0a295ee8] border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]'
-              : 'bg-[#0a295ee8] hover:bg-[#113a80] border-cyan-400/50 hover:border-cyan-300'
-        ]"
-      >
-        <span
-          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-          :class="hasAlarm('lightning') ? 'bg-yellow-400 animate-ping' : 'bg-cyan-300 animate-pulse'"
-        ></span>
-        <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white flex items-center gap-1">
-            <span>大气电场仪</span>
-            <span v-if="hasAlarm('lightning')" class="px-1 rounded bg-yellow-500/30 text-yellow-300 text-[9px]">告警</span>
-          </span>
-          <span
-            class="text-[11px] font-mono font-medium leading-tight"
-            :class="hasAlarm('lightning') ? 'text-yellow-300 font-bold' : 'text-emerald-300'"
-          >
-            {{ hasAlarm('lightning') ? '38.6 kV/m · 电场畸变' : '12.4 kV/m · 正常' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Tag 2: 双流向主动防雷装置 (Top-Center-Right) -->
-      <div
-        @click="openDetail('dual_protection')"
-        class="absolute left-[47%] top-[2%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="focusHotspot === 'dual_protection' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse flex-shrink-0"></span>
-        <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white">双流向主动防雷</span>
-          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">就绪 · 耐受58.7kA</span>
-        </div>
-      </div>
-
-      <!-- Tag 3: SPD监测终端 (Middle-Right) -->
-      <div
-        @click="openDetail('spd_terminal')"
-        class="absolute right-[3%] top-[24%] z-20 cursor-pointer border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="[
-          hasAlarm('spd')
-            ? 'bg-red-950/90 border-red-400 text-red-200 ring-2 ring-red-500/80 shadow-[0_0_22px_rgba(239,68,68,0.85)] animate-pulse'
-            : focusHotspot === 'spd_terminal'
-              ? 'bg-[#0a295ee8] border-amber-300 ring-1 ring-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.75)]'
-              : 'bg-[#0a295ee8] hover:bg-[#113a80] border-cyan-400/50 hover:border-cyan-300'
-        ]"
-      >
-        <span
-          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-          :class="hasAlarm('spd') ? 'bg-red-400 animate-ping' : 'bg-amber-400 animate-pulse'"
-        ></span>
-        <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white flex items-center gap-1">
-            <span>SPD监测终端</span>
-            <span v-if="hasAlarm('spd')" class="px-1 rounded bg-red-600/40 text-red-200 text-[9px]">严重</span>
-          </span>
-          <span
-            class="text-[11px] font-mono font-medium leading-tight"
-            :class="hasAlarm('spd') ? 'text-red-300 font-bold' : 'text-amber-300'"
-          >
-            {{ hasAlarm('spd') ? '漏流 148μA · 一级超标' : '12/12在网 · 正常' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Tag 4: 接地电阻监测 (Bottom-Left) -->
-      <div
-        @click="openDetail('ground_res')"
-        class="absolute left-[4%] bottom-[6%] z-20 cursor-pointer border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="[
-          hasAlarm('ground')
-            ? 'bg-orange-950/90 border-orange-400 text-orange-200 ring-2 ring-orange-400/80 shadow-[0_0_20px_rgba(245,158,11,0.8)] animate-pulse'
-            : focusHotspot === 'ground_res'
-              ? 'bg-[#0a295ee8] border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]'
-              : 'bg-[#0a295ee8] hover:bg-[#113a80] border-cyan-400/50 hover:border-cyan-300'
-        ]"
-      >
-        <span
-          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-          :class="hasAlarm('ground') ? 'bg-orange-400 animate-ping' : 'bg-emerald-400 animate-pulse'"
-        ></span>
-        <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white flex items-center gap-1">
-            <span>地网接地电阻</span>
-            <span v-if="hasAlarm('ground')" class="px-1 rounded bg-orange-600/40 text-orange-200 text-[9px]">超限</span>
-          </span>
-          <span
-            class="text-[11px] font-mono font-medium leading-tight"
-            :class="hasAlarm('ground') ? 'text-orange-300 font-bold' : 'text-emerald-300'"
-          >
-            {{ hasAlarm('ground') ? '0.88 Ω · 二级超限' : '0.52 Ω (≤1.0Ω优)' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Tag 5: 静电监测终端 (Bottom-Right) -->
-      <div
-        @click="openDetail('esd_terminal')"
-        class="absolute right-[4%] bottom-[6%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="focusHotspot === 'esd_terminal' ? 'border-cyan-300 ring-1 ring-cyan-400 shadow-[0_0_18px_rgba(0,240,255,0.75)]' : 'border-cyan-400/50 hover:border-cyan-300'"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-        <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white">微环境静电终端</span>
-          <span class="text-[11px] text-emerald-300 font-mono font-medium leading-tight">0.8 kV · 运行正常</span>
-        </div>
-      </div>
-
-      <!-- Tag 6: 设备机房区域状态 (Center Floating Badge) -->
-      <div
-        @click="openDetail('datacenter_zone')"
-        class="absolute left-[36%] top-[56%] z-20 cursor-pointer bg-[#0a295ee8] hover:bg-[#113a80] border rounded-lg px-2.5 py-1 backdrop-blur-md transition-all transform hover:scale-105 flex items-center gap-2 shadow-[0_4px_16px_rgba(2,12,38,0.7)]"
-        :class="focusHotspot === 'datacenter_zone' ? 'border-emerald-300 ring-1 ring-emerald-400 shadow-[0_0_18px_rgba(0,229,163,0.75)]' : 'border-emerald-400/60 hover:border-emerald-300'"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
-        <div class="flex flex-col text-left">
-          <span class="text-xs font-bold text-white">核心机房防护</span>
-          <span class="text-[11px] text-emerald-300 font-medium leading-tight">屏蔽衰减88dB · 等电位优</span>
-        </div>
-      </div>
-
-      <!-- BOTTOM-LEFT COMPASS ROSE -->
-      <div class="absolute left-3 bottom-3 z-10 flex flex-col items-center select-none pointer-events-none">
-        <div class="w-9 h-9 rounded-full bg-[#0a2b60]/95 border border-cyan-400/70 flex items-center justify-center shadow-[0_0_14px_rgba(0,240,255,0.45)]">
-          <svg
-            class="w-6 h-6 text-cyan-300 transition-transform duration-300"
-            :style="{ transform: `rotate(${-45 - rotateAngle}deg)` }"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <polygon points="12,2 15,12 12,9 9,12" fill="#ef4444" />
-            <polygon points="12,22 15,12 12,9 9,12" fill="#38bdf8" />
-          </svg>
-        </div>
-        <span class="text-xs font-bold text-cyan-300 font-tech mt-0.5 tracking-wider">N</span>
-      </div>
-
-      <!-- Demonstration Feedback Toast -->
-      <div
-        v-if="isDemoRunning"
-        class="absolute inset-x-10 top-3 z-30 bg-[#07244a]/95 border border-cyan-400/80 rounded-xl p-3 backdrop-blur-xl shadow-[0_0_30px_rgba(0,240,255,0.6)] flex items-center justify-between text-xs animate-bounce"
-      >
-        <div class="flex items-center gap-3">
-          <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
-          <span class="text-white font-bold">【雷电拦截仿真演练】已截获 58.7 kA 瞬态陡脉冲！</span>
-          <span class="text-cyan-300 font-tech">分流通量: 100% · 地网散流阻抗: 0.52Ω · 屏蔽衰减: 88dB (防护正常)</span>
-        </div>
+      <div class="flex items-center gap-2 text-slate-400">
+        <span>视角: {{ currentPresetLabel }}</span>
+        <span>·</span>
+        <span>园区工业仿真 1:1</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { DatacenterSceneManager, VIEW_PRESETS } from '@/components/datacenter3d/sceneManager';
+import { LayerId, ViewPresetId, LayerConfig } from '@/components/datacenter3d/types';
 import {
   openDeviceInspection,
   activeFocusHotspot,
   simulatedLightningActive,
-  triggerSimulatedLightning
+  triggerSimulatedLightning,
 } from '@/composables/useCockpitState';
 
 interface AlarmTarget {
@@ -621,138 +391,302 @@ interface AlarmTarget {
   overValue?: string;
 }
 
-const props = withDefaults(defineProps<{
-  activeAlarms?: AlarmTarget[];
-  focusedAlarmId?: string;
-  allowMapSwitch?: boolean;
-}>(), {
-  allowMapSwitch: false
-});
+const props = withDefaults(
+  defineProps<{
+    activeAlarms?: AlarmTarget[];
+    focusedAlarmId?: string;
+    allowMapSwitch?: boolean;
+  }>(),
+  {
+    allowMapSwitch: false,
+  }
+);
 
 const emit = defineEmits<{
   (e: 'switch-to-map'): void;
 }>();
 
-const focusHotspot = activeFocusHotspot;
-const isDemoRunning = simulatedLightningActive;
+// Template Refs & Scene Instances
+const canvasContainer = ref<HTMLElement | null>(null);
+let sceneManager: DatacenterSceneManager | null = null;
 
-// 报警靶点位置映射 (对应三维模型精准几何坐标)
-// 1. spd (2F动力机房SPD): (610, 218)
-// 2. ground (-1F人工地网基准井): (320, 330)
-// 3. lightning (天面12号接闪塔/电场仪): (275, 105)
-const alarmBeaconCoords: Record<string, { x: number; y: number; label: string; badgePos: string }> = {
-  spd: {
-    x: 610,
-    y: 218,
-    label: '2F动力机房 (SPD-04#)',
-    badgePos: 'right-[2%] top-[24%]'
-  },
-  ground: {
-    x: 320,
-    y: 330,
-    label: '-1F地网基准井 (GW-01#)',
-    badgePos: 'left-[4%] bottom-[6%]'
-  },
-  lightning: {
-    x: 275,
-    y: 105,
-    label: '天面12号接闪塔 (AEFM-01#)',
-    badgePos: 'left-[3%] top-[6%]'
-  }
-};
+// UI State
+const showPresetMenu = ref(false);
+const showLayerDrawer = ref(false);
+const isXRayEnabled = ref(false);
+const isPatrolling = ref(false);
+const isLightningFiring = ref(false);
+const activePresetId = ref<ViewPresetId>('birds_eye');
 
-const hasAlarm = (id: string) => {
-  return props.activeAlarms ? props.activeAlarms.some(a => a.id === id) : false;
-};
+const hoveredObject = ref<any | null>(null);
+const selectedDevice = ref<any | null>(null);
 
-const getAlarm = (id: string) => {
-  return props.activeAlarms ? props.activeAlarms.find(a => a.id === id) : null;
-};
+// Layer Configuration
+const layerList = ref<LayerConfig[]>([
+  { id: 'building', name: '建筑主体 (82m×54m)', category: '建筑与土建', color: '#c4cdd9', visible: true, transparent: false, opacity: 1.0, description: '三层数据机房金属幕墙、夹芯板、雨棚及门窗' },
+  { id: 'roads', name: '场地道路与硬化铺装', category: '建筑与土建', color: '#151c27', visible: true, transparent: false, opacity: 1.0, description: '环形消防车道、货运通道、标线与出入口' },
+  { id: 'power', name: '变配电系统 (110kV/10kV)', category: '动力暖通', color: '#243242', visible: true, transparent: false, opacity: 1.0, description: '变配电附属用房、双主变、防爆墙及封闭桥架' },
+  { id: 'cooling', name: '冷却设备区 (水冷机房)', category: '动力暖通', color: '#1d4ed8', visible: true, transparent: false, opacity: 1.0, description: '4台离心水机、循环水泵、多色保温管廊及步道' },
+  { id: 'emergency', name: '应急动力 (柴油发电机)', category: '动力暖通', color: '#1e2e42', visible: true, transparent: false, opacity: 1.0, description: '4台2000kW柴发机组、消音立管与日用燃油围堰' },
+  { id: 'lightning', name: '防雷接闪设施', category: '防雷防静电', color: '#38bdf8', visible: true, transparent: false, opacity: 1.0, description: '女儿墙接闪带、10m网格、避雷短针及主动避雷塔' },
+  { id: 'grounding', name: '接地系统与测试点', category: '防雷防静电', color: '#eab308', visible: true, transparent: false, opacity: 1.0, description: '引下线、断接卡箱、MEB等电位箱及深井测试井' },
+  { id: 'underground', name: '地下数字孪生接地网', category: '防雷防静电', color: '#f97316', visible: true, transparent: false, opacity: 1.0, description: '地下-3.5m 10m×10m闭合铜质网格与垂直接地极' },
+  { id: 'spd', name: '智能浪涌保护器 (SPD)', category: '防雷防静电', color: '#00f0ff', visible: true, transparent: false, opacity: 1.0, description: '高压进线、机房配电、变频冷水及柴发SPD' },
+  { id: 'esd', name: '静电防护与监测 (ESD)', category: '防雷防静电', color: '#06b6d4', visible: true, transparent: false, opacity: 1.0, description: '微环境静电传感器、门禁测试台及卸油接地' },
+  { id: 'sensors', name: '雷电监测传感器', category: '防雷防静电', color: '#a855f7', visible: true, transparent: false, opacity: 1.0, description: '天面大气电场仪AEFM-01及雷电峰值感应' },
+]);
 
-const rotateAngle = ref(0);
-const zoomScale = ref(1.0);
-const isAutoRotating = ref(false);
-let autoRotateTimer: number | null = null;
-
-const viewModes = computed(() => {
-  const modes = [
-    { id: 'all', label: '全景态势' },
-    { id: 'lightning', label: '防雷外廓' },
-    { id: 'server', label: '机房透视' },
-    { id: 'ground', label: '地网拓扑' }
-  ];
-  if (props.allowMapSwitch) {
-    modes.push({ id: 'map', label: '雷电活动地图' });
-  }
-  return modes;
+const activeLayerCount = computed(() => {
+  return layerList.value.filter((l) => l.visible).length;
 });
-const activeMode = ref('all');
 
-const handleModeClick = (modeId: string) => {
-  if (modeId === 'map') {
-    emit('switch-to-map');
-    return;
+const currentPresetLabel = computed(() => {
+  const p = VIEW_PRESETS.find((preset) => preset.id === activePresetId.value);
+  return p ? p.label : '视角预设';
+});
+
+// Select Preset Viewpoint
+function selectPreset(presetId: ViewPresetId) {
+  activePresetId.value = presetId;
+  showPresetMenu.value = false;
+  if (sceneManager) {
+    sceneManager.setViewPreset(presetId);
   }
-  activeMode.value = modeId;
-};
+}
 
-const toggleAutoRotate = () => {
-  isAutoRotating.value = !isAutoRotating.value;
-  if (isAutoRotating.value) {
-    autoRotateTimer = window.setInterval(() => {
-      rotateAngle.value = (rotateAngle.value + 1) % 360;
-    }, 80);
-  } else {
-    if (autoRotateTimer) clearInterval(autoRotateTimer);
-    autoRotateTimer = null;
+// Layer Toggle
+function toggleLayer(layerId: LayerId) {
+  const layer = layerList.value.find((l) => l.id === layerId);
+  if (!layer) return;
+  layer.visible = !layer.visible;
+  if (sceneManager) {
+    sceneManager.setLayerVisibility(layerId, layer.visible);
   }
-};
+}
 
-const zoomIn = () => {
-  if (zoomScale.value < 1.6) zoomScale.value = Number((zoomScale.value + 0.1).toFixed(1));
-};
+// Apply Layer Preset combinations
+function applyLayerPreset(mode: 'all' | 'lightning_ground' | 'power_hvac' | 'underground') {
+  if (mode === 'all') {
+    layerList.value.forEach((l) => (l.visible = true));
+    isXRayEnabled.value = false;
+    if (sceneManager) {
+      layerList.value.forEach((l) => sceneManager!.setLayerVisibility(l.id, true));
+      sceneManager.setBuildingXRay(false);
+    }
+  } else if (mode === 'lightning_ground') {
+    layerList.value.forEach((l) => {
+      l.visible = ['building', 'lightning', 'grounding', 'underground', 'spd', 'esd', 'sensors'].includes(l.id);
+    });
+    isXRayEnabled.value = true;
+    if (sceneManager) {
+      layerList.value.forEach((l) => sceneManager!.setLayerVisibility(l.id, l.visible));
+      sceneManager.setBuildingXRay(true);
+      sceneManager.setViewPreset('roof_lightning');
+    }
+  } else if (mode === 'power_hvac') {
+    layerList.value.forEach((l) => {
+      l.visible = ['building', 'roads', 'power', 'cooling', 'emergency'].includes(l.id);
+    });
+    isXRayEnabled.value = false;
+    if (sceneManager) {
+      layerList.value.forEach((l) => sceneManager!.setLayerVisibility(l.id, l.visible));
+      sceneManager.setBuildingXRay(false);
+      sceneManager.setViewPreset('cooling_yard_detail');
+    }
+  } else if (mode === 'underground') {
+    layerList.value.forEach((l) => {
+      l.visible = ['underground', 'grounding', 'lightning', 'building'].includes(l.id);
+    });
+    isXRayEnabled.value = true;
+    if (sceneManager) {
+      layerList.value.forEach((l) => sceneManager!.setLayerVisibility(l.id, l.visible));
+      sceneManager.setBuildingXRay(true);
+      sceneManager.setViewPreset('underground_grid');
+    }
+  }
+}
 
-const zoomOut = () => {
-  if (zoomScale.value > 0.8) zoomScale.value = Number((zoomScale.value - 0.1).toFixed(1));
-};
+// X-Ray Building Translucency
+function toggleXRay() {
+  isXRayEnabled.value = !isXRayEnabled.value;
+  if (sceneManager) {
+    sceneManager.setBuildingXRay(isXRayEnabled.value);
+  }
+}
 
-const resetView = () => {
-  rotateAngle.value = 0;
-  zoomScale.value = 1.0;
-  if (isAutoRotating.value) toggleAutoRotate();
-};
+// Auto Patrol
+function toggleAutoPatrol() {
+  isPatrolling.value = !isPatrolling.value;
+  if (sceneManager) {
+    sceneManager.isAutoRotate = isPatrolling.value;
+  }
+}
 
-const openDetail = (key: string) => {
-  openDeviceInspection(key);
-};
+// Reset Camera
+function resetCamera() {
+  selectPreset('birds_eye');
+  if (isPatrolling.value) {
+    toggleAutoPatrol();
+  }
+}
 
-const handleLightningDemo = () => {
+// Trigger Lightning Strike Simulation
+function triggerLightning() {
+  isLightningFiring.value = true;
   triggerSimulatedLightning();
-};
+  if (sceneManager) {
+    sceneManager.triggerLightningStrike();
+  }
+  setTimeout(() => {
+    isLightningFiring.value = false;
+  }, 2500);
+}
 
-// 当聚焦告警发生变化时，将3D视角切换到最佳观测模式与角度
+// Open Global Device Inspection Modal
+function openGlobalDetail() {
+  if (selectedDevice.value && selectedDevice.value.id) {
+    openDeviceInspection(selectedDevice.value.id);
+  }
+}
+
+// Watch bidirectional focus alarms
 watch(
   () => props.focusedAlarmId,
   (newId) => {
-    if (!newId) return;
+    if (!newId || !sceneManager) return;
+
     if (newId === 'spd') {
-      activeMode.value = 'server';
-      rotateAngle.value = 15;
-      zoomScale.value = 1.1;
+      sceneManager.focusByEquipmentId('spd_terminal');
+      selectedDevice.value = {
+        id: 'spd_terminal',
+        code: 'DEV-SPD-004',
+        name: '智能浪涌保护器SPD监测终端 (SPD-04)',
+        type: '电源配电二级浪涌监测',
+        system: '浪涌保护SPD',
+        location: '2F 数据机房动力配电室低压柜 A-02',
+        status: '关注',
+        statusType: 'warning',
+        realtimeValue: '漏电流 0.18 mA · 动作累计 12次',
+        specs: '冲击电流 Iimp 25kA · 漏电流监测 · CAN-Bus',
+      };
     } else if (newId === 'ground') {
-      activeMode.value = 'ground';
-      rotateAngle.value = -15;
-      zoomScale.value = 1.1;
+      sceneManager.focusByEquipmentId('ground_res');
+      selectedDevice.value = {
+        id: 'ground_res',
+        code: 'DEV-GND-001',
+        name: '地网电阻在线监测终端 (GW-01#)',
+        type: '联合接地电网基准测试井',
+        system: '接地网',
+        location: '园区室外 -1F 人工地网基准测试井',
+        status: '正常',
+        statusType: 'success',
+        realtimeValue: '0.52 Ω (国标 ≤ 1.0 Ω)',
+        specs: '四极交流异频抗干扰注入法 · 测量范围 0.001~100Ω',
+      };
     } else if (newId === 'lightning') {
-      activeMode.value = 'lightning';
-      rotateAngle.value = 0;
-      zoomScale.value = 1.05;
+      sceneManager.focusByEquipmentId('atmospheric');
+      selectedDevice.value = {
+        id: 'atmospheric',
+        code: 'DEV-ENV-001',
+        name: '大气电场仪 (AEFM-01)',
+        type: '空间电场监测',
+        system: '防雷接闪',
+        location: '主建筑屋面 12号接闪塔顶端',
+        status: '正常',
+        statusType: 'success',
+        realtimeValue: '12.4 kV/m (正常阈值 ±15.0 kV/m)',
+        specs: '动态范围 ±50kV/m · 采样率 1000Hz · Modbus-TCP',
+      };
     }
   },
   { immediate: true }
 );
 
+// Watch activeFocusHotspot from composable
+watch(
+  () => activeFocusHotspot.value,
+  (hotspotId) => {
+    if (hotspotId && sceneManager) {
+      sceneManager.focusByEquipmentId(hotspotId);
+    }
+  }
+);
+
+onMounted(() => {
+  if (canvasContainer.value) {
+    sceneManager = new DatacenterSceneManager(canvasContainer.value, {
+      onHoverObject: (userData) => {
+        hoveredObject.value = userData;
+      },
+      onClickObject: (userData) => {
+        selectedDevice.value = userData;
+        if (userData && userData.id) {
+          openDeviceInspection(userData.id);
+        }
+      },
+    });
+
+    // If there is an initial focused alarm, handle it
+    if (props.focusedAlarmId) {
+      setTimeout(() => {
+        if (props.focusedAlarmId === 'spd') {
+          sceneManager?.focusByEquipmentId('spd_terminal');
+        } else if (props.focusedAlarmId === 'ground') {
+          sceneManager?.focusByEquipmentId('ground_res');
+        } else if (props.focusedAlarmId === 'lightning') {
+          sceneManager?.focusByEquipmentId('atmospheric');
+        }
+      }, 500);
+    }
+  }
+});
+
 onUnmounted(() => {
-  if (autoRotateTimer) clearInterval(autoRotateTimer);
+  if (sceneManager) {
+    sceneManager.dispose();
+    sceneManager = null;
+  }
 });
 </script>
+
+<style scoped>
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.4);
+  border-radius: 2px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.slide-left-enter-from,
+.slide-left-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+</style>
