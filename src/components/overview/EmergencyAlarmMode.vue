@@ -59,14 +59,37 @@
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-[68%_32%] xl:grid-cols-[70%_30%] gap-2 p-2 overflow-hidden">
       <!-- 左侧：三维数字孪生 OR 雷电活动实时地图展示区 -->
       <div class="relative min-w-0 h-full rounded-xl overflow-hidden border border-[#1d4d8c]/80 shadow-lg bg-[#040f24]">
-        <!-- 视图 A：三维数字孪生卡片组件 -->
-        <template v-if="activeMainView === '3d'">
+        <!-- 顶部常驻双模式切换胶囊栏 (三维孪生 vs 实时地图，保证任何状态下随时无缝回切) -->
+        <div class="absolute top-2.5 right-3 z-30 pointer-events-auto flex items-center bg-[#071d3e]/95 border border-cyan-500/60 rounded-lg p-0.5 shadow-[0_0_15px_rgba(6,182,212,0.35)] backdrop-blur-md">
+          <button
+            @click="switchMainView('3d')"
+            class="px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            :class="activeMainView === '3d' ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'text-slate-300 hover:text-white'"
+            title="展示算力中心建筑三维数字孪生告警空间透视"
+          >
+            <Box class="w-3.5 h-3.5" :class="activeMainView === '3d' ? 'text-white' : 'text-cyan-400'" />
+            <span>三维孪生</span>
+          </button>
+          <button
+            @click="switchMainView('map')"
+            class="px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            :class="activeMainView === 'map' ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'text-slate-300 hover:text-white'"
+            title="展示宏观雷电活动落雷分布与防御预警圈电子地图"
+          >
+            <MapPin class="w-3.5 h-3.5" :class="activeMainView === 'map' ? 'text-white' : 'text-cyan-400'" />
+            <span>雷电地图</span>
+          </button>
+        </div>
+
+        <!-- 视图 A：三维数字孪生卡片组件 (保持挂载，切换零延迟) -->
+        <div v-show="activeMainView === '3d'" class="h-full w-full">
           <Datacenter3DCard
+            ref="datacenter3DCardRef"
             class="h-full w-full"
             :active-alarms="alarmCards"
             :focused-alarm-id="focusedId"
             :allow-map-switch="true"
-            @switch-to-map="activeMainView = 'map'"
+            @switch-to-map="switchMainView('map')"
           />
 
           <!-- 在三维视图左下角轻量叠加当前主焦点 HUD 指引徽标 -->
@@ -87,16 +110,17 @@
               </div>
             </div>
           </div>
-        </template>
+        </div>
 
-        <!-- 视图 B：雷电活动实时地图 -->
-        <template v-else>
+        <!-- 视图 B：雷电活动实时地图 (保持挂载，平滑切换) -->
+        <div v-show="activeMainView === 'map'" class="h-full w-full">
           <LightningMapCard
+            ref="lightningMapCardRef"
             class="h-full w-full"
             :can-switch-to-3d="true"
-            @switch-to-3d="activeMainView = '3d'"
+            @switch-to-3d="switchMainView('3d')"
           />
-        </template>
+        </div>
       </div>
 
       <!-- ======================================================== -->
@@ -423,8 +447,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import {
+  Box,
   MapPin,
   Send,
   LogOut,
@@ -449,6 +474,19 @@ import { openDeviceInspection } from '@/composables/useCockpitState';
 
 // 主视图切换：'3d' (三维孪生) OR 'map' (雷电地图)
 const activeMainView = ref<'3d' | 'map'>('3d');
+const datacenter3DCardRef = ref<InstanceType<typeof Datacenter3DCard> | null>(null);
+const lightningMapCardRef = ref<InstanceType<typeof LightningMapCard> | null>(null);
+
+function switchMainView(view: '3d' | 'map') {
+  activeMainView.value = view;
+  nextTick(() => {
+    if (view === '3d') {
+      datacenter3DCardRef.value?.resize();
+    } else {
+      lightningMapCardRef.value?.invalidateSize();
+    }
+  });
+}
 
 // 告警卡片列表：严格规范色彩（红色严格保留给一级严重故障，当前不滥用红色）
 const alarmCards = ref([

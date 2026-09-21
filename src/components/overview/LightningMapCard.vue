@@ -22,13 +22,13 @@
         <button
           v-if="canSwitchTo3D"
           @click="emit('switch-to-3d')"
-          class="px-2 py-0.5 rounded text-[10.5px] bg-gradient-to-r from-[#217bf8] to-[#00a6ff] hover:from-[#1a6de0] hover:to-[#0092e0] text-white border border-cyan-400/80 shadow-[0_0_8px_rgba(33,123,248,0.7)] transition-all font-semibold flex items-center gap-1 cursor-pointer whitespace-nowrap mr-1 active:scale-95"
+          class="px-2.5 py-1 rounded-md text-[11px] bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white border border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.7)] transition-all font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap mr-1 active:scale-95"
           title="切换回算力中心建筑三维数字孪生态势"
         >
-          <svg class="w-3 h-3 fill-current text-amber-300" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 text-amber-300 fill-current" viewBox="0 0 24 24">
             <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
           </svg>
-          <span>切回三维态势</span>
+          <span>切回三维</span>
         </button>
 
         <!-- Boundary Highlight Toggle -->
@@ -84,6 +84,20 @@
     <div class="relative flex-1 min-h-[190px] w-full rounded-lg overflow-hidden my-1 border border-[#20579e]/70 bg-[#092248]">
       <!-- Leaflet Map Mount Point -->
       <div ref="mapContainerRef" class="w-full h-full min-h-[190px] z-0"></div>
+
+      <!-- Floating Prominent Switch Back to 3D Button (Positioned directly on map top-left, impossible to miss) -->
+      <div v-if="canSwitchTo3D" class="absolute top-2.5 left-2.5 z-20 pointer-events-auto">
+        <button
+          @click="emit('switch-to-3d')"
+          class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-700/90 to-cyan-600/90 hover:from-blue-600 hover:to-cyan-500 text-white font-bold text-xs shadow-[0_0_16px_rgba(6,182,212,0.6)] border border-cyan-300 backdrop-blur-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all group"
+          title="点击返回算力中心三维数字孪生建筑态势"
+        >
+          <svg class="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform fill-current" viewBox="0 0 24 24">
+            <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
+          </svg>
+          <span class="tracking-wide">切回三维孪生</span>
+        </button>
+      </div>
 
       <!-- Floating HUD: Top-Right Compact Horizontal Legend Bar (Slim, unobtrusive, fully self-contained in map) -->
       <div class="absolute right-2 top-2 z-10 pointer-events-auto">
@@ -624,6 +638,15 @@ onBeforeUnmount(() => {
     map.remove();
     map = null;
   }
+});
+
+defineExpose({
+  invalidateSize: () => {
+    if (map) {
+      map.invalidateSize();
+    }
+  },
+  recenterMap
 });
 </script>
 

@@ -19,9 +19,19 @@
           <LightningOverviewCard />
         </div>
 
-        <!-- Center Column: 机房三维态势图 (常态保持三维数字孪生，右侧专列雷电活动地图) -->
+        <!-- Center Column: 机房三维态势图 (支持一键切地图与切回三维孪生) -->
         <div class="flex flex-col min-w-0">
-          <Datacenter3DCard :focused-alarm-id="activeFocusedAlarmId" />
+          <Datacenter3DCard
+            v-if="overviewCenterView === '3d'"
+            :focused-alarm-id="activeFocusedAlarmId"
+            :allow-map-switch="true"
+            @switch-to-map="overviewCenterView = 'map'"
+          />
+          <LightningMapCard
+            v-else
+            :can-switch-to-3d="true"
+            @switch-to-3d="overviewCenterView = '3d'"
+          />
         </div>
 
         <!-- Right Column: 实时预警信息 + 雷电活动实时地图 -->
@@ -104,6 +114,7 @@ import LightningMapCard from '@/components/overview/LightningMapCard.vue';
 import BottomCards from '@/components/overview/BottomCards.vue';
 
 const showYellowModal = ref(false);
+const overviewCenterView = ref<'3d' | 'map'>('3d');
 
 const handleYellowSwitch = () => {
   showYellowModal.value = false;

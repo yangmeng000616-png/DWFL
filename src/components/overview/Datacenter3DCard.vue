@@ -21,145 +21,32 @@
         </div>
       </div>
 
-      <!-- Quick Control Actions -->
-      <div class="flex items-center gap-1.5 text-xs flex-wrap">
-        <!-- View Preset Dropdown / Quick Switcher -->
-        <div class="relative">
-          <button
-            @click="showPresetMenu = !showPresetMenu"
-            class="h-6.5 px-2.5 rounded-md bg-[#092960]/90 hover:bg-[#123e84] border border-[#2461b2]/70 text-[11px] font-medium text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="切换漫游预设视角"
-          >
-            <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M15 10l-3 3-3-3" />
-              <circle cx="12" cy="12" r="9" />
-            </svg>
-            <span class="text-cyan-300 font-semibold">{{ currentPresetLabel }}</span>
-          </button>
-
-          <!-- Preset Menu Popover -->
-          <div
-            v-if="showPresetMenu"
-            class="absolute top-8 left-0 z-50 w-52 bg-[#081c3c]/95 border border-cyan-500/50 rounded-lg shadow-2xl p-1.5 backdrop-blur-md grid grid-cols-2 gap-1 text-[11px]"
-          >
-            <button
-              v-for="p in VIEW_PRESETS"
-              :key="p.id"
-              @click="selectPreset(p.id)"
-              class="px-2 py-1.5 rounded text-left transition-colors flex flex-col cursor-pointer"
-              :class="activePresetId === p.id ? 'bg-cyan-600/30 text-cyan-200 border border-cyan-400/50 font-bold' : 'text-slate-300 hover:bg-white/10'"
-            >
-              <span>{{ p.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Layer Control Drawer Toggle -->
-        <button
-          @click="showLayerDrawer = !showLayerDrawer"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
-          :class="showLayerDrawer ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-200 border-[#2461b2]/70'"
-          title="图层管理：建筑/供配电/冷却/防雷/地网"
-        >
-          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 2 7 12 12 22 7 12 2" />
-            <polyline points="2 17 12 22 22 17" />
-            <polyline points="2 12 12 17 22 12" />
-          </svg>
-          <span>图层 ({{ activeLayerCount }})</span>
-        </button>
-
-        <!-- X-Ray Translucent Toggle -->
+      <!-- Quick Control Actions (Minimal: 透视开关, 切地图) -->
+      <div class="flex items-center gap-2 text-xs">
+        <!-- 透视状态开关 (默认已开启透视) -->
         <button
           @click="toggleXRay"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
-          :class="isXRayEnabled ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-200 border-[#2461b2]/70'"
-          title="透视穿透模式：建筑外立面半透明，透视内部服务器机房、监控值班室与地下地网"
+          class="h-6.5 px-2.5 rounded-md border text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+          :class="isXRayEnabled ? 'bg-cyan-600/30 text-cyan-300 border-cyan-400/80 shadow-[0_0_8px_rgba(6,182,212,0.3)]' : 'bg-[#092960]/90 text-slate-300 border-[#2461b2]/70 hover:text-white'"
+          title="建筑透视穿透模式（默认开启，清晰透视机房内部设备与地网）"
         >
-          <svg class="w-3 h-3 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M3 12h3m12 0h3M12 3v3m0 12v3" />
-          </svg>
-          <span>{{ isXRayEnabled ? '透视开' : '透视' }}</span>
+          <span class="w-1.5 h-1.5 rounded-full" :class="isXRayEnabled ? 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]' : 'bg-slate-400'"></span>
+          <span>{{ isXRayEnabled ? '透视模式' : '实体模式' }}</span>
         </button>
 
-        <!-- Interior Server Room Quick Button -->
-        <button
-          @click="selectPreset('interior_server_room')"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
-          :class="activePresetId === 'interior_server_room' ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-cyan-200 border-[#2461b2]/70'"
-          title="直接进入 2F 核心高密服务器冷通道机房"
-        >
-          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-            <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-            <line x1="6" y1="6" x2="6.01" y2="6" />
-            <line x1="6" y1="18" x2="6.01" y2="18" />
-          </svg>
-          <span>2F机房</span>
-        </button>
-
-        <!-- Interior Duty Room Quick Button -->
-        <button
-          @click="selectPreset('interior_duty_room')"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
-          :class="activePresetId === 'interior_duty_room' ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-cyan-200 border-[#2461b2]/70'"
-          title="直接进入 1F 运维监控调度值班大厅"
-        >
-          <svg class="w-3 h-3 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
-          </svg>
-          <span>1F值班室</span>
-        </button>
-
-        <!-- Lightning Simulation Button -->
-        <button
-          @click="triggerLightning"
-          :disabled="isLightningFiring"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-semibold flex items-center gap-1 transition-all shadow-[0_0_8px_rgba(0,240,255,0.2)] disabled:opacity-50 cursor-pointer"
-          :class="isLightningFiring ? 'bg-amber-600 text-white border-amber-400 animate-pulse' : 'bg-[#0f3b7d] hover:bg-[#184ea0] text-cyan-200 border-cyan-400/50'"
-          title="触发模拟雷击与地网泄流"
-        >
-          <svg class="w-3 h-3 fill-current text-amber-300" viewBox="0 0 24 24">
-            <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
-          </svg>
-          <span>{{ isLightningFiring ? '放电泄流中' : '模拟防雷' }}</span>
-        </button>
-
-        <!-- Auto Patrol Toggle -->
-        <button
-          @click="toggleAutoPatrol"
-          class="h-6.5 px-2 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
-          :class="isPatrolling ? 'bg-cyan-600/30 text-cyan-200 border-cyan-400' : 'bg-[#092960]/90 hover:bg-[#123e84] text-slate-300 border-[#2461b2]/70'"
-          title="自动环绕漫游巡检"
-        >
-          <span>{{ isPatrolling ? '巡航中' : '巡航' }}</span>
-        </button>
-
-        <!-- Switch to GIS Map (when in Emergency mode) -->
+        <!-- Switch to GIS Map -->
         <button
           v-if="allowMapSwitch"
           @click="emit('switch-to-map')"
-          class="h-6.5 px-2 rounded-md bg-[#0f356e] hover:bg-[#194c96] border border-cyan-400/60 text-[11px] font-semibold text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
+          class="h-6.5 px-2.5 rounded-md bg-gradient-to-r from-[#124285] to-[#0284c7] hover:from-[#1752a5] hover:to-[#0296e0] border border-cyan-400 text-[11px] font-bold text-white shadow-[0_0_10px_rgba(6,182,212,0.4)] flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
           title="切换至雷电活动实时电子地图"
         >
-          <svg class="w-3 h-3 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="w-3 h-3 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="9" />
             <circle cx="12" cy="12" r="3" />
             <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
           </svg>
           <span>切地图</span>
-        </button>
-
-        <!-- Reset Camera -->
-        <button
-          @click="resetCamera"
-          class="h-6.5 px-2 rounded-md bg-[#092960]/90 hover:bg-[#123e84] border border-[#2461b2]/70 text-[11px] text-slate-300 transition-colors cursor-pointer"
-          title="复位默认鸟瞰视角"
-        >
-          复位
         </button>
       </div>
     </div>
@@ -168,63 +55,6 @@
     <div class="relative flex-1 min-h-[340px] flex items-center justify-center overflow-hidden my-1 rounded-lg border border-[#163a6b]/60 bg-[#06142a]">
       <!-- Canvas Mount Container -->
       <div ref="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
-
-      <!-- 3D 空间告警即时联动定位栏 (Top Center Overlay) -->
-      <div class="absolute top-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-[#071938]/95 px-2.5 py-1 rounded-full border border-cyan-500/50 backdrop-blur-md shadow-2xl max-w-[96%] overflow-x-auto no-scrollbar">
-        <div class="flex items-center gap-1 text-[10px] text-cyan-300 font-bold px-1 whitespace-nowrap">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-          <span>告警透视联动:</span>
-        </div>
-
-        <!-- 告警 1: 地网阻抗 -->
-        <button
-          @click="focusAlarm('ground')"
-          class="px-2.5 py-0.8 rounded-full text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
-          :class="currentFocusedAlarmId === 'ground' ? 'bg-amber-500 text-slate-950 font-bold shadow-[0_0_10px_rgba(245,158,11,0.6)] ring-1 ring-white' : 'bg-amber-950/80 hover:bg-amber-900/90 text-amber-200 border border-amber-500/50'"
-          title="一键透视地下-1F地网，定位超标测试井 GW-01#"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-          <span>[二级] -1F地网 0.88Ω</span>
-        </button>
-
-        <!-- 告警 2: 2F SPD 漏电 -->
-        <button
-          @click="focusAlarm('spd')"
-          class="px-2.5 py-0.8 rounded-full text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
-          :class="currentFocusedAlarmId === 'spd' ? 'bg-yellow-400 text-slate-950 font-bold shadow-[0_0_10px_rgba(234,179,8,0.6)] ring-1 ring-white' : 'bg-yellow-950/80 hover:bg-yellow-900/90 text-yellow-200 border border-yellow-500/50'"
-          title="一键透视2F动力配电室，定位低压柜SPD-04#"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
-          <span>[三级] 2F母线SPD 0.28mA</span>
-        </button>
-
-        <!-- 告警 3: 天面大气电场 -->
-        <button
-          @click="focusAlarm('lightning')"
-          class="px-2.5 py-0.8 rounded-full text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
-          :class="currentFocusedAlarmId === 'lightning' ? 'bg-cyan-500 text-slate-950 font-bold shadow-[0_0_10px_rgba(6,182,212,0.6)] ring-1 ring-white' : 'bg-cyan-950/80 hover:bg-cyan-900/90 text-cyan-200 border border-cyan-500/50'"
-          title="一键视角推至屋面12号接闪塔探针"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-          <span>[四级] 天面探针 38.6kV/m</span>
-        </button>
-      </div>
-
-      <!-- Quick Preset Buttons Pill Overlay (Bottom Center of 3D Scene) -->
-      <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-[#071d3e]/90 p-1 rounded-full border border-cyan-500/40 backdrop-blur-md shadow-lg shadow-black/60 overflow-x-auto max-w-[95%]">
-        <button
-          v-for="preset in VIEW_PRESETS"
-          :key="preset.id"
-          @click="selectPreset(preset.id)"
-          class="px-2.5 py-1 rounded-full text-[10px] font-medium transition-all whitespace-nowrap cursor-pointer"
-          :class="activePresetId === preset.id
-            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-[0_0_8px_rgba(6,182,212,0.6)]'
-            : 'text-slate-300 hover:text-white hover:bg-white/10'"
-          :title="preset.description"
-        >
-          {{ preset.shortLabel }}
-        </button>
-      </div>
 
       <!-- Navigation & Compass Guide Overlay (Top Left of 3D Scene) -->
       <div class="absolute top-2.5 left-2.5 z-20 pointer-events-none flex flex-col gap-1 text-[10px] text-slate-300 bg-[#06193d]/85 px-2 py-1.5 rounded border border-[#194883]/60 backdrop-blur-sm">
@@ -272,99 +102,7 @@
         </div>
       </transition>
 
-      <!-- 3. Layer Management Drawer Panel (Left Slide-in) -->
-      <transition name="slide-left">
-        <div
-          v-if="showLayerDrawer"
-          class="absolute top-0 left-0 bottom-0 z-30 w-72 bg-[#071a38]/95 border-r border-cyan-500/40 shadow-2xl backdrop-blur-md p-3 flex flex-col text-xs"
-        >
-          <div class="flex items-center justify-between pb-2 border-b border-cyan-500/30">
-            <div class="flex items-center gap-1.5 font-bold text-white">
-              <svg class="w-4 h-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                <polyline points="2 17 12 22 22 17" />
-              </svg>
-              <span>数字孪生独立图层管理</span>
-            </div>
-            <button
-              @click="showLayerDrawer = false"
-              class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-white rounded hover:bg-white/10"
-            >
-              ✕
-            </button>
-          </div>
-
-          <!-- Layer Quick Presets -->
-          <div class="grid grid-cols-2 gap-1 my-2">
-            <button
-              @click="applyLayerPreset('all')"
-              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
-            >
-              全景综合
-            </button>
-            <button
-              @click="applyLayerPreset('interior')"
-              class="px-2 py-1 rounded bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 text-[10px] text-center border border-indigo-400/40 font-medium"
-            >
-              机房室内透视
-            </button>
-            <button
-              @click="applyLayerPreset('lightning_ground')"
-              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
-            >
-              防雷接地专项
-            </button>
-            <button
-              @click="applyLayerPreset('power_hvac')"
-              class="px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
-            >
-              动力暖通运维
-            </button>
-            <button
-              @click="applyLayerPreset('underground')"
-              class="col-span-2 px-2 py-1 rounded bg-[#0b2b60] hover:bg-[#12428c] text-cyan-200 text-[10px] text-center border border-cyan-500/30"
-            >
-              地下地网透视
-            </button>
-          </div>
-
-          <!-- Layer Switch List -->
-          <div class="flex-1 overflow-y-auto space-y-1 pr-1 custom-scroll">
-            <div
-              v-for="layer in layerList"
-              :key="layer.id"
-              class="flex items-center justify-between p-1.5 rounded hover:bg-white/5 border transition-colors"
-              :class="layer.visible ? 'border-cyan-500/20 bg-[#092247]/60' : 'border-transparent opacity-60'"
-            >
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: layer.color }"></span>
-                <div>
-                  <div class="font-medium text-slate-100 text-[11px]">{{ layer.name }}</div>
-                  <div class="text-[9px] text-slate-400">{{ layer.description }}</div>
-                </div>
-              </div>
-
-              <!-- Toggle Eye Icon -->
-              <button
-                @click="toggleLayer(layer.id)"
-                class="w-6 h-6 flex items-center justify-center rounded hover:bg-cyan-500/20 text-cyan-300 transition-colors"
-                :title="layer.visible ? '隐藏图层' : '显示图层'"
-              >
-                <svg v-if="layer.visible" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-                <svg v-else class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </transition>
-
-      <!-- 4. Selected Device Inspector Bottom Bar / Modal -->
+      <!-- Selected Device Inspector -->
       <transition name="slide-up">
         <div
           v-if="selectedDevice"
@@ -492,7 +230,7 @@ let sceneManager: DatacenterSceneManager | null = null;
 // UI State
 const showPresetMenu = ref(false);
 const showLayerDrawer = ref(false);
-const isXRayEnabled = ref(false);
+const isXRayEnabled = ref(true);
 const isPatrolling = ref(false);
 const isLightningFiring = ref(false);
 const activePresetId = ref<ViewPresetId>('birds_eye');
@@ -720,6 +458,10 @@ onMounted(() => {
       },
     });
 
+    // 默认开启建筑透视与机房内部结构展示
+    sceneManager.setBuildingXRay(true);
+    sceneManager.setLayerVisibility('interior', true);
+
     // Handle initial alarm or preset focus
     const initialTarget = props.focusedAlarmId || 'ground';
     setTimeout(() => {
@@ -733,6 +475,10 @@ onUnmounted(() => {
     sceneManager.dispose();
     sceneManager = null;
   }
+});
+
+defineExpose({
+  resize: () => sceneManager?.resize(),
 });
 </script>
 

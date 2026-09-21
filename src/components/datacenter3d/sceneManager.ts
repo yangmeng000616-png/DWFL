@@ -181,6 +181,7 @@ export class DatacenterSceneManager {
 
   // Auto patrol
   public isAutoRotate = false;
+  private resizeObserver: ResizeObserver | null = null;
 
   constructor(container: HTMLElement, callbacks: SceneManagerCallbacks = {}) {
     this.container = container;
@@ -322,6 +323,9 @@ export class DatacenterSceneManager {
     this.alarmMarkersGroup.name = 'Layer_alarms';
     this.scene.add(this.alarmMarkersGroup);
     this.initDefaultAlarmBeacons();
+
+    // 8. 默认开启建筑透视（X-Ray），直观显露室内高密机房与地下地网
+    this.setBuildingXRay(true);
   }
 
   public setHighlightColor(colorHex: number) {
@@ -547,9 +551,20 @@ export class DatacenterSceneManager {
     });
 
     window.addEventListener('resize', this.onResize);
+
+    if (window.ResizeObserver && this.container) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.onResize();
+      });
+      this.resizeObserver.observe(this.container);
+    }
   }
 
-  private onResize = () => {
+  public resize() {
+    this.onResize();
+  }
+
+  public onResize = () => {
     if (!this.container) return;
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
@@ -1021,11 +1036,16 @@ export class DatacenterSceneManager {
   public dispose() {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
     window.removeEventListener('resize', this.onResize);
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
     this.controls.dispose();
     this.renderer.dispose();
-    if (this.container && this.renderer.domElement) {
+    if (this.container && this.renderer.domElement && this.renderer.domElement.parentNode === this.container) {
       this.container.removeChild(this.renderer.domElement);
     }
   }
