@@ -260,11 +260,24 @@ function initMap() {
     maxZoom: 18
   });
 
-  // Clean, high-definition Dark Map Tiles without watermark (CartoDB dark-matter)
-  const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 19,
-    className: 'crisp-tech-tiles'
+  // Explicit high-priority panes for vectors so boundaries and strikes never get obscured
+  map.createPane('boundariesPane');
+  const boundariesPane = map.getPane('boundariesPane');
+  if (boundariesPane) boundariesPane.style.zIndex = '420';
+
+  map.createPane('ringsPane');
+  const ringsPane = map.getPane('ringsPane');
+  if (ringsPane) ringsPane.style.zIndex = '430';
+
+  map.createPane('strikesPane');
+  const strikesPane = map.getPane('strikesPane');
+  if (strikesPane) strikesPane.style.zIndex = '440';
+
+  // High-definition Dark Map Tiles without watermark or API key requirements (Esri Dark Gray Canvas)
+  const tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 18,
+    className: 'crisp-tech-tiles',
+    attribution: ''
   });
   tileLayer.addTo(map);
 
@@ -308,11 +321,12 @@ async function loadChinaBoundaries() {
     if (countryRes.ok) {
       const countryGeo = await countryRes.json();
 
-      // Layer A: Outer diffuse luminous cyan halo (blurred glow ring)
+      // Layer A: Outer diffuse luminous cyan halo
       const outerHalo = L.geoJSON(countryGeo, {
+        pane: 'boundariesPane',
         style: {
           color: '#0284c7',
-          weight: 5.5,
+          weight: 6,
           opacity: 0.5,
           fill: false,
           className: 'china-national-glow-outer'
@@ -321,12 +335,13 @@ async function loadChinaBoundaries() {
 
       // Layer B: Core sharp neon cyan boundary with subtle territory mask
       const coreBorder = L.geoJSON(countryGeo, {
+        pane: 'boundariesPane',
         style: {
           color: '#00f0ff',
-          weight: 2.6,
+          weight: 2.8,
           opacity: 1.0,
           fillColor: '#00e5ff',
-          fillOpacity: 0.04,
+          fillOpacity: 0.05,
           className: 'china-national-boundary'
         }
       });
@@ -341,13 +356,14 @@ async function loadChinaBoundaries() {
       const provincesGeo = await provincesRes.json();
 
       provincesGeoLayer = L.geoJSON(provincesGeo, {
+        pane: 'boundariesPane',
         style: () => ({
-          color: '#258bf5',
-          weight: 1.2,
+          color: '#38bdf8',
+          weight: 1.5,
           opacity: 0.85,
-          dashArray: '4, 3',
-          fillColor: '#0066ff',
-          fillOpacity: 0.01,
+          dashArray: '5, 4',
+          fillColor: '#0284c7',
+          fillOpacity: 0.05,
           className: 'china-province-boundary'
         }),
         onEachFeature: (feature, layer) => {
@@ -378,11 +394,11 @@ async function loadChinaBoundaries() {
             mouseover: (e) => {
               const target = e.target as L.Path;
               target.setStyle({
-                color: '#00f0ff',
-                weight: 2.4,
+                color: '#00ffff',
+                weight: 2.6,
                 dashArray: '',
-                fillColor: '#00e5ff',
-                fillOpacity: 0.16
+                fillColor: '#00f0ff',
+                fillOpacity: 0.22
               });
               if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                 target.bringToFront();
@@ -436,6 +452,7 @@ function drawWarningRings() {
 
   // 15km Inner Guard Zone
   const innerRing = L.circle([CENTER_LAT, CENTER_LNG], {
+    pane: 'ringsPane',
     radius: 15000,
     color: '#00f0ff',
     dashArray: '4, 6',
@@ -450,6 +467,7 @@ function drawWarningRings() {
 
   // 30km Early Warning Zone
   const midRing = L.circle([CENTER_LAT, CENTER_LNG], {
+    pane: 'ringsPane',
     radius: 30000,
     color: '#38bdf8',
     dashArray: '6, 8',
@@ -464,6 +482,7 @@ function drawWarningRings() {
 
   // 50km Monitoring Radar Zone
   const outerRing = L.circle([CENTER_LAT, CENTER_LNG], {
+    pane: 'ringsPane',
     radius: 50000,
     color: '#2563eb',
     dashArray: '8, 10',
@@ -487,6 +506,7 @@ function drawStrikes() {
   strikeClusters.forEach((cluster) => {
     // Outer halo
     const halo = L.circle([cluster.lat, cluster.lng], {
+      pane: 'strikesPane',
       radius: cluster.radius,
       color: cluster.color,
       weight: 1.5,
@@ -496,6 +516,7 @@ function drawStrikes() {
 
     // Inner bright core
     const core = L.circleMarker([cluster.lat, cluster.lng], {
+      pane: 'strikesPane',
       radius: 6,
       color: '#ffffff',
       weight: 2,
@@ -569,6 +590,7 @@ function startLiveStrikePulse() {
     const flashLng = 116.8 + (Math.random() - 0.5) * 0.5;
 
     const flashMarker = L.circleMarker([flashLat, flashLng], {
+      pane: 'strikesPane',
       radius: 8,
       color: '#ffffff',
       weight: 2,
@@ -659,7 +681,7 @@ defineExpose({
 
 /* High-tech luminous dark-blue cyber styling for dark tiles without watermark */
 .crisp-tech-tiles {
-  filter: brightness(115%) contrast(115%) hue-rotate(190deg) saturate(135%) !important;
+  filter: brightness(92%) contrast(125%) hue-rotate(185deg) saturate(125%) !important;
 }
 
 /* Custom dark popup styling */
@@ -713,43 +735,45 @@ defineExpose({
   border: none !important;
 }
 
-/* China National Boundary Glowing Cyber Highlight */
+/* China National Boundary - Crisp Neon Cyan Highlight */
 path.china-national-boundary {
   stroke: #00f0ff !important;
-  stroke-width: 2.6px !important;
+  stroke-width: 2.8px !important;
+  stroke-opacity: 1 !important;
   stroke-linejoin: round !important;
   stroke-linecap: round !important;
-  filter: drop-shadow(0 0 5px #00f0ff) drop-shadow(0 0 12px rgba(0, 240, 255, 0.75));
-  pointer-events: stroke;
+  fill: #00e5ff !important;
+  fill-opacity: 0.05 !important;
 }
 
 path.china-national-glow-outer {
   stroke: #0284c7 !important;
-  stroke-width: 5.5px !important;
+  stroke-width: 6px !important;
   stroke-opacity: 0.5 !important;
   stroke-linejoin: round !important;
   stroke-linecap: round !important;
-  filter: blur(1.5px);
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
-/* China Provincial Boundary (Interactive) */
+/* China Provincial Boundary (Interactive High-Contrast) */
 path.china-province-boundary {
-  stroke: #258bf5 !important;
-  stroke-width: 1.2px !important;
+  stroke: #38bdf8 !important;
+  stroke-width: 1.5px !important;
   stroke-opacity: 0.85 !important;
-  stroke-dasharray: 4, 3 !important;
-  transition: all 0.2s ease-out;
+  stroke-dasharray: 5, 4 !important;
+  fill: #0284c7 !important;
+  fill-opacity: 0.05 !important;
+  transition: all 0.15s ease-out;
   cursor: pointer;
 }
 
 path.china-province-boundary:hover {
-  stroke: #00f0ff !important;
-  stroke-width: 2.4px !important;
+  stroke: #00ffff !important;
+  stroke-width: 2.6px !important;
   stroke-opacity: 1 !important;
   stroke-dasharray: none !important;
-  fill: rgba(0, 240, 255, 0.18) !important;
-  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.95));
+  fill: #00f0ff !important;
+  fill-opacity: 0.22 !important;
 }
 
 /* Custom province tooltip styling */
