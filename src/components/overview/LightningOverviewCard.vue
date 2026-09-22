@@ -8,7 +8,7 @@
             <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
           </svg>
         </div>
-        <h3 class="text-sm font-bold text-white tracking-wide">雷电监测概览</h3>
+        <h3 class="text-sm font-bold text-white tracking-wide">雷电监测</h3>
       </div>
 
       <!-- Filter pills -->
@@ -33,7 +33,7 @@
           <span class="text-[10px] text-slate-400 font-mono">(kA)</span>
         </span>
         <span class="text-[11px] text-cyan-300 font-mono font-medium bg-cyan-950/70 border border-cyan-500/30 px-1.5 py-0.5 rounded">
-          MAX 58.7 kA @ 12:36
+          峰值 58.7 kA
         </span>
       </div>
 
@@ -108,29 +108,29 @@
       </div>
     </div>
 
-    <!-- Middle Telemetry Metrics Breakdown (Enriches card height and fills empty void) -->
+    <!-- Middle Telemetry Metrics Breakdown -->
     <div class="my-2 grid grid-cols-2 gap-1.5">
       <div class="bg-[#092557]/80 border border-[#1e529a]/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
-        <span class="text-[11px] text-slate-300">24h放电频次</span>
+        <span class="text-[11px] text-slate-300">放电频次</span>
         <span class="font-tech text-cyan-300 font-bold text-xs">14 <span class="text-[10px] text-slate-400 font-normal">次</span></span>
       </div>
       <div class="bg-[#092557]/80 border border-[#1e529a]/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
-        <span class="text-[11px] text-slate-300">平均雷电幅值</span>
+        <span class="text-[11px] text-slate-300">平均幅值</span>
         <span class="font-tech text-white font-bold text-xs">23.6 <span class="text-[10px] text-slate-400 font-normal">kA</span></span>
       </div>
       <div class="bg-[#092557]/80 border border-[#1e529a]/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
-        <span class="text-[11px] text-slate-300">空间电场梯度</span>
+        <span class="text-[11px] text-slate-300">电场梯度</span>
         <span class="font-tech text-emerald-400 font-bold text-xs">+1.2 <span class="text-[10px] text-slate-400 font-normal">kV/m·s</span></span>
       </div>
       <div class="bg-[#092557]/80 border border-[#1e529a]/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
-        <span class="text-[11px] text-slate-300">雷击综合风险</span>
+        <span class="text-[11px] text-slate-300">综合风险</span>
         <span class="text-emerald-400 font-bold text-xs flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 安全可控
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 正常
         </span>
       </div>
     </div>
 
-    <!-- Bottom Status Metrics Grid (Structured & Compact) -->
+    <!-- Bottom Status Metrics Grid -->
     <div class="pt-2 border-t border-[#215caa]/70 grid grid-cols-3 gap-1.5 text-center">
       <div class="p-1.5 rounded-lg bg-[#0a285e]/85 border border-[#235eae]/60">
         <div class="text-[10px] text-slate-300 truncate font-medium">预警等级</div>
@@ -141,7 +141,7 @@
       </div>
       <div class="p-1.5 rounded-lg bg-[#0a285e]/85 border border-[#235eae]/60">
         <div class="text-[10px] text-slate-300 truncate font-medium">活动概率</div>
-        <div class="mt-0.5 font-tech font-bold text-[11px] text-cyan-300 whitespace-nowrap">5% (低)</div>
+        <div class="mt-0.5 font-tech font-bold text-[11px] text-cyan-300 whitespace-nowrap">5%</div>
       </div>
       <div class="p-1.5 rounded-lg bg-[#0a285e]/85 border border-[#235eae]/60">
         <div class="text-[10px] text-slate-300 truncate font-medium">电场强度</div>

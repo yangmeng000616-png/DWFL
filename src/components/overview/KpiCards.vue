@@ -28,16 +28,16 @@
         <div class="text-lg font-bold font-tech text-emerald-300 tracking-wide glow-text-green">
           99.4 <span class="text-xs font-normal text-slate-300 font-sans">%</span>
         </div>
-        <span class="text-[10px] text-cyan-300 font-mono">156 / 157 台</span>
+        <span class="text-[10px] text-cyan-300 font-mono">156 / 157</span>
       </div>
-      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">全域感知终端联机率</div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">联机率</div>
     </div>
 
     <!-- Card 1: 雷电监测 -->
     <div
       @click="openDeviceInspection('atmospheric')"
       class="tech-panel tech-panel-hover rounded-xl py-2 px-2.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer"
-      title="点击查看大气电场与雷电监测装置详情"
+      title="大气电场监测"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5">
@@ -65,10 +65,10 @@
         >
           23.6 <span class="text-xs font-normal text-slate-300 font-sans">kA</span>
         </div>
-        <span class="text-[10px] text-slate-400 font-sans">预警阈值 30.0kA</span>
+        <span class="text-[10px] text-slate-400 font-sans">阈值 30kA</span>
       </div>
       <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
-        {{ hasLightningAlarm ? '顶楼空间电场畸变' : '当前雷电电场强度' }}
+        {{ hasLightningAlarm ? '电场畸变' : '电场强度' }}
       </div>
     </div>
 
@@ -76,7 +76,7 @@
     <div
       @click="openDeviceInspection('esd_terminal')"
       class="tech-panel tech-panel-hover rounded-xl py-2 px-2.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer"
-      title="点击查看静电监测与微环境防范详情"
+      title="静电监测"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5">
@@ -99,16 +99,16 @@
         <div class="text-lg font-bold font-tech text-emerald-300 tracking-wide glow-text-green">
           0.8 <span class="text-xs font-normal text-slate-300 font-sans">kV</span>
         </div>
-        <span class="text-[10px] text-slate-400 font-sans">国标限值 &lt; 2.0kV</span>
+        <span class="text-[10px] text-slate-400 font-sans">限值 &lt; 2kV</span>
       </div>
-      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">机房表面静电电位</div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">表面静电</div>
     </div>
 
     <!-- Card 3: 接地系统 -->
     <div
       @click="openDeviceInspection('ground_res')"
       class="tech-panel tech-panel-hover rounded-xl py-2 px-2.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer"
-      title="点击查看地网接地电阻在线遥测详情"
+      title="地网电阻在线监测"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5">
@@ -128,7 +128,7 @@
             ? 'bg-amber-950/80 border-amber-400/60 text-amber-300 animate-pulse'
             : 'bg-emerald-900/80 border-emerald-400/60 text-emerald-300'"
         >
-          {{ hasGroundAlarm ? '阻抗超标' : '正常' }}
+          {{ hasGroundAlarm ? '超标' : '正常' }}
         </span>
       </div>
 
@@ -140,11 +140,11 @@
           {{ hasGroundAlarm ? '1.28' : '0.52' }} <span class="text-xs font-normal text-slate-300 font-sans">Ω</span>
         </div>
         <span class="text-[10px] font-sans" :class="hasGroundAlarm ? 'text-amber-300 font-medium' : 'text-slate-400'">
-          {{ hasGroundAlarm ? '门限 ≤ 1.0Ω (超标)' : '规约基线 ≤ 1.0Ω' }}
+          {{ hasGroundAlarm ? '限值 ≤ 1Ω' : '基线 ≤ 1Ω' }}
         </span>
       </div>
       <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
-        {{ hasGroundAlarm ? '地网降阻接地阻抗超标' : '综合地网接地电阻' }}
+        {{ hasGroundAlarm ? '阻抗超标' : '地网电阻' }}
       </div>
     </div>
 
@@ -152,7 +152,7 @@
     <div
       @click="openDeviceInspection('spd_terminal')"
       class="tech-panel tech-panel-hover rounded-xl py-2 px-2.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer"
-      title="点击查看智能SPD浪涌保护器群组状态"
+      title="SPD群组状态"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5">
@@ -172,7 +172,7 @@
             ? 'bg-amber-950/80 border-amber-400/60 text-amber-300'
             : 'bg-emerald-900/80 border-emerald-400/60 text-emerald-300'"
         >
-          {{ hasSpdAlarm ? '三级关注' : '正常' }}
+          {{ hasSpdAlarm ? '三级' : '正常' }}
         </span>
       </div>
 
@@ -184,11 +184,11 @@
           {{ hasSpdAlarm ? '11 / 12' : '12 / 12' }}
         </div>
         <span class="text-[10px] font-sans" :class="hasSpdAlarm ? 'text-amber-300' : 'text-slate-400'">
-          {{ hasSpdAlarm ? '在网率 91.7% (1台待检)' : '在网率 100%' }}
+          {{ hasSpdAlarm ? '91.7%' : '100%' }}
         </span>
       </div>
       <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
-        {{ hasSpdAlarm ? 'SPD-04 漏流 0.28mA 劣化' : '浪涌保护终端全部就绪' }}
+        {{ hasSpdAlarm ? 'SPD-04 漏电' : '终端就绪' }}
       </div>
     </div>
 
@@ -196,7 +196,7 @@
     <div
       @click="openDeviceInspection('datacenter_zone')"
       class="tech-panel tech-panel-hover rounded-xl py-2 px-2.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer"
-      title="点击查看机房动力电源与屏蔽区质量"
+      title="动力电源质量"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5">
@@ -217,9 +217,9 @@
         <div class="text-base font-bold font-tech text-emerald-300 tracking-wide glow-text-green whitespace-nowrap">
           220.4V / 12.6A
         </div>
-        <span class="text-[10px] text-slate-400 font-sans">50.0Hz 标称</span>
+        <span class="text-[10px] text-slate-400 font-sans">50.0Hz</span>
       </div>
-      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">配电相电压与负载电流</div>
+      <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">电压 / 电流</div>
     </div>
   </div>
 </template>

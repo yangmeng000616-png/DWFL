@@ -405,92 +405,125 @@ export class DatacenterSceneManager {
           ? 0xeab308
           : 0x06b6d4;
 
-      // 1. Vertical translucent pulsing beam
-      const colGeo = new THREE.CylinderGeometry(0.12, 0.4, 3.2, 16);
+      // 1. Dynamic Strobe Warning PointLight (rhythmically illuminates area on flash)
+      const pointLight = new THREE.PointLight(colorHex, 2.5, 36, 1.8);
+      pointLight.name = 'alarmPointLight';
+      pointLight.position.y = 4.0;
+      group.add(pointLight);
+
+      // 2. Vertical translucent pulsing beam (tall, penetrates building in X-Ray)
+      const colGeo = new THREE.CylinderGeometry(0.2, 0.65, 9.5, 16);
       const colMat = new THREE.MeshBasicMaterial({
         color: colorHex,
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.6,
         depthWrite: false,
       });
       const colMesh = new THREE.Mesh(colGeo, colMat);
-      colMesh.position.y = 1.6;
+      colMesh.name = 'lightBeam';
+      colMesh.position.y = 4.75;
       colMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
       group.add(colMesh);
 
-      // 2. Base pulse ring
-      const pulseGeo = new THREE.RingGeometry(0.8, 1.25, 24);
-      const pulseMat = new THREE.MeshBasicMaterial({
+      // 3. Multi-tier expanding ripple rings on ground/floor
+      const ringGeo = new THREE.RingGeometry(0.8, 1.5, 32);
+      const ringMat1 = new THREE.MeshBasicMaterial({
         color: colorHex,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.9,
         side: THREE.DoubleSide,
         depthWrite: false,
       });
-      const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
-      pulseMesh.name = 'pulseRing';
-      pulseMesh.rotation.x = -Math.PI / 2;
-      pulseMesh.position.y = 0.08;
-      pulseMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
-      group.add(pulseMesh);
+      const pulseMesh1 = new THREE.Mesh(ringGeo, ringMat1);
+      pulseMesh1.name = 'pulseRing1';
+      pulseMesh1.rotation.x = -Math.PI / 2;
+      pulseMesh1.position.y = 0.08;
+      pulseMesh1.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(pulseMesh1);
 
-      // 3. Central floating Diamond beacon
-      const diamondGeo = new THREE.OctahedronGeometry(0.55, 0);
-      const diamondMat = new THREE.MeshBasicMaterial({
+      const ringMat2 = new THREE.MeshBasicMaterial({
         color: colorHex,
+        transparent: true,
+        opacity: 0.9,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+      const pulseMesh2 = new THREE.Mesh(ringGeo, ringMat2);
+      pulseMesh2.name = 'pulseRing2';
+      pulseMesh2.rotation.x = -Math.PI / 2;
+      pulseMesh2.position.y = 0.12;
+      pulseMesh2.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(pulseMesh2);
+
+      // 4. Central high-energy flashing core sphere
+      const coreGeo = new THREE.SphereGeometry(0.75, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+      });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      coreMesh.name = 'flashCore';
+      coreMesh.position.y = 4.2;
+      coreMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
+      group.add(coreMesh);
+
+      // 5. Surrounding rotating wireframe Diamond beacon
+      const diamondGeo = new THREE.OctahedronGeometry(1.05, 0);
+      const diamondMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.8,
       });
       const diamondMesh = new THREE.Mesh(diamondGeo, diamondMat);
       diamondMesh.name = 'diamondMesh';
-      diamondMesh.position.y = 3.2;
+      diamondMesh.position.y = 4.2;
       diamondMesh.userData = { isAlarmBeacon: true, alarmId: alarm.id };
       group.add(diamondMesh);
 
-      // 4. Sprite Billboard
+      // 6. Sprite Billboard (Compact & Minimal text)
       const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 110;
+      canvas.width = 240;
+      canvas.height = 70;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.fillStyle =
-          alarm.severity === 'orange'
-            ? 'rgba(45, 20, 5, 0.90)'
-            : alarm.severity === 'yellow'
-            ? 'rgba(42, 32, 5, 0.90)'
-            : 'rgba(8, 30, 60, 0.90)';
-        ctx.strokeStyle =
-          alarm.severity === 'orange'
+        const strokeColor =
+          alarm.severity === 'red'
+            ? '#ef4444'
+            : alarm.severity === 'orange'
             ? '#f59e0b'
             : alarm.severity === 'yellow'
             ? '#eab308'
             : '#00f0ff';
-        ctx.lineWidth = 4;
+
+        ctx.fillStyle = 'rgba(6, 16, 36, 0.92)';
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 3;
         ctx.beginPath();
         if (typeof ctx.roundRect === 'function') {
-          ctx.roundRect(6, 6, 388, 98, 16);
+          ctx.roundRect(4, 4, 232, 62, 10);
         } else {
-          ctx.rect(6, 6, 388, 98);
+          ctx.rect(4, 4, 232, 62);
         }
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 24px sans-serif';
-        const sevText =
-          alarm.severity === 'orange'
-            ? '【二级高危】'
-            : alarm.severity === 'yellow'
-            ? '【三级关注】'
-            : '【四级提示】';
-        ctx.fillText(`${sevText} ${alarm.code}`, 18, 42);
+        // Warning Dot
+        ctx.fillStyle = strokeColor;
+        ctx.beginPath();
+        ctx.arc(20, 24, 5.5, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx.fillStyle =
-          alarm.severity === 'orange'
-            ? '#fcd34d'
-            : alarm.severity === 'yellow'
-            ? '#fef08a'
-            : '#67e8f9';
-        ctx.font = 'bold 22px monospace';
-        ctx.fillText(alarm.value, 18, 80);
+        // Code
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText(alarm.code, 32, 30);
+
+        // Value text
+        ctx.fillStyle = strokeColor;
+        ctx.font = 'bold 19px monospace';
+        ctx.fillText(alarm.value, 16, 55);
       }
       const texture = new THREE.CanvasTexture(canvas);
       const spriteMat = new THREE.SpriteMaterial({
@@ -500,8 +533,8 @@ export class DatacenterSceneManager {
       });
       const sprite = new THREE.Sprite(spriteMat);
       sprite.name = 'alarmSprite';
-      sprite.scale.set(10, 2.8, 1);
-      sprite.position.y = 4.8;
+      sprite.scale.set(7.5, 2.2, 1);
+      sprite.position.y = 8.5;
       sprite.userData = { isAlarmBeacon: true, alarmId: alarm.id };
       group.add(sprite);
 
@@ -632,7 +665,7 @@ export class DatacenterSceneManager {
 
       if (targetObj && targetObj.userData) {
         if (targetObj.userData.isAlarmBeacon && targetObj.userData.alarmId) {
-          const alarmRes = this.focusByAlarmId(targetObj.userData.alarmId);
+          const alarmRes = this.focusByAlarmId(targetObj.userData.alarmId, false);
           if (this.callbacks.onClickAlarm) {
             this.callbacks.onClickAlarm(targetObj.userData.alarmId);
           }
@@ -643,7 +676,7 @@ export class DatacenterSceneManager {
         }
 
         if (targetObj.userData.name) {
-          this.focusOnObject(targetObj);
+          this.focusOnObject(targetObj, false);
           if (this.callbacks.onClickObject) {
             this.callbacks.onClickObject(targetObj.userData);
           }
@@ -652,7 +685,7 @@ export class DatacenterSceneManager {
     }
   }
 
-  public focusOnObject(obj: THREE.Object3D) {
+  public focusOnObject(obj: THREE.Object3D, shouldFly = false) {
     this.activeFocusObject = obj;
     const worldPos = new THREE.Vector3();
     obj.getWorldPosition(worldPos);
@@ -662,30 +695,34 @@ export class DatacenterSceneManager {
       this.highlightRing.visible = true;
     }
 
-    // Smoothly pan camera target to object position
-    const camOffset = this.camera.position.clone().sub(this.controls.target);
-    const targetDistance = Math.max(camOffset.length(), 28);
-    camOffset.normalize().multiplyScalar(targetDistance);
+    if (shouldFly) {
+      // Smoothly pan camera target to object position only if explicitly requested
+      const camOffset = this.camera.position.clone().sub(this.controls.target);
+      const targetDistance = Math.max(camOffset.length(), 28);
+      camOffset.normalize().multiplyScalar(targetDistance);
 
-    this.flyTo(
-      worldPos.clone().add(new THREE.Vector3(20, 16, 20)),
-      worldPos,
-      1200
-    );
+      this.flyTo(
+        worldPos.clone().add(new THREE.Vector3(20, 16, 20)),
+        worldPos,
+        1200
+      );
+    }
   }
 
-  public focusByAlarmId(alarmId: string): { found: boolean; userData?: any } {
+  public focusByAlarmId(alarmId: string, shouldFly = false): { found: boolean; userData?: any } {
     if (alarmId === 'ground' || alarmId === 'DEV-GND-001' || alarmId === 'ground_res') {
       this.setLayerVisibility('underground', true);
       this.setLayerVisibility('grounding', true);
       this.setBuildingXRay(true);
-      this.controls.maxPolarAngle = Math.PI * 0.72;
       this.setHighlightColor(0xf59e0b);
-      this.flyTo(
-        new THREE.Vector3(-18, 16, 56),
-        new THREE.Vector3(-38, 0.2, 38),
-        1200
-      );
+      if (shouldFly) {
+        this.controls.maxPolarAngle = Math.PI * 0.72;
+        this.flyTo(
+          new THREE.Vector3(-18, 16, 56),
+          new THREE.Vector3(-38, 0.2, 38),
+          1200
+        );
+      }
       if (this.highlightRing) {
         this.highlightRing.position.set(-38, 0.25, 38);
         this.highlightRing.visible = true;
@@ -695,29 +732,31 @@ export class DatacenterSceneManager {
         userData: {
           id: 'ground_res',
           code: 'DEV-GND-001',
-          name: '园区室外 -1F 人工地网基准测试井 (GW-01#)',
-          type: '联合接地电网基准测试井',
+          name: '人工地网测试井 (GW-01#)',
+          type: '地网测试井',
           system: '接地网',
-          location: '园区地下 -1F 人工地网基准测试井 (标高 -4.2m)',
+          location: '-1F 地下 (标高 -4.2m)',
           status: '预警',
           statusType: 'orange',
-          realtimeValue: '0.88 Ω (设计限值 ≤ 0.80 Ω · 国标 ≤ 1.0 Ω)',
+          realtimeValue: '0.88 Ω (限值 ≤ 0.80Ω)',
           threshold: '≤ 0.80 Ω',
-          specs: '四极交流异频抗干扰注入法 · 紫铜热熔焊网格',
-          desc: '地网接地阻抗持续微变超限，地网均压差扩大，遇直接雷或感应雷击时可能引发反击过电压。',
+          specs: '紫铜热熔焊网格',
+          desc: '地网阻抗微变超限。',
         },
       };
     } else if (alarmId === 'spd' || alarmId === 'DEV-SPD-004' || alarmId === 'spd_terminal') {
       this.setBuildingXRay(true);
       this.setLayerVisibility('interior', true);
       this.setLayerVisibility('spd', true);
-      this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
       this.setHighlightColor(0xeab308);
-      this.flyTo(
-        new THREE.Vector3(30, 15, 2),
-        new THREE.Vector3(18, 7.2, -10),
-        1200
-      );
+      if (shouldFly) {
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
+        this.flyTo(
+          new THREE.Vector3(30, 15, 2),
+          new THREE.Vector3(18, 7.2, -10),
+          1200
+        );
+      }
       if (this.highlightRing) {
         this.highlightRing.position.set(18, 5.8, -10);
         this.highlightRing.visible = true;
@@ -727,27 +766,28 @@ export class DatacenterSceneManager {
         userData: {
           id: 'spd_terminal',
           code: 'DEV-SPD-004',
-          name: '2F动力配电室低压母线二级SPD监测终端 (SPD-04#)',
-          type: '电源配电二级浪涌监测',
-          system: '浪涌保护SPD',
-          location: '2F 数据机房动力配电室低压母线柜 A-02',
+          name: '母线二级SPD (SPD-04#)',
+          type: '浪涌监测',
+          system: '浪涌保护',
+          location: '2F 配电室 A-02',
           status: '关注',
           statusType: 'warning',
-          realtimeValue: '漏电流 0.28 mA · 动作累计 12次',
+          realtimeValue: '0.28 mA (限值 ≤ 0.20mA)',
           threshold: '≤ 0.20 mA',
-          specs: '冲击电流 Imax 80kA · 氧化锌高能压敏阀片 · CAN-Bus总线',
-          desc: 'SPD内部氧化锌阀片进入早期微劣化阶段，漏电微安增加，建议红外巡视并在维保窗口更换。',
+          specs: 'Imax 80kA · 氧化锌阀片',
+          desc: 'SPD漏电微增。',
         },
       };
     } else if (alarmId === 'lightning' || alarmId === 'atmospheric' || alarmId === 'DEV-ENV-001') {
-      this.setBuildingXRay(false);
       this.setLayerVisibility('lightning', true);
       this.setHighlightColor(0x06b6d4);
-      this.flyTo(
-        new THREE.Vector3(12, 28, 24),
-        new THREE.Vector3(-8, 19, 0),
-        1200
-      );
+      if (shouldFly) {
+        this.flyTo(
+          new THREE.Vector3(12, 28, 24),
+          new THREE.Vector3(-8, 19, 0),
+          1200
+        );
+      }
       if (this.highlightRing) {
         this.highlightRing.position.set(-8, 17.8, 0);
         this.highlightRing.visible = true;
@@ -757,27 +797,29 @@ export class DatacenterSceneManager {
         userData: {
           id: 'atmospheric',
           code: 'DEV-ENV-001',
-          name: '天面大气电场动态监测探针 (AEFM-01)',
-          type: '空间电场监测探针',
+          name: '大气电场探针 (AEFM-01)',
+          type: '电场探针',
           system: '防雷接闪',
-          location: '科研楼天面 12号主动接闪塔顶端 (标高 +48.5m)',
+          location: '天面 12号接闪塔',
           status: '关注',
           statusType: 'info',
-          realtimeValue: '38.6 kV/m (雷暴云前沿)',
+          realtimeValue: '38.6 kV/m (限值 ≤ 25kV/m)',
           threshold: '≤ 25.0 kV/m',
-          specs: '动态范围 ±50kV/m · 采样率 1000Hz · Modbus-TCP光纤环网',
-          desc: '探测到上方对流层雷云强电荷集聚，大气电场迅速畸变，预计30分钟内有强对流雷闪可能。',
+          specs: '量程 ±50kV/m',
+          desc: '雷云电荷集聚。',
         },
       };
     } else if (alarmId === 'esd' || alarmId === 'DEV-ESD-008' || alarmId === 'esd_terminal' || alarmId === 'esd_channel') {
       this.setBuildingXRay(true);
       this.setLayerVisibility('interior', true);
       this.setHighlightColor(0x06b6d4);
-      this.flyTo(
-        new THREE.Vector3(6, 11, 14),
-        new THREE.Vector3(0, 6.9, 0),
-        1200
-      );
+      if (shouldFly) {
+        this.flyTo(
+          new THREE.Vector3(6, 11, 14),
+          new THREE.Vector3(0, 6.9, 0),
+          1200
+        );
+      }
       if (this.highlightRing) {
         this.highlightRing.position.set(0, 5.7, 0);
         this.highlightRing.visible = true;
@@ -787,24 +829,24 @@ export class DatacenterSceneManager {
         userData: {
           id: 'esd_terminal',
           code: 'DEV-ESD-008',
-          name: '微环境静电综合监测终端 (ESD-MON)',
-          type: '机房防静电微环境',
-          system: '防静电ESD',
-          location: '2F 核心算力机房 A01-A16 列冷通道',
+          name: '静电终端 (ESD-MON)',
+          type: '防静电监测',
+          system: '防静电',
+          location: '2F 核心机房通道',
           status: '正常',
           statusType: 'success',
-          realtimeValue: '0.72 MΩ (人员残存电压 < 25V)',
+          realtimeValue: '0.72 MΩ (限值 ≤ 1.0MΩ)',
           threshold: '≤ 1.00 MΩ',
-          specs: '防静电耗散地板 · 等电位铜排 · Zigbee无线网',
-          desc: '核心服务器通道防静电接地阻抗稳定，在控无威胁。',
+          specs: '等电位铜排',
+          desc: '防静电稳定在控。',
         },
       };
     }
     return { found: false };
   }
 
-  public focusByEquipmentId(id: string): boolean {
-    const alarmCheck = this.focusByAlarmId(id);
+  public focusByEquipmentId(id: string, shouldFly = false): boolean {
+    const alarmCheck = this.focusByAlarmId(id, shouldFly);
     if (alarmCheck.found) {
       if (alarmCheck.userData && this.callbacks.onClickObject) {
         this.callbacks.onClickObject(alarmCheck.userData);
@@ -823,7 +865,7 @@ export class DatacenterSceneManager {
     });
 
     if (found) {
-      this.focusOnObject(found);
+      this.focusOnObject(found, shouldFly);
       if (this.callbacks.onClickObject) {
         this.callbacks.onClickObject((found as THREE.Object3D).userData);
       }
@@ -847,7 +889,10 @@ export class DatacenterSceneManager {
       this.setLayerVisibility('interior', true);
     } else {
       this.controls.maxPolarAngle = Math.PI / 2 - 0.04;
-      this.setBuildingXRay(false);
+      // In birds-eye overview, keep building X-Ray transparent so internal equipment and problem points are visible
+      if (presetId === 'birds_eye') {
+        this.setBuildingXRay(true);
+      }
     }
 
     this.flyTo(
@@ -1005,26 +1050,80 @@ export class DatacenterSceneManager {
       this.highlightRing.scale.set(scale, scale, scale);
     }
 
-    // Animate 3D Spatial Alarm Beacons
+    // Animate 3D Spatial Alarm Beacons (Vivid Flashing & Blinking)
     if (this.alarmMarkersGroup && this.alarmMarkersGroup.visible) {
       this.alarmMarkersGroup.children.forEach((group) => {
-        const ring = group.getObjectByName('pulseRing');
-        if (ring) {
-          const ringScale = 1 + ((time * 0.0015) % 1) * 1.5;
-          ring.scale.set(ringScale, ringScale, ringScale);
-          const mat = (ring as THREE.Mesh).material as THREE.MeshBasicMaterial;
+        // High-visibility alarm strobe flash cadence (~1.6 Hz)
+        const flashRaw = Math.sin(time * 0.0075);
+        const flashAlpha = Math.max(0, flashRaw); // 0 to 1 sharp strobe pulse
+        const smoothPulse = (flashRaw + 1) * 0.5; // 0 to 1 smooth oscillation
+
+        // 1. Dynamic warning strobe PointLight (casts real light on surroundings)
+        const pointLight = group.getObjectByName('alarmPointLight') as THREE.PointLight;
+        if (pointLight) {
+          pointLight.intensity = 0.4 + Math.pow(flashAlpha, 1.4) * 4.2;
+        }
+
+        // 2. High-energy flashing core sphere (pulsing size & brightness)
+        const flashCore = group.getObjectByName('flashCore') as THREE.Mesh;
+        if (flashCore) {
+          const coreScale = 0.85 + flashAlpha * 0.55;
+          flashCore.scale.set(coreScale, coreScale, coreScale);
+          const mat = flashCore.material as THREE.MeshBasicMaterial;
           if (mat) {
-            mat.opacity = Math.max(0, 0.85 - ((time * 0.0015) % 1) * 0.85);
+            mat.opacity = 0.35 + flashAlpha * 0.65;
           }
         }
-        const diamond = group.getObjectByName('diamondMesh');
+
+        // 3. Rotating Diamond beacon wireframe
+        const diamond = group.getObjectByName('diamondMesh') as THREE.Mesh;
         if (diamond) {
-          diamond.rotation.y = time * 0.002;
-          diamond.position.y = 3.2 + Math.sin(time * 0.004) * 0.25;
+          diamond.rotation.y = time * 0.003;
+          diamond.rotation.x = time * 0.0015;
+          const diamondScale = 1.0 + flashAlpha * 0.35;
+          diamond.scale.set(diamondScale, diamondScale, diamondScale);
         }
-        const sprite = group.getObjectByName('alarmSprite');
+
+        // 4. Vertical light beam pulse
+        const beam = group.getObjectByName('lightBeam') as THREE.Mesh;
+        if (beam) {
+          const mat = beam.material as THREE.MeshBasicMaterial;
+          if (mat) {
+            mat.opacity = 0.2 + flashAlpha * 0.7;
+          }
+        }
+
+        // 5. Multi-tier concentric ripple rings on floor/ground
+        const ring1 = group.getObjectByName('pulseRing1') as THREE.Mesh;
+        if (ring1) {
+          const phase1 = ((time * 0.0016) % 1);
+          const rScale1 = 1 + phase1 * 3.6;
+          ring1.scale.set(rScale1, rScale1, rScale1);
+          const mat1 = ring1.material as THREE.MeshBasicMaterial;
+          if (mat1) {
+            mat1.opacity = Math.max(0, (1 - phase1) * 0.95);
+          }
+        }
+
+        const ring2 = group.getObjectByName('pulseRing2') as THREE.Mesh;
+        if (ring2) {
+          const phase2 = (((time * 0.0016) + 0.5) % 1);
+          const rScale2 = 1 + phase2 * 3.6;
+          ring2.scale.set(rScale2, rScale2, rScale2);
+          const mat2 = ring2.material as THREE.MeshBasicMaterial;
+          if (mat2) {
+            mat2.opacity = Math.max(0, (1 - phase2) * 0.95);
+          }
+        }
+
+        // 6. Billboard tag hover bobbing & subtle opacity pulse
+        const sprite = group.getObjectByName('alarmSprite') as THREE.Sprite;
         if (sprite) {
-          sprite.position.y = 4.8 + Math.sin(time * 0.003) * 0.15;
+          sprite.position.y = 10.2 + Math.sin(time * 0.003) * 0.25;
+          const mat = sprite.material as THREE.SpriteMaterial;
+          if (mat) {
+            mat.opacity = 0.85 + smoothPulse * 0.15;
+          }
         }
       });
     }

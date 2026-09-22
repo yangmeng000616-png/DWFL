@@ -11,8 +11,8 @@
           </svg>
         </div>
         <div class="flex items-center gap-1">
-          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide whitespace-nowrap">雷电活动实时地图</h3>
-          <span class="px-1 py-0.2 text-[9px] bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 rounded font-medium whitespace-nowrap">实时监测</span>
+          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide whitespace-nowrap">雷电地图</h3>
+          <span class="px-1 py-0.2 text-[9px] bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 rounded font-medium whitespace-nowrap">实时</span>
         </div>
       </div>
 
@@ -39,7 +39,7 @@
           title="显示或隐藏中国行政区划高亮边界"
         >
           <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="showBoundaries ? 'bg-cyan-300 shadow-[0_0_6px_#00f0ff] animate-pulse' : 'bg-slate-400'"></span>
-          <span>{{ showBoundaries ? '边界高亮:开' : '边界高亮:关' }}</span>
+          <span>{{ showBoundaries ? '边界:开' : '边界:关' }}</span>
         </button>
 
         <!-- Nationwide View Button -->
@@ -101,40 +101,40 @@
 
       <!-- Floating HUD: Top-Right Compact Horizontal Legend Bar (Slim, unobtrusive, fully self-contained in map) -->
       <div class="absolute right-2 top-2 z-10 pointer-events-auto">
-        <div class="bg-[#051838eb] border border-[#235dae]/80 rounded-lg px-2.5 py-1 backdrop-blur-md shadow-lg flex items-center gap-2 text-[11px]">
-          <span class="text-slate-400 font-medium text-[10px]">雷暴强度:</span>
-          <div class="flex items-center gap-1" title="强烈雷暴"><span class="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_5px_#ef4444]"></span><span class="text-slate-200 text-[10px]">强烈</span></div>
-          <div class="flex items-center gap-1" title="较强雷暴"><span class="w-2 h-2 rounded-full bg-[#f97316] shadow-[0_0_5px_#f97316]"></span><span class="text-slate-200 text-[10px]">较强</span></div>
-          <div class="flex items-center gap-1" title="中等雷暴"><span class="w-2 h-2 rounded-full bg-[#eab308] shadow-[0_0_5px_#eab308]"></span><span class="text-slate-200 text-[10px]">中等</span></div>
-          <div class="flex items-center gap-1" title="较弱雷暴"><span class="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_5px_#00f0ff]"></span><span class="text-slate-200 text-[10px]">较弱</span></div>
+        <div class="bg-[#051838eb] border border-[#235dae]/80 rounded-lg px-2 py-0.8 backdrop-blur-md shadow-lg flex items-center gap-1.5 text-[10px]">
+          <span class="text-slate-400 font-medium">强度:</span>
+          <div class="flex items-center gap-1" title="强烈雷暴"><span class="w-1.5 h-1.5 rounded-full bg-[#ef4444] shadow-[0_0_5px_#ef4444]"></span><span class="text-slate-200">强烈</span></div>
+          <div class="flex items-center gap-1" title="较强雷暴"><span class="w-1.5 h-1.5 rounded-full bg-[#f97316] shadow-[0_0_5px_#f97316]"></span><span class="text-slate-200">较强</span></div>
+          <div class="flex items-center gap-1" title="中等雷暴"><span class="w-1.5 h-1.5 rounded-full bg-[#eab308] shadow-[0_0_5px_#eab308]"></span><span class="text-slate-200">中等</span></div>
+          <div class="flex items-center gap-1" title="较弱雷暴"><span class="w-1.5 h-1.5 rounded-full bg-[#00f0ff] shadow-[0_0_5px_#00f0ff]"></span><span class="text-slate-200">较弱</span></div>
 
-          <span class="w-px h-3 bg-[#1e4d8c]"></span>
+          <span class="w-px h-2.5 bg-[#1e4d8c]"></span>
 
-          <div class="flex items-center gap-1" title="中国国界高亮轮廓"><span class="w-3.5 h-0.5 bg-[#00f0ff] shadow-[0_0_6px_#00f0ff] rounded"></span><span class="text-cyan-200 text-[10px]">国界</span></div>
-          <div class="flex items-center gap-1" title="省级行政边界"><span class="w-3.5 h-0.5 border-t border-dashed border-[#38bdf8]"></span><span class="text-slate-300 text-[10px]">省界</span></div>
+          <div class="flex items-center gap-1" title="中国国界高亮轮廓"><span class="w-3 h-0.5 bg-[#00f0ff] shadow-[0_0_6px_#00f0ff] rounded"></span><span class="text-cyan-200">国界</span></div>
+          <div class="flex items-center gap-1" title="省级行政边界"><span class="w-3 h-0.5 border-t border-dashed border-[#38bdf8]"></span><span class="text-slate-300">省界</span></div>
 
-          <span class="w-px h-3 bg-[#1e4d8c]"></span>
+          <span class="w-px h-2.5 bg-[#1e4d8c]"></span>
 
           <div class="flex items-center gap-1" title="15km核心防护圈 / 30km预警圈 / 50km探测圈">
-            <span class="w-2 h-2 rounded-full border border-cyan-400"></span>
-            <span class="text-slate-200 text-[10px]">15/30/50km防御圈</span>
+            <span class="w-1.5 h-1.5 rounded-full border border-cyan-400"></span>
+            <span class="text-slate-200">防御圈</span>
           </div>
         </div>
       </div>
 
       <!-- Floating HUD: Bottom-Right Compact Coordinates & Status Pill -->
       <div class="absolute right-2 bottom-2 z-10 pointer-events-auto">
-        <div class="bg-[#051838eb] border border-[#235dae]/80 rounded-lg px-2.5 py-1 backdrop-blur-md shadow-lg text-[11px] flex items-center gap-2">
+        <div class="bg-[#051838eb] border border-[#235dae]/80 rounded-lg px-2 py-0.8 backdrop-blur-md shadow-lg text-[10px] flex items-center gap-1.5">
           <div class="text-cyan-300 font-bold flex items-center gap-1">
-            <svg class="w-3 h-3 text-cyan-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="w-2.5 h-2.5 text-cyan-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="8"/>
               <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
             </svg>
-            <span class="text-[10px]">主站:</span>
+            <span>主站</span>
           </div>
-          <div class="text-slate-200 font-mono text-[10px]">116.397°E, 39.908°N</div>
-          <span class="w-px h-3 bg-[#1e4d8c]"></span>
-          <div class="text-slate-200 text-[10px]">雷电概率: <span class="text-emerald-400 font-bold font-mono">5%</span></div>
+          <div class="text-slate-300 font-mono">116.40°E, 39.91°N</div>
+          <span class="w-px h-2.5 bg-[#1e4d8c]"></span>
+          <div class="text-slate-300">概率 <span class="text-emerald-400 font-bold font-mono">5%</span></div>
         </div>
       </div>
 

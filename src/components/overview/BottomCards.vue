@@ -9,7 +9,7 @@
               <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
             </svg>
           </div>
-          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">多参数趋势联动</h3>
+          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">趋势联动</h3>
         </div>
 
         <!-- Metric Switcher -->
@@ -34,7 +34,7 @@
             <span class="text-slate-300">{{ currentMetricConfig.unitLabel }}</span>
           </div>
           <span class="font-tech text-cyan-300 font-semibold bg-[#072458]/90 border border-cyan-500/40 px-2 py-0.5 rounded text-[10.5px] shadow-[0_0_8px_rgba(0,240,255,0.15)] flex items-center gap-1">
-            当前: <span class="text-white font-bold">{{ currentMetricConfig.currentVal }}</span>
+            <span class="text-white font-bold">{{ currentMetricConfig.currentVal }}</span>
           </span>
         </div>
 
@@ -143,9 +143,9 @@
               <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
             </svg>
           </div>
-          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">设备在线与健康度</h3>
+          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">设备状态</h3>
         </div>
-        <span class="text-[11px] text-slate-300 font-tech">在线率 100%</span>
+        <span class="text-[11px] text-slate-300 font-tech">在线 100%</span>
       </div>
 
       <!-- 2x2 Device Grid with Circular Ring Progress Gauges (Clickable to inspect) -->
@@ -211,16 +211,16 @@
       <!-- Bottom Device Health Summary Strip -->
       <div class="mt-1 pt-1.5 border-t border-[#184682]/60 grid grid-cols-3 gap-1 text-center">
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">在网总设备</div>
-          <div class="font-tech text-[10px] text-cyan-300 font-bold">37 台/套</div>
+          <div class="text-[9px] text-slate-400">总设备</div>
+          <div class="font-tech text-[10px] text-cyan-300 font-bold">37 台</div>
         </div>
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">设备健康度</div>
+          <div class="text-[9px] text-slate-400">健康度</div>
           <div class="font-tech text-[10px] text-emerald-400 font-bold">100 分</div>
         </div>
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">巡检机制</div>
-          <div class="font-tech text-[10px] text-white font-bold">自适应闭环</div>
+          <div class="text-[9px] text-slate-400">巡检</div>
+          <div class="font-tech text-[10px] text-white font-bold">正常</div>
         </div>
       </div>
     </div>
@@ -234,7 +234,7 @@
               <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
             </svg>
           </div>
-          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">运行数据统计</h3>
+          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">运行统计</h3>
         </div>
 
         <!-- Time Range Selector -->
@@ -253,12 +253,12 @@
 
       <!-- 2x2 Metric Stat Boxes with Visual Telemetry -->
       <div class="grid grid-cols-2 gap-1.5 my-1 flex-1">
-        <!-- Box 1: 雷击事件计数 -->
+        <!-- Box 1: 雷击计数 -->
         <div class="bg-[#0a285e]/85 hover:bg-[#123877] border border-[#235eae]/60 rounded-lg p-1.5 px-2 flex items-center justify-between transition-colors group">
           <div class="flex flex-col justify-between">
             <div class="text-[10px] text-slate-300 group-hover:text-white font-medium flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-              <span>雷击事件计数</span>
+              <span>雷击计数</span>
             </div>
             <div class="text-sm font-bold font-tech text-white my-0.2">
               {{ currentPeriodData.lightningCount }} <span class="text-[10px] font-sans text-slate-400 font-normal">次</span>
@@ -281,19 +281,19 @@
           </div>
         </div>
 
-        <!-- Box 2: 峰值泄流电流 -->
+        <!-- Box 2: 泄流电流 -->
         <div class="bg-[#0a285e]/85 hover:bg-[#123877] border border-[#235eae]/60 rounded-lg p-1.5 px-2 flex items-center justify-between transition-colors group">
           <div class="flex flex-col justify-between">
             <div class="text-[10px] text-slate-300 group-hover:text-white font-medium flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-              <span>峰值泄流电流</span>
+              <span>泄流电流</span>
             </div>
             <div class="text-sm font-bold font-tech text-cyan-300 my-0.2">
               {{ currentPeriodData.maxCurrent }} <span class="text-[10px] font-sans text-slate-400 font-normal">kA</span>
             </div>
             <div>
               <span class="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.2 rounded bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 font-medium">
-                截获率 100%
+                截获 100%
               </span>
             </div>
           </div>
@@ -321,19 +321,19 @@
           </div>
         </div>
 
-        <!-- Box 3: 静电超限告警 -->
+        <!-- Box 3: 静电告警 -->
         <div class="bg-[#0a285e]/85 hover:bg-[#123877] border border-[#235eae]/60 rounded-lg p-1.5 px-2 flex items-center justify-between transition-colors group">
           <div class="flex flex-col justify-between">
             <div class="text-[10px] text-slate-300 group-hover:text-white font-medium flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span>静电超限告警</span>
+              <span>静电告警</span>
             </div>
             <div class="text-sm font-bold font-tech text-white my-0.2">
               {{ currentPeriodData.esdAlerts }} <span class="text-[10px] font-sans text-slate-400 font-normal">次</span>
             </div>
             <div>
               <span class="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.2 rounded bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 font-medium">
-                <span class="w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_4px_#10b981]"></span> 平稳受控
+                <span class="w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_4px_#10b981]"></span> 受控
               </span>
             </div>
           </div>
@@ -346,19 +346,19 @@
           </div>
         </div>
 
-        <!-- Box 4: 设备主动维保 -->
+        <!-- Box 4: 维保记录 -->
         <div class="bg-[#0a285e]/85 hover:bg-[#123877] border border-[#235eae]/60 rounded-lg p-1.5 px-2 flex items-center justify-between transition-colors group">
           <div class="flex flex-col justify-between">
             <div class="text-[10px] text-slate-300 group-hover:text-white font-medium flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-              <span>设备主动维保</span>
+              <span>维保记录</span>
             </div>
             <div class="text-sm font-bold font-tech text-white my-0.2">
               {{ currentPeriodData.maintenanceCount }} <span class="text-[10px] font-sans text-slate-400 font-normal">次</span>
             </div>
             <div>
               <span class="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.2 rounded bg-indigo-950/80 border border-indigo-400/40 text-indigo-300 font-medium">
-                已处置闭环
+                闭环
               </span>
             </div>
           </div>
@@ -375,16 +375,16 @@
       <!-- Bottom Statistical Energy & Archive Ribbon -->
       <div class="mt-1 pt-1.5 border-t border-[#184682]/60 grid grid-cols-3 gap-1 text-center">
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">泄放总能量</div>
+          <div class="text-[9px] text-slate-400">泄放能量</div>
           <div class="font-tech text-[10px] text-cyan-300 font-bold">{{ currentPeriodData.absorbedEnergy }}</div>
         </div>
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">防护拦截率</div>
+          <div class="text-[9px] text-slate-400">拦截率</div>
           <div class="font-tech text-[10px] text-emerald-400 font-bold">100.0%</div>
         </div>
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">报表归档</div>
-          <div class="font-tech text-[10px] text-white font-bold">自动闭环</div>
+          <div class="text-[9px] text-slate-400">归档</div>
+          <div class="font-tech text-[10px] text-white font-bold">正常</div>
         </div>
       </div>
     </div>
@@ -399,7 +399,7 @@
               <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
             </svg>
           </div>
-          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">系统综合可用度</h3>
+          <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide">综合可用度</h3>
         </div>
 
         <!-- MTBF & SLA Badge in Header -->
@@ -435,11 +435,11 @@
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span class="text-base font-bold font-tech text-white tracking-tight">99.8%</span>
-              <span class="text-[8.5px] text-[#00e5a3] font-semibold bg-[#00e5a3]/15 px-1.5 py-0.2 rounded border border-[#00e5a3]/40">稳定运行</span>
+              <span class="text-[8.5px] text-[#00e5a3] font-semibold bg-[#00e5a3]/15 px-1.5 py-0.2 rounded border border-[#00e5a3]/40">正常</span>
             </div>
           </div>
           <div class="text-[9.5px] text-slate-300 font-mono text-center mt-1">
-            无故障 <span class="text-cyan-300 font-bold">342</span> 天
+            无故障 <span class="text-cyan-300 font-bold">342</span>天
           </div>
         </div>
 
@@ -448,7 +448,7 @@
           <div class="bg-[#0a285e]/80 hover:bg-[#123877] border border-[#235eae]/60 rounded px-1.5 py-0.5 flex items-center justify-between transition-colors">
             <div class="flex items-center gap-1 truncate">
               <span class="w-1 h-1 rounded-full bg-[#00e5a3] shadow-[0_0_4px_#00e5a3] flex-shrink-0"></span>
-              <span class="text-slate-200 truncate text-[10px]">空间雷电感知链</span>
+              <span class="text-slate-200 truncate text-[10px]">雷电感知链</span>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
               <span class="font-tech text-cyan-300 font-bold text-[10px]">99.9%</span>
@@ -459,7 +459,7 @@
           <div class="bg-[#0a285e]/80 hover:bg-[#123877] border border-[#235eae]/60 rounded px-1.5 py-0.5 flex items-center justify-between transition-colors">
             <div class="flex items-center gap-1 truncate">
               <span class="w-1 h-1 rounded-full bg-[#00e5a3] shadow-[0_0_4px_#00e5a3] flex-shrink-0"></span>
-              <span class="text-slate-200 truncate text-[10px]">机房微环境屏蔽</span>
+              <span class="text-slate-200 truncate text-[10px]">微环境屏蔽</span>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
               <span class="font-tech text-white font-bold text-[10px]">-62dB</span>
@@ -470,7 +470,7 @@
           <div class="bg-[#0a285e]/80 hover:bg-[#123877] border border-[#235eae]/60 rounded px-1.5 py-0.5 flex items-center justify-between transition-colors">
             <div class="flex items-center gap-1 truncate">
               <span class="w-1 h-1 rounded-full bg-[#00e5a3] shadow-[0_0_4px_#00e5a3] flex-shrink-0"></span>
-              <span class="text-slate-200 truncate text-[10px]">深埋人工地网</span>
+              <span class="text-slate-200 truncate text-[10px]">人工地网</span>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
               <span class="font-tech text-cyan-300 font-bold text-[10px]">0.52Ω</span>
@@ -481,7 +481,7 @@
           <div class="bg-[#0a285e]/80 hover:bg-[#123877] border border-[#235eae]/60 rounded px-1.5 py-0.5 flex items-center justify-between transition-colors">
             <div class="flex items-center gap-1 truncate">
               <span class="w-1 h-1 rounded-full bg-[#00e5a3] shadow-[0_0_4px_#00e5a3] flex-shrink-0"></span>
-              <span class="text-slate-200 truncate text-[10px]">浪涌主动分流通道</span>
+              <span class="text-slate-200 truncate text-[10px]">浪涌分流通道</span>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
               <span class="font-tech text-white font-bold text-[10px]">双通道</span>
@@ -492,7 +492,7 @@
           <div class="bg-[#0a285e]/80 hover:bg-[#123877] border border-[#235eae]/60 rounded px-1.5 py-0.5 flex items-center justify-between transition-colors">
             <div class="flex items-center gap-1 truncate">
               <span class="w-1 h-1 rounded-full bg-[#00e5a3] shadow-[0_0_4px_#00e5a3] flex-shrink-0"></span>
-              <span class="text-slate-200 truncate text-[10px]">数字孪生通信总线</span>
+              <span class="text-slate-200 truncate text-[10px]">数字孪生总线</span>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
               <span class="font-tech text-emerald-300 font-bold text-[10px]">3.8ms</span>
@@ -505,16 +505,16 @@
       <!-- Bottom SLA & Architecture Guarantee Strip -->
       <div class="mt-1 pt-1.5 border-t border-[#184682]/60 grid grid-cols-3 gap-1 text-center">
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">自检周期</div>
-          <div class="font-tech text-[10px] text-cyan-300 font-bold">10 秒/轮</div>
+          <div class="text-[9px] text-slate-400">自检</div>
+          <div class="font-tech text-[10px] text-cyan-300 font-bold">10s/轮</div>
         </div>
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">冗余等级</div>
+          <div class="text-[9px] text-slate-400">冗余</div>
           <div class="font-tech text-[10px] text-emerald-400 font-bold">Tier IV</div>
         </div>
         <div class="py-0.5 px-1 rounded bg-[#0a285e]/85 border border-[#235eae]/50">
-          <div class="text-[9px] text-slate-400">响应闭环</div>
-          <div class="font-tech text-[10px] text-emerald-400 font-bold">&lt; 50 ms</div>
+          <div class="text-[9px] text-slate-400">响应</div>
+          <div class="font-tech text-[10px] text-emerald-400 font-bold">&lt; 50ms</div>
         </div>
       </div>
     </div>
@@ -634,7 +634,7 @@ const currentPeriodData = computed(() => {
       maxCurrent: 64.2,
       esdAlerts: 1,
       maintenanceCount: 3,
-      lightningDiff: '较同期 ↓ 20%',
+      lightningDiff: '↓ 20%',
       bars: [30, 60, 95, 45, 70],
       absorbedEnergy: '128.5 MJ'
     };
@@ -645,7 +645,7 @@ const currentPeriodData = computed(() => {
       maxCurrent: 78.5,
       esdAlerts: 2,
       maintenanceCount: 6,
-      lightningDiff: '较同期 ↓ 35%',
+      lightningDiff: '↓ 35%',
       bars: [45, 80, 100, 60, 85],
       absorbedEnergy: '486.2 MJ'
     };
@@ -655,7 +655,7 @@ const currentPeriodData = computed(() => {
     maxCurrent: 58.7,
     esdAlerts: 0,
     maintenanceCount: 1,
-    lightningDiff: '较同期 ↓ 50%',
+    lightningDiff: '↓ 50%',
     bars: [25, 40, 90, 35, 50],
     absorbedEnergy: '42.8 MJ'
   };

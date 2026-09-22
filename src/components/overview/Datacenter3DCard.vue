@@ -9,29 +9,20 @@
             <path d="M13 2L3 14h8l-1 8 11-12h-8l1-8z" />
           </svg>
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
-              <span>星云计算中心 · 三维数字孪生</span>
-            </h3>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-950/80 text-cyan-300 border border-blue-500/40">
-              82m×54m 主机房 · PBR仿真
-            </span>
-          </div>
-        </div>
+        <h3 class="text-sm font-bold text-white tracking-wide">三维孪生</h3>
       </div>
 
-      <!-- Quick Control Actions (Minimal: 透视开关, 切地图) -->
+      <!-- Quick Control Actions (Minimal: 透视, 地图) -->
       <div class="flex items-center gap-2 text-xs">
-        <!-- 透视状态开关 (默认已开启透视) -->
+        <!-- 透视状态开关 -->
         <button
           @click="toggleXRay"
           class="h-6.5 px-2.5 rounded-md border text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
           :class="isXRayEnabled ? 'bg-cyan-600/30 text-cyan-300 border-cyan-400/80 shadow-[0_0_8px_rgba(6,182,212,0.3)]' : 'bg-[#092960]/90 text-slate-300 border-[#2461b2]/70 hover:text-white'"
-          title="建筑透视穿透模式（默认开启，清晰透视机房内部设备与地网）"
+          title="建筑透视穿透模式"
         >
           <span class="w-1.5 h-1.5 rounded-full" :class="isXRayEnabled ? 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]' : 'bg-slate-400'"></span>
-          <span>{{ isXRayEnabled ? '透视模式' : '实体模式' }}</span>
+          <span>{{ isXRayEnabled ? '透视' : '实体' }}</span>
         </button>
 
         <!-- Switch to GIS Map -->
@@ -39,14 +30,14 @@
           v-if="allowMapSwitch"
           @click="emit('switch-to-map')"
           class="h-6.5 px-2.5 rounded-md bg-gradient-to-r from-[#124285] to-[#0284c7] hover:from-[#1752a5] hover:to-[#0296e0] border border-cyan-400 text-[11px] font-bold text-white shadow-[0_0_10px_rgba(6,182,212,0.4)] flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-          title="切换至雷电活动实时电子地图"
+          title="切换至雷电地图"
         >
           <svg class="w-3 h-3 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="9" />
             <circle cx="12" cy="12" r="3" />
             <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
           </svg>
-          <span>切地图</span>
+          <span>地图</span>
         </button>
       </div>
     </div>
@@ -56,15 +47,9 @@
       <!-- Canvas Mount Container -->
       <div ref="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
 
-      <!-- Navigation & Compass Guide Overlay (Top Left of 3D Scene) -->
-      <div class="absolute top-2.5 left-2.5 z-20 pointer-events-none flex flex-col gap-1 text-[10px] text-slate-300 bg-[#06193d]/85 px-2 py-1.5 rounded border border-[#194883]/60 backdrop-blur-sm">
-        <div class="flex items-center gap-1.5 font-mono text-cyan-300 font-bold">
-          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-          <span>星云计算中心 · 三维数字孪生底座</span>
-        </div>
-        <div class="text-[9px] text-slate-400">
-          左键旋转 · 右键平移 · 滚轮缩放 · 单击设备检视
-        </div>
+      <!-- Navigation Tip (Minimal) -->
+      <div class="absolute top-2.5 left-2.5 z-20 pointer-events-none text-[9.5px] text-slate-400 bg-[#06193d]/80 px-2 py-1 rounded border border-[#194883]/50 backdrop-blur-sm">
+        拖拽旋转 · 滚轮缩放
       </div>
 
       <!-- Hover Tooltip HUD (Follows or Anchors Hovered Device) -->
@@ -92,12 +77,9 @@
               <span class="text-slate-200 text-right truncate max-w-[170px]">{{ hoveredObject.location }}</span>
             </div>
             <div v-if="hoveredObject.realtimeValue" class="flex justify-between font-mono text-cyan-300 pt-0.5 font-semibold">
-              <span>实时遥测:</span>
+              <span>遥测:</span>
               <span>{{ hoveredObject.realtimeValue }}</span>
             </div>
-          </div>
-          <div class="text-[9px] text-cyan-400/80 pt-1 text-right">
-            单击可展开设备工况与技术档案 →
           </div>
         </div>
       </transition>
@@ -106,11 +88,11 @@
       <transition name="slide-up">
         <div
           v-if="selectedDevice"
-          class="absolute bottom-12 left-4 right-4 z-30 bg-[#071f45]/95 border border-cyan-400/80 rounded-xl p-3 shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-3 text-xs"
+          class="absolute bottom-11 left-3 right-3 z-30 bg-[#071f45]/95 border border-cyan-400/80 rounded-xl px-3 py-2 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 text-xs"
         >
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 flex-shrink-0">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 flex-shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
                 <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
                 <line x1="6" y1="6" x2="6.01" y2="6" />
@@ -118,43 +100,49 @@
               </svg>
             </div>
 
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-white text-sm tracking-wide">{{ selectedDevice.name }}</span>
-                <span class="font-mono text-[10px] text-cyan-300 bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-500/40">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-white text-xs sm:text-sm tracking-wide truncate">
+                  {{ cleanDeviceName(selectedDevice.name) }}
+                </span>
+                <span class="font-mono text-[10px] text-cyan-300 bg-cyan-950/80 px-1.5 py-0.2 rounded border border-cyan-500/40">
                   {{ selectedDevice.code || selectedDevice.id }}
                 </span>
                 <span
-                  class="px-2 py-0.5 rounded text-[10px] font-bold"
-                  :class="selectedDevice.statusType === 'warning' ? 'bg-amber-950 text-amber-300 border border-amber-500/50' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/50'"
+                  class="px-1.5 py-0.2 rounded text-[10px] font-bold"
+                  :class="isWarningStatus(selectedDevice)
+                    ? 'bg-amber-950/90 text-amber-300 border border-amber-400/60 shadow-[0_0_6px_rgba(245,158,11,0.3)]'
+                    : 'bg-emerald-950/90 text-emerald-300 border border-emerald-400/50'"
                 >
-                  {{ selectedDevice.status || '状态正常' }}
+                  {{ selectedDevice.status || '正常' }}
                 </span>
               </div>
-              <div class="text-[11px] text-slate-300 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
-                <span>位置: <strong class="text-slate-100 font-normal">{{ selectedDevice.location }}</strong></span>
-                <span>所属系统: <strong class="text-cyan-300 font-normal">{{ selectedDevice.system }}</strong></span>
-                <span v-if="selectedDevice.specs">技术规格: <strong class="text-slate-300 font-normal">{{ selectedDevice.specs }}</strong></span>
+              <div class="text-[11px] text-slate-300 mt-0.5 flex items-center gap-2 truncate">
+                <span class="truncate">位置: <strong class="text-slate-100 font-normal">{{ cleanLocation(selectedDevice.location) }}</strong></span>
+                <span class="text-slate-500">·</span>
+                <span class="flex-shrink-0">系统: <strong class="text-cyan-300 font-normal">{{ selectedDevice.system }}</strong></span>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
-            <div v-if="selectedDevice.realtimeValue" class="bg-[#051633] px-3 py-1.5 rounded-lg border border-cyan-500/30 font-mono text-center">
-              <div class="text-[10px] text-slate-400">实时遥测监测值</div>
-              <div class="text-sm font-bold text-cyan-300">{{ selectedDevice.realtimeValue }}</div>
+          <div class="flex items-center gap-2.5 flex-shrink-0">
+            <div v-if="selectedDevice.realtimeValue" class="bg-[#051633] px-2.5 py-1 rounded-lg border border-cyan-500/40 font-mono text-center">
+              <div class="text-[9px] text-slate-400 leading-none">遥测值</div>
+              <div class="text-xs sm:text-sm font-bold text-cyan-300 mt-0.5 whitespace-nowrap">
+                {{ cleanRealtimeValue(selectedDevice.realtimeValue) }}
+              </div>
             </div>
 
             <button
               @click="openGlobalDetail"
-              class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold text-xs transition-all shadow-[0_0_10px_rgba(6,182,212,0.4)] cursor-pointer"
+              class="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold text-xs transition-all shadow-[0_0_10px_rgba(6,182,212,0.4)] cursor-pointer whitespace-nowrap"
             >
-              查看诊断档案
+              档案
             </button>
 
             <button
               @click="selectedDevice = null"
-              class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10"
+              class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
             >
               ✕
             </button>
@@ -168,18 +156,16 @@
       <div class="flex items-center gap-3 font-mono">
         <span class="flex items-center gap-1.5 text-cyan-300">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>地网电阻: 0.52Ω</span>
+          <span>地网 0.52Ω</span>
         </span>
-        <span class="text-slate-500">|</span>
-        <span class="text-slate-300">空间电场: 12.4 kV/m</span>
-        <span class="text-slate-500">|</span>
-        <span class="text-amber-300">SPD-04 漏电关注: 0.18mA</span>
+        <span class="text-slate-500">·</span>
+        <span class="text-slate-300">电场 12.4 kV/m</span>
+        <span class="text-slate-500">·</span>
+        <span class="text-amber-300">SPD 0.18mA</span>
       </div>
 
       <div class="flex items-center gap-2 text-slate-400">
         <span>视角: {{ currentPresetLabel }}</span>
-        <span>·</span>
-        <span>园区工业仿真 1:1</span>
       </div>
     </div>
   </div>
@@ -387,6 +373,49 @@ function triggerLightning() {
   setTimeout(() => {
     isLightningFiring.value = false;
   }, 2500);
+}
+
+// Clean helpers for inspector display
+function cleanDeviceName(name?: string) {
+  if (!name) return '';
+  return name
+    .replace('园区室外 -1F 人工地网基准测试井', '人工地网测试井')
+    .replace('2F动力配电室低压母线二级SPD监测终端', '母线二级SPD')
+    .replace('科研楼天面 12号主动接闪塔顶端', '天面接闪塔')
+    .replace('科研楼天面 12号主动接闪塔', '天面接闪塔')
+    .replace('微环境静电综合监测终端', '静电终端');
+}
+
+function cleanLocation(loc?: string) {
+  if (!loc) return '';
+  return loc
+    .replace('园区地下 -1F 人工地网基准测试井', '-1F 地下井位')
+    .replace('园区地下-1F 人工地网基准测试井', '-1F 地下井位')
+    .replace('2F 数据机房动力配电室低压母线柜', '2F 配电室')
+    .replace('科研楼天面 12号主动接闪塔顶端', '天面接闪塔')
+    .replace('2F 核心算力机房 A01-A16 列冷通道', '2F 核心机房通道');
+}
+
+function cleanRealtimeValue(val?: string) {
+  if (!val) return '';
+  return val
+    .replace(' (设计限值 ≤ 0.80 Ω · 国标 ≤ 1.0 Ω)', ' (限值 ≤ 0.80Ω)')
+    .replace(' · 动作累计 12次', '')
+    .replace(' (雷暴云前沿)', '')
+    .replace(' (人员残存电压 < 25V)', '')
+    .replace(' (国标标准 ≤ 1.0 Ω)', ' (≤ 1.0Ω)');
+}
+
+function isWarningStatus(dev: any) {
+  if (!dev) return false;
+  return (
+    dev.statusType === 'warning' ||
+    dev.statusType === 'orange' ||
+    dev.status === '预警' ||
+    dev.status === '关注' ||
+    dev.status === '超标' ||
+    dev.status === '三级'
+  );
 }
 
 // Open Global Device Inspection Modal
